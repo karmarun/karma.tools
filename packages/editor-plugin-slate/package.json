@@ -1,0 +1,42 @@
+{
+  "name": "@karma.run/editor-plugin-slate",
+  "version": "0.13.0",
+  "main": "./lib/cjs/index.js",
+  "module": "./lib/es6/index.js",
+  "types": "./lib/types/index.d.ts",
+  "license": "MIT",
+  "repository": "github:karmarun/karma.tools",
+  "scripts": {
+    "build": "run-p build:*",
+    "build:cjs": "tsc --outDir ./lib/cjs",
+    "build:es6": "tsc --module esnext --outDir ./lib/es6",
+    "build:types": "tsc --declaration --declarationDir ./lib/types --emitDeclarationOnly",
+    "watch": "run-s clean mkdir symlink watch:dev",
+    "watch:dev": "tsc --watch --outDir ./lib/cjs --declaration --declarationDir ./lib/types --declarationMap",
+    "mkdir": "shx mkdir -p ./lib/cjs ./lib/types",
+    "symlink": "shx ln -s ./cjs ./lib/es6",
+    "copy:license": "shx cp ../../LICENSE ./",
+    "clean": "shx rm -rf ./LICENSE ./lib",
+    "prepare": "run-s clean copy:license build"
+  },
+  "dependencies": {
+    "memoize-one": "^3.1.1",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "slate": "^0.34.6",
+    "slate-plain-serializer": "^0.5.21",
+    "slate-react": "^0.13.3"
+  },
+  "devDependencies": {
+    "@types/react": "^16.4.6",
+    "@types/react-dom": "^16.0.6",
+    "@types/slate": "^0.33.1",
+    "@types/slate-plain-serializer": "^0.5.1",
+    "@types/slate-react": "^0.12.1",
+    "typescript": "^3.0.1"
+  },
+  "peerDependencies": {
+    "@karma.run/editor-client": "^0.13.0",
+    "@karma.run/editor-common": "^0.13.0"
+  }
+}

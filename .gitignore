@@ -1,0 +1,10 @@
+.DS_Store
+.idea/
+.cache/
+lib/
+dist/
+packages/**/LICENSE
+node_modules
+npm-debug.log
+yarn-error.log
+/editor.*.config.*

@@ -1,0 +1,32 @@
+{
+  "name": "@karma.run/editor-worker",
+  "version": "0.13.0",
+  "main": "./lib/cjs/index.js",
+  "module": "./lib/es6/index.js",
+  "types": "./lib/types/index.d.ts",
+  "license": "MIT",
+  "repository": "github:karmarun/karma.tools",
+  "scripts": {
+    "build": "run-p build:*",
+    "build:cjs": "tsc --outDir ./lib/cjs",
+    "build:es6": "tsc --module esnext --outDir ./lib/es6",
+    "build:types": "tsc --declaration --declarationDir ./lib/types --emitDeclarationOnly",
+    "watch": "run-s clean mkdir symlink watch:dev",
+    "watch:dev": "tsc --watch --outDir ./lib/cjs --declaration --declarationDir ./lib/types --declarationMap",
+    "mkdir": "shx mkdir -p ./lib/cjs ./lib/types",
+    "symlink": "shx ln -s ./cjs ./lib/es6",
+    "copy:license": "shx cp ../../LICENSE ./",
+    "clean": "shx rm -rf ./LICENSE ./lib",
+    "prepare": "run-s clean copy:license build"
+  },
+  "dependencies": {
+    "@karma.run/editor-common": "^0.13.0",
+    "bcryptjs": "^2.4.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.1",
+    "npm-run-all": "^4.1.3",
+    "shx": "^0.3.0",
+    "typescript": "^3.0.1"
+  }
+}

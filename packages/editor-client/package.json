@@ -1,0 +1,51 @@
+{
+  "name": "@karma.run/editor-client",
+  "version": "0.13.0",
+  "main": "./lib/cjs/index.js",
+  "module": "./lib/es6/index.js",
+  "types": "./lib/types/index.d.ts",
+  "sideEffects": false,
+  "license": "MIT",
+  "repository": "github:karmarun/karma.tools",
+  "scripts": {
+    "build": "run-p build:*",
+    "build:cjs": "tsc --outDir ./lib/cjs",
+    "build:es6": "tsc --module esnext --outDir ./lib/es6",
+    "build:types": "tsc --declaration --declarationDir ./lib/types --emitDeclarationOnly",
+    "watch": "run-s clean mkdir symlink watch:dev",
+    "watch:dev": "tsc --watch --outDir ./lib/cjs --declaration --declarationDir ./lib/types --declarationMap",
+    "mkdir": "shx mkdir -p ./lib/cjs ./lib/types",
+    "symlink": "shx ln -s ./cjs ./lib/es6",
+    "copy:license": "shx cp ../../LICENSE ./",
+    "clean": "shx rm -rf ./LICENSE ./lib",
+    "prepare": "run-s clean copy:license build"
+  },
+  "dependencies": {
+    "@karma.run/editor-common": "^0.13.0",
+    "@karma.run/sdk": "^0.5.0-beta.0",
+    "axios": "^0.18.0",
+    "classnames": "^2.2.5",
+    "csx": "^9.0.0",
+    "fuse.js": "^3.2.0",
+    "memoize-one": "^3.1.1",
+    "moment": "^2.19.1",
+    "qs": "^6.5.1",
+    "react": "^16.4.1",
+    "react-datetime": "^2.10.3",
+    "react-dom": "^16.4.1",
+    "react-markdown": "^3.1.4",
+    "shortid": "^2.2.8",
+    "typestyle": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/classnames": "^2.2.3",
+    "@types/memoize-one": "^3.1.1",
+    "@types/qs": "^6.5.1",
+    "@types/react": "^16.4.6",
+    "@types/react-dom": "^16.0.6",
+    "@types/shortid": "^0.0.29",
+    "npm-run-all": "^4.1.3",
+    "shx": "^0.3.0",
+    "typescript": "^3.0.1"
+  }
+}
