@@ -30,7 +30,6 @@ RUN mkdir ./libvips \
   && make install
 
 COPY ./package.json $HOME_DIR
-COPY ./yarn.lock $HOME_DIR
 COPY ./.yarnclean $HOME_DIR
 
 WORKDIR $HOME_DIR

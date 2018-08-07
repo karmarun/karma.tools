@@ -226,7 +226,6 @@ export const SlateFieldEditComponentStyle = style({
         '> .editor': {
           overflowY: 'auto',
           padding: Spacing.medium,
-          maxHeight: '33vh',
           $nest: {
             '&:not(:first-child)': {
               borderTop: `1px solid ${Color.neutral.light1}`
@@ -314,7 +313,12 @@ export class SlateField implements Field<SlateFieldValue> {
 
   public renderListComponent(props: ListRenderProps<SlateFieldValue>) {
     const plainText = plainTextSerializer.serialize(props.value.value)
-    return <CardSection>{plainText}</CardSection>
+
+    if (plainText.length > 30) {
+      return <CardSection>{plainText.slice(0, 30).trim()}...</CardSection>
+    } else {
+      return <CardSection>{plainText}</CardSection>
+    }
   }
 
   public renderEditComponent(props: EditRenderProps<SlateFieldValue>) {
