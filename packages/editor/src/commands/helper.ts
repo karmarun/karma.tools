@@ -155,7 +155,6 @@ export async function build(
 
     compiler.run((err, stats) => {
       if (err) return reject(err)
-      fs.promises.writeFile('./stats.json', JSON.stringify(stats.toJson()))
       return resolve({path: bundlePath, stats})
     })
   })

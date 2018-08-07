@@ -333,9 +333,36 @@ export class SlateField implements Field<SlateFieldValue> {
   }
 
   public transformRawValue(value: any): SlateFieldValue {
+    const recurse = (node: SlateJSON): any => {
+      switch (node.object) {
+        case 'document':
+          return {
+            ...node,
+            nodes: node.nodes ? node.nodes.map(node => recurse(node)) : undefined
+          }
+
+        case 'inline':
+        case 'block':
+          const dataKey = node.data ? firstKeyOptional(node.data) : undefined
+          const dataField = dataKey ? this.dataFields[dataKey] : undefined
+          const data = dataField ? dataField.transformRawValue(node.data![dataKey!]) : undefined
+
+          return {
+            ...node,
+            data: data ? {[dataKey!]: data} : node.data,
+            nodes: node.nodes ? node.nodes.map(node => recurse(node)) : undefined
+          }
+
+        default:
+          return node
+      }
+    }
+
+    console.log(recurse(value))
+
     return {
       value: Slate.Value.create({
-        document: Slate.Document.fromJSON(value)
+        document: Slate.Document.fromJSON(recurse(value))
       }),
       isValid: true
     }
