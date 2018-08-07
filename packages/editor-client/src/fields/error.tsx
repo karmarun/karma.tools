@@ -90,10 +90,6 @@ export class ErrorField implements Field<ErrorFieldValue> {
     return e.null()
   }
 
-  public isValidValue() {
-    return [this.message]
-  }
-
   public traverse() {
     return this
   }

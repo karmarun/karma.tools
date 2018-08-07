@@ -29,7 +29,6 @@ RUN mkdir ./libvips \
   && make \
   && make install
 
-COPY ./LICENSE $HOME_DIR
 COPY ./package.json $HOME_DIR
 COPY ./yarn.lock $HOME_DIR
 COPY ./.yarnclean $HOME_DIR

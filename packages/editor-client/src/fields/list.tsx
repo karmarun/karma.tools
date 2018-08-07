@@ -329,10 +329,6 @@ export class ListField implements Field<ListFieldValue> {
     return d.list(...value.value.map(({value}) => this.field.transformValueToExpression(value)))
   }
 
-  public isValidValue() {
-    return null
-  }
-
   public fieldOptions(): ListFieldOptions & TypedFieldOptions {
     return {
       type: ListField.type,

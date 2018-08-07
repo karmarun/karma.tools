@@ -207,10 +207,6 @@ export class UnionField implements Field<UnionFieldValue> {
     )
   }
 
-  public isValidValue() {
-    return null
-  }
-
   public fieldOptions(): UnionFieldOptions & TypedFieldOptions {
     return {
       type: UnionField.type,

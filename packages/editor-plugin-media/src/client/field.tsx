@@ -337,10 +337,6 @@ export class MediaField implements Field<MediaFieldValue> {
     })
   }
 
-  public isValidValue() {
-    return null
-  }
-
   public fieldOptions(): MediaFieldOptions & TypedFieldOptions {
     return {
       type: MediaField.type,

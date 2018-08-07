@@ -247,10 +247,6 @@ export class MapField implements Field<MapFieldValue> {
     )
   }
 
-  public isValidValue() {
-    return null
-  }
-
   public fieldOptions(): MapFieldOptions & TypedFieldOptions {
     return {
       type: MapField.type,

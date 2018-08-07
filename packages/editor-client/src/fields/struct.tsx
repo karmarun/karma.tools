@@ -276,10 +276,6 @@ export class StructField implements Field<StructFieldValue> {
     )
   }
 
-  public isValidValue() {
-    return null
-  }
-
   public fieldOptions(): StructFieldOptions & TypedFieldOptions {
     return {
       type: StructField.type,

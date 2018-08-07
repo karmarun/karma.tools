@@ -97,10 +97,6 @@ export class DateTimeField implements Field<DateTimeValue> {
     return e.dateTime(value.value.toISOString())
   }
 
-  public isValidValue() {
-    return []
-  }
-
   public fieldOptions(): DateTimeFieldOptions & TypedFieldOptions {
     return {
       type: DateTimeField.type,

@@ -119,10 +119,6 @@ export class EnumField implements Field<EnumFieldValue> {
     return e.symbol(value.value)
   }
 
-  public isValidValue(_value: string) {
-    return []
-  }
-
   public fieldOptions(): EnumFieldOptions & TypedFieldOptions {
     return {
       type: EnumField.type,

@@ -178,10 +178,6 @@ export class TupleField implements Field<TupleFieldValue> {
     return d.tuple(...tupleValues)
   }
 
-  public isValidValue() {
-    return null
-  }
-
   public fieldOptions(): TupleFieldOptions & TypedFieldOptions {
     return {
       type: TupleField.type,

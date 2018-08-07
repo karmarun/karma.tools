@@ -140,7 +140,9 @@ export class PasswordField implements Field<PasswordFieldValue> {
     )
   }
 
-  public transformRawValue(value: any): PasswordFieldValue {
+  public transformRawValue(value: unknown): PasswordFieldValue {
+    if (typeof value !== 'string') throw new Error('Invalid value.')
+
     return {
       value: {
         hash: value,
@@ -152,7 +154,7 @@ export class PasswordField implements Field<PasswordFieldValue> {
   }
 
   public transformValueToExpression(value: PasswordFieldValue): DataExpression {
-    if (!value.value.hash) return e.null()
+    if (value.value.hash == undefined) return e.null()
     return e.string(value.value.hash)
   }
 
@@ -176,11 +178,6 @@ export class PasswordField implements Field<PasswordFieldValue> {
     }
 
     return value
-  }
-
-  public isValidValue(value: PasswordFieldValue) {
-    if (!value.value.hash) return ['noPasswordSet']
-    return null
   }
 
   public fieldOptions(): PasswordFieldOptions & TypedFieldOptions {

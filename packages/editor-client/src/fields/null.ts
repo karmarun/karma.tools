@@ -38,10 +38,6 @@ export class NullField implements Field<NullFieldValue> {
     return e.null()
   }
 
-  public isValidValue() {
-    return null
-  }
-
   public fieldOptions(): TypedFieldOptions {
     return {type: NullField.type}
   }

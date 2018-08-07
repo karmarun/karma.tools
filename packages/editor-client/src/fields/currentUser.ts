@@ -38,10 +38,6 @@ export class CurrentUserField implements Field<CurrentUserFieldValue> {
     return d.expr(e.currentUser())
   }
 
-  public isValidValue() {
-    return null
-  }
-
   public fieldOptions(): TypedFieldOptions {
     return {type: CurrentUserField.type}
   }

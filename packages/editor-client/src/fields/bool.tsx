@@ -104,10 +104,6 @@ export class BoolField implements Field<BoolFieldValue> {
     return e.bool(fieldValue.value)
   }
 
-  public isValidValue() {
-    return null
-  }
-
   public fieldOptions(): BoolFieldOptions & TypedFieldOptions {
     return {
       type: BoolField.type,
