@@ -1,4 +1,6 @@
 /src/
+/example/
+/docs/
 .env
 .env.example
 tsconfig.json
