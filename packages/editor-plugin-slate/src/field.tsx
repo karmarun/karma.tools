@@ -358,8 +358,6 @@ export class SlateField implements Field<SlateFieldValue> {
       }
     }
 
-    console.log(recurse(value))
-
     return {
       value: Slate.Value.create({
         document: Slate.Document.fromJSON(recurse(value))
