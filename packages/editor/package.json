@@ -1,11 +1,11 @@
 {
   "name": "@karma.run/editor",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "description": "Administrative editor for karma.data.",
   "bin": {
-    "karma-editor": "./dist/cli/index.js"
+    "karma-editor": "./dist/index.js"
   },
   "license": "MIT",
   "repository": "github:karmarun/karma.tools",

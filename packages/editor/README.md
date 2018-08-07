@@ -5,7 +5,7 @@
 
 Administrative editor for karma.data.
 
-![Preview](./docs/media/preview.png)
+![Preview](https://raw.githubusercontent.com/karmarun/karma.tools/master/packages/editor/docs/media/preview.png)
 
 ## Install
 
