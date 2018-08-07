@@ -1,6 +1,6 @@
 {
   "name": "@karma.run/editor-plugin-slate",
-  "version": "0.13.1",
+  "version": "0.13.2",
   "main": "./lib/cjs/index.js",
   "module": "./lib/es6/index.js",
   "types": "./lib/types/index.d.ts",

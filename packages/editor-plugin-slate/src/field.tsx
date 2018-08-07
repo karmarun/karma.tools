@@ -314,8 +314,8 @@ export class SlateField implements Field<SlateFieldValue> {
   public renderListComponent(props: ListRenderProps<SlateFieldValue>) {
     const plainText = plainTextSerializer.serialize(props.value.value)
 
-    if (plainText.length > 30) {
-      return <CardSection>{plainText.slice(0, 30).trim()}...</CardSection>
+    if (plainText.length > 140) {
+      return <CardSection>{plainText.slice(0, 140).trim()}...</CardSection>
     } else {
       return <CardSection>{plainText}</CardSection>
     }
