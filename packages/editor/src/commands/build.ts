@@ -1,13 +1,6 @@
-import {
-  build,
-  watchBuild,
-  getCachePath,
-  loadServerConfig,
-  findConfigsIfNeededAndSetCWD
-} from './helper'
+import {build, watchBuild, getCachePath, findConfigsIfNeededAndSetCWD} from './helper'
 
 export interface BuildCommandOptions {
-  karmaDataURL?: string
   watch?: boolean
   serverConfigPath?: string
   clientConfigPath?: string
@@ -16,18 +9,10 @@ export interface BuildCommandOptions {
 }
 
 export default async function buildCommand(opts: BuildCommandOptions): Promise<void> {
-  const {serverConfigPath, clientConfigPath} = findConfigsIfNeededAndSetCWD(
+  const {clientConfigPath} = findConfigsIfNeededAndSetCWD(
     opts.serverConfigPath,
     opts.clientConfigPath
   )
-
-  const config = serverConfigPath ? await loadServerConfig(serverConfigPath) : {}
-  const karmaDataURL = process.env.KARMA_DATA_URL || opts.karmaDataURL || config.karmaDataURL
-
-  if (!karmaDataURL) {
-    console.error('No karma.data URL specified, set it via environment, CLI option or config.')
-    return process.exit(1)
-  }
 
   const cachePath = getCachePath()
 
