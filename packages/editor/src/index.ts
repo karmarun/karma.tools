@@ -8,7 +8,7 @@ import viewContext from './commands/viewContext'
 
 export * from './interface'
 
-const program = commander.name('karma-editor').version('0.13.0')
+const program = commander.name('karma-editor').version('0.13.3')
 
 program
   .command('server')
