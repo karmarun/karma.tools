@@ -22,13 +22,10 @@
   },
   "dependencies": {
     "@karma.run/editor-server": "^0.13.0",
-    "@types/findup-sync": "^0.3.29",
     "commander": "^2.15.1",
     "compression": "^1.7.2",
     "express": "^4.16.3",
     "findup-sync": "^2.0.0",
-    "interpret": "^1.1.0",
-    "liftoff": "^2.5.0",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.2"
   },
@@ -45,6 +42,7 @@
   "devDependencies": {
     "@types/compression": "^0.0.36",
     "@types/express": "^4.11.1",
+    "@types/findup-sync": "^0.3.29",
     "@types/mkdirp": "^0.5.2",
     "@types/rimraf": "^2.0.2",
     "@types/webpack": "^4.4.1",
