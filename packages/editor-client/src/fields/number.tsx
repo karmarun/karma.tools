@@ -209,7 +209,7 @@ export class NumberField implements Field<NumberFieldValue> {
   }
 
   static create(model: Model, opts?: NumberFieldConstructorOptions) {
-    if (model.type !== 'null') {
+    if (!validModelTypes.includes(model.type)) {
       return new ErrorField({
         label: opts && opts.label,
         description: opts && opts.description,

@@ -67,7 +67,10 @@ export class UnionFieldEditComponent extends React.PureComponent<
 
     this.props.onValueChange(
       {
-        value: {...this.props.value.value, values: {...value.value.values, [key]: value}},
+        value: {
+          ...this.props.value.value,
+          values: {...this.props.value.value.values, [key]: value}
+        },
         isValid: true
       },
       this.props.changeKey

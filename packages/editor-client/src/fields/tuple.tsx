@@ -33,12 +33,15 @@ export type TupleFieldOptionsTuple = [number, TypedFieldOptions]
 export class TupleFieldEditComponent extends React.PureComponent<
   EditComponentRenderProps<TupleField, TupleFieldValue>
 > {
-  private handleValueChange = (value: any, key: string | undefined) => {
+  private handleValueChange = (value: AnyFieldValue, key: string | undefined) => {
     if (key == undefined) {
       throw new Error('Child field did not call onValueChange with changeKey!')
     }
 
-    this.props.onValueChange({...this.props.value, [key]: value}, this.props.changeKey)
+    this.props.onValueChange(
+      {value: {...this.props.value.value, [key]: value}, isValid: true},
+      this.props.changeKey
+    )
   }
 
   public render() {
