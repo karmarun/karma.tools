@@ -274,6 +274,14 @@ export const expression = {
     return {searchRegex: {regex, value, caseInsensitive, multiLine}}
   },
 
+  stringContains(value: t.Expression, search: t.Expression): t.StringContainsFn {
+    return {stringContains: [value, search]}
+  },
+
+  substringIndex(value: t.Expression, search: t.Expression): t.SubstringIndexFn {
+    return {substringIndex: [value, search]}
+  },
+
   // Optional
   // --------
 
@@ -361,6 +369,10 @@ export const expression = {
 
   memSort(value: t.Expression, sorter: t.FuncExpression): t.MemSortFn {
     return {memSort: [value, sorter]}
+  },
+
+  memSortFunction(value: t.Expression, sorter: t.FuncExpression): t.MemSortFunctionFn {
+    return {memSortFunction: [value, sorter]}
   },
 
   reverseList(value: t.Expression): t.ReverseListFn {

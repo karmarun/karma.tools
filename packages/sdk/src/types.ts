@@ -275,10 +275,7 @@ export interface NotFn {
 }
 
 export interface SwitchCaseFn {
-  switchCase: [
-    Expression,
-    ObjectMap<FuncExpression>
-  ]
+  switchCase: [Expression, ObjectMap<FuncExpression>]
 }
 
 export interface SwitchModelRefFn {
@@ -400,6 +397,10 @@ export interface MemSortFn {
   memSort: [Expression, FuncExpression]
 }
 
+export interface MemSortFunctionFn {
+  memSortFunction: [Expression, FuncExpression]
+}
+
 export interface ReverseListFn {
   reverseList: Expression
 }
@@ -514,6 +515,14 @@ export interface SearchRegexFn {
     regex: string
     value: Expression
   }
+}
+
+export interface StringContainsFn {
+  stringContains: [Expression, Expression]
+}
+
+export interface SubstringIndexFn {
+  substringIndex: [Expression, Expression]
 }
 
 // Date Time
