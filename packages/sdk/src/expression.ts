@@ -306,15 +306,15 @@ export const expression = {
   // Union
   // -----
 
-  isCase(caseKey: t.Expression, value: t.Expression): t.IsCaseFn {
-    return {isCase: {case: caseKey, value}}
+  isCase(value: t.Expression, caseKey: t.Expression): t.IsCaseFn {
+    return {isCase: {value, case: caseKey}}
   },
 
   // Tuple
   // -----
 
-  indexTuple(index: number, value: t.Expression): t.IndexTupleFn {
-    return {indexTuple: {number: index, value}}
+  indexTuple(value: t.Expression, index: number): t.IndexTupleFn {
+    return {indexTuple: [value, index]}
   },
 
   // Struct
@@ -500,12 +500,8 @@ export const expression = {
     return {presentOrZero: value}
   },
 
-  switchCase(
-    value: t.Expression,
-    defaultValue: t.Expression,
-    cases: ObjectMap<t.FuncExpression>
-  ): t.SwitchCaseFn {
-    return {switchCase: {value, default: defaultValue, cases}}
+  switchCase(value: t.Expression, cases: ObjectMap<t.FuncExpression>): t.SwitchCaseFn {
+    return {switchCase: [value, cases]}
   },
 
   switchModelRef(

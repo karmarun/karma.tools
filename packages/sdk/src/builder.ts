@@ -66,7 +66,7 @@ export function createContext() {
       return e.mapSet(value, this.function(mapper, this.getUniqueParamNames('value')))
     },
 
-    signature(func: (...params: t.ScopeFn[]) => t.Expression) {
+    signature(func: FunctionBodyFn) {
       return e.signature(this.function(func))
     },
 
@@ -81,14 +81,9 @@ export function createContext() {
       )
     },
 
-    switchCase(
-      value: t.Expression,
-      defaultValue: t.Expression,
-      cases: ObjectMap<(value: t.ScopeFn) => t.Expression>
-    ) {
+    switchCase(value: t.Expression, cases: ObjectMap<(value: t.ScopeFn) => t.Expression>) {
       return e.switchCase(
         value,
-        defaultValue,
         mapObject(cases, caseFn => this.function(caseFn, this.getUniqueParamNames('value')))
       )
     },
@@ -100,7 +95,7 @@ export function createContext() {
 
     function(body: FunctionBodyFn, paramNames: string[] = []) {
       if (body.length > 0) {
-        for (let i = paramNames.length; i < paramNames.length - body.length; i++) {
+        for (let i = paramNames.length; i < body.length - paramNames.length; i++) {
           paramNames[i] = this.getUniqueParamNames(`param${i}`)[0]
         }
       }

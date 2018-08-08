@@ -275,11 +275,10 @@ export interface NotFn {
 }
 
 export interface SwitchCaseFn {
-  switchCase: {
-    cases: ObjectMap<FuncExpression>
-    value: Expression
-    default: Expression
-  }
+  switchCase: [
+    Expression,
+    ObjectMap<FuncExpression>
+  ]
 }
 
 export interface SwitchModelRefFn {
@@ -436,7 +435,7 @@ export interface SetFieldFn {
 // -----
 
 export interface IndexTupleFn {
-  indexTuple: {number: number; value: Expression}
+  indexTuple: [Expression, number]
 }
 
 // Union
