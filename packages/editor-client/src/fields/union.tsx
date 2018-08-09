@@ -43,7 +43,11 @@ export class UnionFieldEditComponent extends React.PureComponent<
 
     if (!selectedKey) {
       return this.props.onValueChange(
-        {value: {selectedKey, values: value.value.values}, isValid: true},
+        {
+          value: {selectedKey, values: value.value.values},
+          isValid: true,
+          hasChanges: true
+        },
         this.props.changeKey
       )
     }
@@ -54,7 +58,8 @@ export class UnionFieldEditComponent extends React.PureComponent<
     this.props.onValueChange(
       {
         value: {selectedKey, values: {...value.value.values, [selectedKey]: selectedValue}},
-        isValid: true
+        isValid: true,
+        hasChanges: true
       },
       this.props.changeKey
     )
@@ -71,7 +76,8 @@ export class UnionFieldEditComponent extends React.PureComponent<
           ...this.props.value.value,
           values: {...this.props.value.value.values, [key]: value}
         },
-        isValid: true
+        isValid: true,
+        hasChanges: true
       },
       this.props.changeKey
     )
@@ -146,7 +152,12 @@ export class UnionField implements Field<UnionFieldValue> {
   public fields: UnionFieldChildTuple[]
   public fieldMap!: ReadonlyMap<string, AnyField>
 
-  public defaultValue: UnionFieldValue = {value: {values: {}}, isValid: true}
+  public defaultValue: UnionFieldValue = {
+    value: {values: {}},
+    isValid: true,
+    hasChanges: false
+  }
+
   public sortConfigurations: SortConfiguration[] = []
   public filterConfigurations: FilterConfiguration[] = []
 
@@ -186,16 +197,20 @@ export class UnionField implements Field<UnionFieldValue> {
     return field
   }
 
-  public transformRawValue(value: any): UnionFieldValue {
-    const key = firstKey(value)
-    const unionValue = value[key]
+  public transformRawValue(value: unknown): UnionFieldValue {
+    if (typeof value !== 'object') throw new Error('Invalid value.')
+
+    const objectValue = value as ObjectMap<unknown>
+    const key = firstKey(objectValue)
+    const unionValue = objectValue[key]
 
     return {
       value: {
         selectedKey: key,
         values: {[key]: this.fieldForKey(key).transformRawValue(unionValue)}
       },
-      isValid: true
+      isValid: true,
+      hasChanges: false
     }
   }
 
@@ -269,7 +284,8 @@ export class UnionField implements Field<UnionFieldValue> {
           )
         }
       },
-      isValid: true
+      isValid: true,
+      hasChanges: true
     }
   }
 
@@ -288,7 +304,8 @@ export class UnionField implements Field<UnionFieldValue> {
           )
         }
       },
-      isValid: true
+      isValid: true,
+      hasChanges: true
     }
   }
 

@@ -37,7 +37,6 @@ export interface RecordEditPanelState {
   record?: ModelRecord
   isSaving: boolean
   isLoadingRecord: boolean
-  hasUnsavedChanges: boolean
   value?: AnyFieldValue
 }
 
@@ -45,10 +44,11 @@ export class RecordEditPanel extends React.PureComponent<
   RecordEditPanelProps,
   RecordEditPanelState
 > {
+  private hasIncreasedUnsavedChangesCount = false
+
   public state: RecordEditPanelState = {
     isSaving: false,
     isLoadingRecord: false,
-    hasUnsavedChanges: false,
     value: undefined
   }
 
@@ -70,33 +70,31 @@ export class RecordEditPanel extends React.PureComponent<
 
     this.setState({
       isLoadingRecord: false,
-      hasUnsavedChanges: false,
       record,
       value: record.value
     })
   }
 
-  private handleValueChange = (value: any) => {
-    if (!this.state.hasUnsavedChanges) {
+  private handleValueChange = (value: AnyFieldValue) => {
+    if (value.hasChanges && !this.hasIncreasedUnsavedChangesCount) {
       this.props.sessionContext.increaseUnsavedChangesCount()
+      this.hasIncreasedUnsavedChangesCount = true
     }
 
-    this.setState({
-      hasUnsavedChanges: true,
-      value
-    })
+    this.setState({value})
   }
 
   private handleBack = () => {
     let confirmed = true
 
-    if (this.state.hasUnsavedChanges) {
+    if (this.value.hasChanges) {
       confirmed = window.confirm('You have unsaved changes, are you sure you want to go back?')
     }
 
     if (confirmed) {
-      if (this.state.hasUnsavedChanges) {
+      if (this.hasIncreasedUnsavedChangesCount) {
         this.props.sessionContext.decreaseUnsavedChangesCount()
+        this.hasIncreasedUnsavedChangesCount = false
       }
 
       this.props.onBack(this.props.model, this.state.record)
@@ -120,11 +118,14 @@ export class RecordEditPanel extends React.PureComponent<
         })
 
         this.props.onPostSave(this.props.model, result.record.id)
-        if (this.state.value) this.props.sessionContext.decreaseUnsavedChangesCount()
+
+        if (this.hasIncreasedUnsavedChangesCount) {
+          this.props.sessionContext.decreaseUnsavedChangesCount()
+          this.hasIncreasedUnsavedChangesCount = false
+        }
 
         return this.setState({
           isSaving: false,
-          hasUnsavedChanges: false,
           record: result.record,
           value: result.record.value
         })
@@ -172,13 +173,12 @@ export class RecordEditPanel extends React.PureComponent<
 
         this.props.onPostSave(this.props.model, result.record.id)
 
-        if (this.state.hasUnsavedChanges) {
+        if (this.hasIncreasedUnsavedChangesCount) {
           this.props.sessionContext.decreaseUnsavedChangesCount()
         }
 
         return this.setState({
           isSaving: false,
-          hasUnsavedChanges: false,
           record: result.record,
           value: result.record.value
         })
@@ -276,7 +276,7 @@ export class RecordEditPanel extends React.PureComponent<
     const _ = this.props.localeContext.get
     const disabled = this.state.isSaving || this.props.disabled
     const isNewRecord = this.props.recordID == undefined && this.state.record == undefined
-    const hasUnsavedChanges = this.props.recordID == undefined || this.state.hasUnsavedChanges
+    const hasUnsavedChanges = this.props.recordID == undefined || this.value.hasChanges
     const viewContext = this.props.sessionContext.viewContextMap.get(this.props.model)
 
     // TODO: Error panel

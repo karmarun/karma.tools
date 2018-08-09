@@ -81,7 +81,12 @@ export class EnumField implements Field<EnumFieldValue> {
   public readonly description?: string
   public readonly options: EnumFieldOption[]
 
-  public readonly defaultValue: EnumFieldValue = {value: undefined, isValid: false}
+  public readonly defaultValue: EnumFieldValue = {
+    value: undefined,
+    isValid: false,
+    hasChanges: false
+  }
+
   public readonly sortConfigurations: SortConfiguration[] = []
   public readonly filterConfigurations: FilterConfiguration[] = []
 
@@ -110,8 +115,9 @@ export class EnumField implements Field<EnumFieldValue> {
     )
   }
 
-  public transformRawValue(value: any) {
-    return value
+  public transformRawValue(value: unknown): EnumFieldValue {
+    if (typeof value !== 'string') throw new Error('Invalid value.')
+    return {value, isValid: true, hasChanges: false}
   }
 
   public transformValueToExpression(value: EnumFieldValue) {

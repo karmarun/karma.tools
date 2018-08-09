@@ -142,7 +142,8 @@ export class ListFieldEditComponent extends React.PureComponent<
         value: Object.assign([...this.props.value.value], {
           [index]: {...this.props.value.value[index], value}
         }),
-        isValid: true
+        isValid: true,
+        hasChanges: true
       },
       this.props.changeKey
     )
@@ -158,7 +159,14 @@ export class ListFieldEditComponent extends React.PureComponent<
       value: this.props.field.field.defaultValue
     })
 
-    this.props.onValueChange({value: newValue, isValid: true}, this.props.changeKey)
+    this.props.onValueChange(
+      {
+        value: newValue,
+        isValid: true,
+        hasChanges: true
+      },
+      this.props.changeKey
+    )
   }
 
   public removeValueAt(index: number) {
@@ -167,7 +175,14 @@ export class ListFieldEditComponent extends React.PureComponent<
     const newValue = [...this.props.value.value]
     newValue.splice(index, 1)
 
-    this.props.onValueChange({value: newValue, isValid: true}, this.props.changeKey)
+    this.props.onValueChange(
+      {
+        value: newValue,
+        isValid: true,
+        hasChanges: true
+      },
+      this.props.changeKey
+    )
   }
 
   private moveFieldToIndex(index: number, toIndex: number) {
@@ -178,7 +193,14 @@ export class ListFieldEditComponent extends React.PureComponent<
     const moveValue = newValue.splice(index, 1)
     newValue.splice(toIndex, 0, ...moveValue)
 
-    this.props.onValueChange({value: newValue, isValid: true}, this.props.changeKey)
+    this.props.onValueChange(
+      {
+        value: newValue,
+        isValid: true,
+        hasChanges: true
+      },
+      this.props.changeKey
+    )
   }
 
   private handleInsertFieldAt = (index: number) => {
@@ -282,7 +304,7 @@ export class ListField implements Field<ListFieldValue> {
   public readonly label?: string
   public readonly description?: string
 
-  public readonly defaultValue: ListFieldValue = {value: [], isValid: true}
+  public readonly defaultValue: ListFieldValue = {value: [], isValid: true, hasChanges: false}
   public readonly sortConfigurations: SortConfiguration[] = []
   public readonly filterConfigurations: FilterConfiguration[] = []
 
@@ -321,7 +343,8 @@ export class ListField implements Field<ListFieldValue> {
         key,
         value: this.field.transformRawValue(value)
       })),
-      isValid: true
+      isValid: true,
+      hasChanges: false
     }
   }
 
@@ -359,7 +382,7 @@ export class ListField implements Field<ListFieldValue> {
       newValue.push({id, value: await this.field.onSave(mapValue, context)})
     }
 
-    return {value: newValue, isValid: true}
+    return {value: newValue, isValid: true, hasChanges: true}
   }
 
   public async onDelete(value: ListFieldValue, context: DeleteContext): Promise<ListFieldValue> {
@@ -370,7 +393,7 @@ export class ListField implements Field<ListFieldValue> {
       newValue.push({id, value: await this.field.onDelete(mapValue, context)})
     }
 
-    return {value: newValue, isValid: true}
+    return {value: newValue, isValid: true, hasChanges: true}
   }
 
   public static type = 'list'

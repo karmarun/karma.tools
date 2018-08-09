@@ -17,7 +17,9 @@ import {
   ListRenderProps,
   FieldComponent,
   FieldLabel,
-  CardSection
+  CardSection,
+  FieldValue,
+  CreateFieldFunction
 } from '@karma.run/editor-client'
 
 import {RichTextInput, Control, LinkType, BlockType, StyleGroup, CustomElement} from './input'
@@ -25,12 +27,34 @@ import {RichTextInput, Control, LinkType, BlockType, StyleGroup, CustomElement} 
 export class DraftJSFieldEditComponent extends React.PureComponent<
   EditComponentRenderProps<DraftJSField, DraftJSFieldValue>
 > {
-  private handleValueChange = (value: any) => {
-    this.props.onValueChange(value, this.props.changeKey)
+  private handleValueChange = (value: EditorState) => {
+    this.props.onValueChange(
+      {
+        value: value,
+        isValid: true,
+        hasChanges: value.getCurrentContent() !== this.props.value.value.getCurrentContent()
+      },
+      this.props.changeKey
+    )
   }
 
-  private handleOpenBlockEditor = () => {}
-  private handleOpenLinkEditor = () => {}
+  private handleOpenBlockEditor = (
+    key: string,
+    data: any,
+    done: (data: any) => void,
+    cancel: () => void
+  ) => {
+    console.log(key, data, done, cancel)
+    // const newData = await this.props.onEditField({}, data ? data.get(dataKey) : undefined)
+  }
+
+  private handleOpenLinkEditor = (data: any, done: (data: any) => void, cancel: () => void) => {
+    console.log(data, done, cancel)
+    // const newData = await this.props.onEditField(
+    //   this.props.field.dataFields[dataKey],
+    //   data ? data.get(dataKey) : undefined
+    // )
+  }
 
   public render() {
     return (
@@ -44,7 +68,7 @@ export class DraftJSFieldEditComponent extends React.PureComponent<
           />
         )}
         <RichTextInput
-          value={this.props.value}
+          value={this.props.value.value}
           onOpenBlockEditor={this.handleOpenBlockEditor}
           onOpenLinkEditor={this.handleOpenLinkEditor}
           onChange={this.handleValueChange}
@@ -68,7 +92,7 @@ export interface DraftJSFieldOptions {
   readonly maxLength?: number
 }
 
-export type DraftJSFieldValue = EditorState
+export type DraftJSFieldValue = FieldValue<EditorState, string[]>
 
 export class DraftJSField implements Field<DraftJSFieldValue> {
   public readonly label?: string
@@ -77,7 +101,12 @@ export class DraftJSField implements Field<DraftJSFieldValue> {
   public readonly minLength?: number
   public readonly maxLength?: number
 
-  public readonly defaultValue: DraftJSFieldValue = EditorState.createEmpty()
+  public readonly defaultValue: DraftJSFieldValue = {
+    value: EditorState.createEmpty(),
+    isValid: true,
+    hasChanges: false
+  }
+
   public readonly sortConfigurations: SortConfiguration[] = []
   public readonly filterConfigurations: FilterConfiguration[] = []
 
@@ -100,7 +129,7 @@ export class DraftJSField implements Field<DraftJSFieldValue> {
   }
 
   public renderListComponent(props: ListRenderProps<DraftJSFieldValue>) {
-    return <CardSection>{props.value.getCurrentContent().getPlainText()}</CardSection>
+    return <CardSection>{props.value.value.getCurrentContent().getPlainText()}</CardSection>
   }
 
   public renderEditComponent(props: EditRenderProps<DraftJSFieldValue>) {
@@ -114,8 +143,12 @@ export class DraftJSField implements Field<DraftJSFieldValue> {
     )
   }
 
-  public transformRawValue(value: any) {
-    return EditorState.createWithContent(convertFromRaw(value))
+  public transformRawValue(value: any): DraftJSFieldValue {
+    return {
+      value: EditorState.createWithContent(convertFromRaw(value)),
+      isValid: true,
+      hasChanges: false
+    }
   }
 
   public transformValueToExpression(_value: DraftJSFieldValue) {
@@ -124,7 +157,7 @@ export class DraftJSField implements Field<DraftJSFieldValue> {
 
   public isValidValue(value: DraftJSFieldValue) {
     const errors: string[] = []
-    const plainText = value.getCurrentContent().getPlainText()
+    const plainText = value.value.getCurrentContent().getPlainText()
 
     if (this.maxLength && plainText.length > this.maxLength) errors.push('stringToLongError')
     if (this.minLength && plainText.length < this.minLength) errors.push('stringToShortError')
@@ -150,6 +183,10 @@ export class DraftJSField implements Field<DraftJSFieldValue> {
     return []
   }
 
+  public valuesForKeyPath(value: DraftJSFieldValue) {
+    return [value]
+  }
+
   public static type = 'richText'
 
   static canInferFromModel(model: Model) {
@@ -157,10 +194,28 @@ export class DraftJSField implements Field<DraftJSFieldValue> {
       return true
     }
 
+    if (
+      model.type === 'recursion' &&
+      model.model.type === 'struct' &&
+      model.model.fields['type'] &&
+      model.model.fields['object'] &&
+      model.model.fields['nodes'] &&
+      model.model.fields['isVoid'] &&
+      model.model.fields['text'] &&
+      model.model.fields['nodes'] &&
+      model.model.fields['data']
+    ) {
+      return true
+    }
+
     return false
   }
 
-  static create(model: Model, opts?: DraftJSFieldOptions) {
+  static create(
+    model: Model,
+    opts: DraftJSFieldOptions | undefined,
+    _createField: CreateFieldFunction
+  ) {
     if (model.type === 'annotation') {
       model = model.model
     }

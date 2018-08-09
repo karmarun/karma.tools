@@ -39,7 +39,11 @@ export class TupleFieldEditComponent extends React.PureComponent<
     }
 
     this.props.onValueChange(
-      {value: {...this.props.value.value, [key]: value}, isValid: true},
+      {
+        value: {...this.props.value.value, [key]: value},
+        isValid: true,
+        hasChanges: true
+      },
       this.props.changeKey
     )
   }
@@ -126,7 +130,8 @@ export class TupleField implements Field<TupleFieldValue> {
         },
         [] as any[]
       ),
-      isValid: true
+      isValid: true,
+      hasChanges: false
     }
 
     this.sortConfigurations = [
@@ -165,7 +170,8 @@ export class TupleField implements Field<TupleFieldValue> {
   public transformRawValue(value: any[]): TupleFieldValue {
     return {
       value: value.map((value, index) => this.fieldMap.get(index)!.transformRawValue(value)),
-      isValid: true
+      isValid: true,
+      hasChanges: false
     }
   }
 
@@ -233,7 +239,11 @@ export class TupleField implements Field<TupleFieldValue> {
       newValues.push(await field.onSave(tupleValue, context))
     }
 
-    return {value: newValues, isValid: true}
+    return {
+      value: newValues,
+      isValid: true,
+      hasChanges: true
+    }
   }
 
   public async onDelete(value: TupleFieldValue, context: DeleteContext) {
@@ -248,7 +258,11 @@ export class TupleField implements Field<TupleFieldValue> {
       newValues.push(await field.onDelete(tupleValue, context))
     }
 
-    return {value: newValues, isValid: true}
+    return {
+      value: newValues,
+      isValid: true,
+      hasChanges: true
+    }
   }
 
   public static type = 'tuple'

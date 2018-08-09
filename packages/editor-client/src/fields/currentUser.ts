@@ -14,7 +14,12 @@ import {Field, FieldValue} from '../api/field'
 export type CurrentUserFieldValue = FieldValue<undefined, never>
 
 export class CurrentUserField implements Field<CurrentUserFieldValue> {
-  public readonly defaultValue: CurrentUserFieldValue = {value: undefined, isValid: true}
+  public readonly defaultValue: CurrentUserFieldValue = {
+    value: undefined,
+    isValid: true,
+    hasChanges: false
+  }
+
   public readonly sortConfigurations: SortConfiguration[] = []
   public readonly filterConfigurations: FilterConfiguration[] = []
 

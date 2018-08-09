@@ -50,7 +50,14 @@ export class RefFieldEditComponent extends React.PureComponent<
 
     if (record) {
       this.setState({record})
-      this.props.onValueChange({value: record.id, isValid: true}, this.props.changeKey)
+      this.props.onValueChange(
+        {
+          value: record.id,
+          isValid: true,
+          hasChanges: true
+        },
+        this.props.changeKey
+      )
     }
   }
 
@@ -59,7 +66,14 @@ export class RefFieldEditComponent extends React.PureComponent<
 
     if (record) {
       this.setState({record})
-      this.props.onValueChange({value: record.id, isValid: true}, this.props.changeKey)
+      this.props.onValueChange(
+        {
+          value: record.id,
+          isValid: true,
+          hasChanges: true
+        },
+        this.props.changeKey
+      )
     }
   }
 
@@ -68,7 +82,14 @@ export class RefFieldEditComponent extends React.PureComponent<
 
     if (record) {
       this.setState({record})
-      this.props.onValueChange({value: record.id, isValid: true}, this.props.changeKey)
+      this.props.onValueChange(
+        {
+          value: record.id,
+          isValid: true,
+          hasChanges: true
+        },
+        this.props.changeKey
+      )
     }
   }
 
@@ -261,7 +282,12 @@ export class RefField implements Field<RefFieldValue> {
   public readonly description?: string
   public readonly model: Ref
 
-  public readonly defaultValue: RefFieldValue = {value: undefined, isValid: true}
+  public readonly defaultValue: RefFieldValue = {
+    value: undefined,
+    isValid: true,
+    hasChanges: true
+  }
+
   public readonly sortConfigurations: SortConfiguration[] = []
   public readonly filterConfigurations: FilterConfiguration[] = []
 
@@ -295,7 +321,12 @@ export class RefField implements Field<RefFieldValue> {
 
   public transformRawValue(value: unknown): RefFieldValue {
     if (!isRef(value)) throw new Error('Invalid value')
-    return {value: value, isValid: true}
+
+    return {
+      value: value,
+      isValid: true,
+      hasChanges: true
+    }
   }
 
   public transformValueToExpression(value: RefFieldValue) {

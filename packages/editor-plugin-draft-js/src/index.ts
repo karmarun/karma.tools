@@ -1,5 +1,7 @@
 import {ClientPlugin} from '@karma.run/editor-client'
+
 import {name, version} from './version'
+import {DraftJSField} from './field'
 
 export * from './field'
 export * from './input'
@@ -16,4 +18,8 @@ export * from './input'
 export class DraftJSPlugin implements ClientPlugin {
   public readonly name = name
   public readonly version = version
+
+  public registerFields() {
+    return [DraftJSField]
+  }
 }

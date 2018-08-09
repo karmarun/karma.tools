@@ -67,6 +67,7 @@ export interface FieldValue<V, E> {
   readonly value: V
   readonly error?: E
   readonly isValid: boolean
+  readonly hasChanges: boolean
 }
 
 export type AnyFieldValue = FieldValue<any, any>

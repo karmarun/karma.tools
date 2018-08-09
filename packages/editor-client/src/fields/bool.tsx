@@ -25,7 +25,7 @@ export class BoolFieldEditComponent extends React.PureComponent<
   EditComponentRenderProps<BoolField, BoolFieldValue>
 > {
   private handleChange = (value: boolean) => {
-    this.props.onValueChange({value, isValid: true}, this.props.changeKey)
+    this.props.onValueChange({value, isValid: true, hasChanges: true}, this.props.changeKey)
   }
 
   public render() {
@@ -65,7 +65,8 @@ export class BoolField implements Field<BoolFieldValue> {
 
   public readonly defaultValue: BoolFieldValue = {
     value: false,
-    isValid: true
+    isValid: true,
+    hasChanges: true
   }
 
   public readonly sortConfigurations: SortConfiguration[]
@@ -96,8 +97,9 @@ export class BoolField implements Field<BoolFieldValue> {
     )
   }
 
-  public transformRawValue(value: any) {
-    return value
+  public transformRawValue(value: unknown): BoolFieldValue {
+    if (typeof value !== 'boolean') throw new Error('Invalid value.')
+    return {value, isValid: true, hasChanges: false}
   }
 
   public transformValueToExpression(fieldValue: BoolFieldValue) {

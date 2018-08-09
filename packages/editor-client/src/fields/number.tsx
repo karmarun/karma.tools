@@ -26,7 +26,14 @@ export class NumberFieldEditComponent extends React.PureComponent<
   EditComponentRenderProps<NumberField, NumberFieldValue>
 > {
   private handleChange = (value: string) => {
-    this.props.onValueChange({value: value, isValid: true}, this.props.changeKey)
+    this.props.onValueChange(
+      {
+        value: value,
+        isValid: true,
+        hasChanges: true
+      },
+      this.props.changeKey
+    )
   }
 
   public render() {
@@ -97,7 +104,12 @@ export class NumberField implements Field<NumberFieldValue> {
   public readonly step?: number
   public readonly storageType: StorageType
 
-  public readonly defaultValue: NumberFieldValue = {value: '', isValid: true}
+  public readonly defaultValue: NumberFieldValue = {
+    value: '',
+    isValid: true,
+    hasChanges: false
+  }
+
   public readonly sortConfigurations: SortConfiguration[] = []
   public readonly filterConfigurations: FilterConfiguration[] = []
 

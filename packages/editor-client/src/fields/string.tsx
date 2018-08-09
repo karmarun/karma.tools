@@ -81,7 +81,12 @@ export class StringField implements Field<StringFieldValue> {
   public readonly maxLength?: number
   public readonly multiline?: boolean
 
-  public readonly defaultValue: StringFieldValue = {value: '', isValid: true}
+  public readonly defaultValue: StringFieldValue = {
+    value: '',
+    isValid: true,
+    hasChanges: false
+  }
+
   public readonly sortConfigurations: SortConfiguration[]
   public readonly filterConfigurations: FilterConfiguration[] = []
 
@@ -154,7 +159,12 @@ export class StringField implements Field<StringFieldValue> {
     if (this.maxLength && value.length > this.maxLength) errors.push('stringToLongError')
     if (this.minLength && value.length < this.minLength) errors.push('stringToShortError')
 
-    return {value, isValid: errors.length === 0, error: errors}
+    return {
+      value,
+      isValid: errors.length === 0,
+      error: errors,
+      hasChanges: true
+    }
   }
 
   public async onSave(value: StringFieldValue): Promise<StringFieldValue> {

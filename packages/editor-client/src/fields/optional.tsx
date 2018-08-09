@@ -38,7 +38,8 @@ export class OptionalFieldEditComponent extends React.PureComponent<
           isPresent: value,
           value: this.props.value.value.value || this.props.field.field.defaultValue
         },
-        isValid: true
+        isValid: true,
+        hasChanges: true
       },
       this.props.changeKey
     )
@@ -51,7 +52,8 @@ export class OptionalFieldEditComponent extends React.PureComponent<
           isPresent: this.props.value.value.isPresent,
           value: value
         },
-        isValid: true
+        isValid: true,
+        hasChanges: true
       },
       this.props.changeKey
     )
@@ -124,7 +126,8 @@ export class OptionalField implements Field<OptionalFieldValue> {
       isPresent: false,
       value: undefined
     },
-    isValid: true
+    isValid: true,
+    hasChanges: true
   }
 
   public sortConfigurations: SortConfiguration[] = []
@@ -159,22 +162,15 @@ export class OptionalField implements Field<OptionalFieldValue> {
   }
 
   public transformRawValue(value: any): OptionalFieldValue {
-    if (value == undefined) {
-      return {
-        value: {
-          isPresent: false,
-          value: this.field.defaultValue
-        },
-        isValid: true
-      }
-    } else {
-      return {
-        value: {
-          isPresent: true,
-          value: this.field.transformRawValue(value)
-        },
-        isValid: true
-      }
+    const isPresent = value == undefined
+
+    return {
+      value: {
+        isPresent,
+        value: isPresent ? this.field.transformRawValue(value) : this.field.defaultValue
+      },
+      isValid: true,
+      hasChanges: false
     }
   }
 
@@ -215,7 +211,8 @@ export class OptionalField implements Field<OptionalFieldValue> {
           isPresent: value.value.isPresent,
           value: await this.field.onSave(value.value.value!, context)
         },
-        isValid: true
+        isValid: true,
+        hasChanges: true
       }
     }
 
@@ -232,7 +229,8 @@ export class OptionalField implements Field<OptionalFieldValue> {
           isPresent: value.value.isPresent,
           value: await this.field.onDelete(value.value.value!, context)
         },
-        isValid: true
+        isValid: true,
+        hasChanges: true
       }
     }
 
