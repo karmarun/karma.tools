@@ -13,29 +13,29 @@ import {
   PanelHeader
 } from '../../ui'
 
-import {AnyField} from '../../api/field'
+import {AnyField, AnyFieldValue} from '../../api/field'
 import {SessionContext, ModelRecord, withSession} from '../../context/session'
 import {LocaleContext, withLocale} from '../../context/locale'
 
 export interface FieldPanelProps {
-  value?: any
+  value?: AnyFieldValue
   field: AnyField
   sessionContext: SessionContext
   localeContext: LocaleContext
   disabled: boolean
   onBack: () => void
-  onApply: (value: any) => void
+  onApply: (value: AnyFieldValue) => void
   onRemove: () => void
   onEditRecord: (model: Ref, id?: Ref) => Promise<ModelRecord | undefined>
   onSelectRecord: (model: Ref) => Promise<ModelRecord | undefined>
-  onEditField: (field: AnyField, value?: any) => Promise<any>
+  onEditField: (field: AnyField, value?: AnyFieldValue) => Promise<AnyFieldValue | undefined>
 }
 
 export interface FieldPanelState {
   isSaving: boolean
   isLoadingRecord: boolean
   hasUnsavedChanges: boolean
-  value: any
+  value?: AnyFieldValue
 }
 
 export class FieldPanel extends React.PureComponent<FieldPanelProps, FieldPanelState> {

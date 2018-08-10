@@ -1,6 +1,6 @@
 {
   "name": "@karma.run/editor",
-  "version": "0.13.4",
+  "version": "0.14.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "description": "Administrative editor for karma.data.",
@@ -21,7 +21,7 @@
     "prepare": "run-s clean copy:license build"
   },
   "dependencies": {
-    "@karma.run/editor-server": "^0.13.0",
+    "@karma.run/editor-server": "^0.14.0",
     "commander": "^2.15.1",
     "compression": "^1.7.2",
     "express": "^4.16.3",
@@ -30,7 +30,7 @@
     "rimraf": "^2.6.2"
   },
   "optionalDependencies": {
-    "@karma.run/editor-client": "^0.13.0",
+    "@karma.run/editor-client": "^0.14.0",
     "@karma.run/editor-worker": "^0.13.0",
     "babel-polyfill": "^6.26.0",
     "intersection-observer-polyfill": "^0.1.0",

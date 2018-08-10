@@ -94,7 +94,7 @@ export class SlateFieldEditComponent extends React.PureComponent<
       data ? data.get(dataKey) : undefined
     )
 
-    return newData ? {[dataKey]: newData.value} : undefined
+    return newData ? {[dataKey]: newData} : undefined
   }
 
   private handleRenderMark = (props: RenderMarkProps): React.ReactNode => {
@@ -218,6 +218,7 @@ export const SlateFieldEditComponentStyle = style({
     '> .inputWrapper': {
       fontSize: '1em',
       lineHeight: 1.2,
+      position: 'relative',
 
       border: `1px solid ${Color.neutral.light1}`,
       backgroundColor: Color.neutral.white,
@@ -225,6 +226,9 @@ export const SlateFieldEditComponentStyle = style({
 
       $nest: {
         '> .toolbar': {
+          position: 'sticky',
+          top: '5rem',
+
           padding: Spacing.small,
           backgroundColor: Color.neutral.light2
         },
@@ -575,26 +579,4 @@ export const SlateFieldConstructor = (
       })
     }
   } as AnyFieldConstructor
-}
-
-export function unserializeValue(_value: any) {}
-
-export function serializeValue(value: Slate.Document) {
-  function recurse(value: any) {
-    return value.nodes.map((node: any) => {
-      switch (node.type) {
-        default:
-        case 'block':
-        case 'inline': {
-          return {
-            type: node.type,
-            isVoid: node.isVoid,
-            data: Object.keys(node.data).length ? {[node.type]: node.data} : null
-          }
-        }
-      }
-    })
-  }
-
-  return recurse(value.toJSON())
 }

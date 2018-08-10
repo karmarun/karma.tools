@@ -29,7 +29,7 @@ export interface RecordEditPanelProps {
   onBack: (model: Ref, record?: ModelRecord) => void
   onEditRecord: (model: Ref, id?: Ref) => Promise<ModelRecord | undefined>
   onSelectRecord: (model: Ref) => Promise<ModelRecord | undefined>
-  onEditField: (field: AnyField, value?: any) => Promise<any>
+  onEditField: (field: AnyField, value?: any) => Promise<AnyFieldValue | undefined>
   onPostSave: (model: Ref, id: Ref) => void
 }
 

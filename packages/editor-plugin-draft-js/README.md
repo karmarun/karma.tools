@@ -4,57 +4,59 @@
     "annotation": {
       "value": "field:richText",
       "model": {
-        "struct": {
-          "blocks": {
-            "list": {
+        "recursive": {
+          "models": {
+            "data": {
+              "optional": {
+                "union": {
+                  "url": {"string": {}}
+                }
+              }
+            },
+            "value": {
               "struct": {
-                "key": {"string": {}},
-                "type": {"string": {}},
-                "text": {"string": {}},
-                "depth": {"int32": {}},
-                "entityRanges": {
+                "blocks": {
                   "list": {
                     "struct": {
                       "key": {"string": {}},
-                      "length": {"int32": {}},
-                      "offset": {"int32": {}}
+                      "type": {"string": {}},
+                      "text": {"string": {}},
+                      "depth": {"int32": {}},
+                      "entityRanges": {
+                        "list": {
+                          "struct": {
+                            "key": {"int32": {}},
+                            "length": {"int32": {}},
+                            "offset": {"int32": {}}
+                          }
+                        }
+                      },
+                      "inlineStyleRanges": {
+                        "list": {
+                          "struct": {
+                            "length": {"int32": {}},
+                            "offset": {"int32": {}},
+                            "style": {"string": {}}
+                          }
+                        }
+                      },
+                      "data": {"recurse": "data"}
                     }
                   }
                 },
-                "inlineStyleRanges": {
-                  "list": {
+                "entityMap": {
+                  "map": {
                     "struct": {
-                      "length": {"int32": {}},
-                      "offset": {"int32": {}},
-                      "style": {"string": {}}
-                    }
-                  }
-                },
-                "data": {
-                  "optional": {
-                    "union": {
-                      "url": {"string": {}}
+                      "data": {"recurse": "data"},
+                      "mutability": {"string": {}},
+                      "type": {"string": {}}
                     }
                   }
                 }
               }
             }
           },
-          "entityMap": {
-            "map": {
-              "struct": {
-                "data": {
-                  "optional": {
-                    "union": {
-                      "url": {"string": {}}
-                    }
-                  }
-                },
-                "mutability": {"string": {}},
-                "type": {"string": {}}
-              }
-            }
-          }
+          "top": "value"
         }
       }
     }
