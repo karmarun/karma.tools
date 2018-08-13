@@ -195,6 +195,7 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
       getReferrers: this.getReferrers,
       saveRecord: this.saveRecord,
       deleteRecord: this.deleteRecord,
+      query: this.query,
       increaseUnsavedChangesCount: this.increaseUnsavedChangesCount,
       decreaseUnsavedChangesCount: this.decreaseUnsavedChangesCount,
       setDevelopmentMode: this.setDevelopmentMode
@@ -448,6 +449,16 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
       this.props.config.karmaDataURL,
       this.state.session.signature,
       buildFunction(e => () => e.delete(e.data(d => d.ref(id))))
+    )
+  }
+
+  public query = async (expression: Expression): Promise<any> => {
+    if (!this.state.session) throw new Error('No session!')
+
+    return query(
+      this.props.config.karmaDataURL,
+      this.state.session.signature,
+      buildFunction(() => () => expression)
     )
   }
 

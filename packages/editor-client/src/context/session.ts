@@ -1,6 +1,6 @@
 import React from 'react'
 
-import {Ref} from '@karma.run/sdk'
+import {Ref, Expression} from '@karma.run/sdk'
 
 import {EditorContext, ReadonlyRefMap, RefMap, Sort, Condition} from '@karma.run/editor-common'
 
@@ -92,6 +92,7 @@ export interface SessionContext extends EditorData {
   getReferrers(id: Ref, limit: number, offset: number): Promise<ModelRecord[]>
   saveRecord(model: Ref, id: Ref | undefined, value: AnyFieldValue): Promise<SaveRecordResult>
   deleteRecord(model: Ref, id: Ref, value: AnyFieldValue): Promise<void>
+  query(expression: Expression): Promise<any>
 
   increaseUnsavedChangesCount(): void
   decreaseUnsavedChangesCount(): void
@@ -138,6 +139,10 @@ export const SessionContext = React.createContext<SessionContext>({
   },
 
   async deleteRecord() {
+    throw new Error('No SessionProvider found!')
+  },
+
+  async query() {
     throw new Error('No SessionProvider found!')
   },
 
