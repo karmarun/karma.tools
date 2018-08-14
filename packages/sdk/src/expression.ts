@@ -397,6 +397,22 @@ export const expression = {
     return {reduceList: {value, initial, reducer}}
   },
 
+  leftFoldList(
+    value: t.Expression,
+    initial: t.Expression,
+    folderFn: t.FuncExpression
+  ): t.LeftFoldListFn {
+    return {leftFoldList: [value, initial, folderFn]}
+  },
+
+  rightFoldList(
+    value: t.Expression,
+    initial: t.Expression,
+    folderFn: t.FuncExpression
+  ): t.RightFoldListFn {
+    return {rightFoldList: [value, initial, folderFn]}
+  },
+
   // User / Permission
   // -----------------
 

@@ -417,6 +417,14 @@ export interface ReduceListFn {
   }
 }
 
+export interface RightFoldListFn {
+  rightFoldList: [Expression, Expression, FuncExpression]
+}
+
+export interface LeftFoldListFn {
+  leftFoldList: [Expression, Expression, FuncExpression]
+}
+
 // Struct
 // ------
 
@@ -761,6 +769,8 @@ export type Expression =
   | ReverseListFn
   | SliceFn
   | ReduceListFn
+  | LeftFoldListFn
+  | RightFoldListFn
 
   // User / Permission
   | CurrentUserFn
