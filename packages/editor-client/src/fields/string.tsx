@@ -7,7 +7,8 @@ import {
   SortType,
   SortConfiguration,
   FilterConfiguration,
-  TypedFieldOptions
+  TypedFieldOptions,
+  ConditionType
 } from '@karma.run/editor-common'
 import {ErrorField} from './error'
 
@@ -88,7 +89,7 @@ export class StringField implements Field<StringFieldValue> {
   }
 
   public readonly sortConfigurations: SortConfiguration[]
-  public readonly filterConfigurations: FilterConfiguration[] = []
+  public readonly filterConfigurations: FilterConfiguration[]
 
   public constructor(opts?: StringFieldOptions) {
     this.label = opts && opts.label
@@ -99,6 +100,27 @@ export class StringField implements Field<StringFieldValue> {
 
     this.sortConfigurations = [
       {key: shortid.generate(), type: SortType.String, label: this.label || '', path: []}
+    ]
+
+    this.filterConfigurations = [
+      {
+        id: shortid.generate(),
+        depth: 0,
+        label: this.label!,
+        conditionGroups: [
+          {
+            id: shortid.generate(),
+            label: 'String',
+            conditions: [
+              {
+                id: shortid.generate(),
+                type: ConditionType.StringEqual,
+                path: []
+              }
+            ]
+          }
+        ]
+      }
     ]
   }
 

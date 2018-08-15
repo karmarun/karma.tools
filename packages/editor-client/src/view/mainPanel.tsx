@@ -14,11 +14,11 @@ import {
   AppLocation,
   LocationType,
   withLocation,
-  EntryEditLocation,
-  EntryNewLocation,
+  EditRecordLocation,
+  NewRecordLocation,
   NotFoundLocation,
-  EntryListLocation,
-  EntryDeleteLocation
+  ListRecordsLocation,
+  DeleteRecordLocation
 } from '../context/location'
 
 import {AnyField, AnyFieldValue} from '../api/field'
@@ -176,13 +176,13 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
   private getPanelContextsForLocation(location: AppLocation): PanelContext[] {
     const sessionContext = this.props.sessionContext
     switch (location.type) {
-      case LocationType.EntryList: {
+      case LocationType.ListRecords: {
         const viewContext = sessionContext.viewContextSlugMap.get(location.slug)
         if (!viewContext) return [NotFoundContext('notFound')]
         return [RootListPanelContext(viewContext.model, `rootList/${viewContext.model[1]}`)]
       }
 
-      case LocationType.EntryNew: {
+      case LocationType.NewRecord: {
         const viewContext = sessionContext.viewContextSlugMap.get(location.slug)
         if (!viewContext) return [NotFoundContext('notFound')]
 
@@ -192,7 +192,7 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
         ]
       }
 
-      case LocationType.EntryEdit: {
+      case LocationType.EditRecord: {
         const viewContext = sessionContext.viewContextSlugMap.get(location.slug)
         if (!viewContext) return [NotFoundContext('notFound')]
 
@@ -206,7 +206,7 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
         ]
       }
 
-      case LocationType.EntryDelete: {
+      case LocationType.DeleteRecord: {
         const viewContext = sessionContext.viewContextSlugMap.get(location.slug)
         if (!viewContext) return [NotFoundContext('notFound')]
 
@@ -233,7 +233,7 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
 
       viewContext
         ? this.props.locationContext.pushLocation(
-            id ? EntryEditLocation(viewContext.slug, id[1]) : EntryNewLocation(viewContext.slug)
+            id ? EditRecordLocation(viewContext.slug, id[1]) : NewRecordLocation(viewContext.slug)
           )
         : this.props.locationContext.pushLocation(NotFoundLocation())
     }
@@ -251,7 +251,7 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
       const viewContext = this.props.sessionContext.viewContextMap.get(model)
 
       viewContext
-        ? this.props.locationContext.pushLocation(EntryListLocation(viewContext.slug))
+        ? this.props.locationContext.pushLocation(ListRecordsLocation(viewContext.slug))
         : this.props.locationContext.pushLocation(NotFoundLocation())
     }
 
@@ -298,7 +298,7 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
       const viewContext = this.props.sessionContext.viewContextMap.get(model)
 
       viewContext
-        ? this.props.locationContext.pushLocation(EntryDeleteLocation(viewContext.slug, id[1]))
+        ? this.props.locationContext.pushLocation(DeleteRecordLocation(viewContext.slug, id[1]))
         : this.props.locationContext.pushLocation(NotFoundLocation())
     }
 
@@ -321,7 +321,7 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
       const viewContext = this.props.sessionContext.viewContextMap.get(model)
 
       viewContext
-        ? this.props.locationContext.pushLocation(EntryEditLocation(viewContext.slug, id[1]))
+        ? this.props.locationContext.pushLocation(EditRecordLocation(viewContext.slug, id[1]))
         : this.props.locationContext.pushLocation(NotFoundLocation())
     }
   }
@@ -333,7 +333,7 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
       const viewContext = this.props.sessionContext.viewContextMap.get(model)
 
       viewContext
-        ? this.props.locationContext.pushLocation(EntryListLocation(viewContext.slug))
+        ? this.props.locationContext.pushLocation(ListRecordsLocation(viewContext.slug))
         : this.props.locationContext.pushLocation(NotFoundLocation())
     }
 

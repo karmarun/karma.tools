@@ -213,6 +213,10 @@ export const expression = {
     return {data: value}
   },
 
+  with(value: t.Expression, body: t.FuncExpression): t.WithFn {
+    return {with: [value, body]}
+  },
+
   define(name: string, expr: t.Expression): t.DefineFn {
     return {define: [name, expr]}
   },

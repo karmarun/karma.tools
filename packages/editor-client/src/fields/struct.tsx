@@ -1,4 +1,5 @@
 import React from 'react'
+import shortid from 'shortid'
 import {style} from 'typestyle'
 import {data as d} from '@karma.run/sdk'
 
@@ -231,7 +232,26 @@ export class StructField implements Field<StructFieldValue> {
       )
     ]
 
-    this.filterConfigurations = []
+    this.filterConfigurations = [
+      {label: this.label || '', depth: 0, id: shortid.generate(), conditionGroups: []},
+      ...this.fields.reduce(
+        (acc, [key, field]) => [
+          ...acc,
+          ...field.filterConfigurations.map(config => ({
+            ...config,
+            depth: config.depth + 1,
+            conditionGroups: config.conditionGroups.map(group => ({
+              ...group,
+              conditions: group.conditions.map(condition => ({
+                ...condition,
+                path: [StructPathSegment(key), ...condition.path]
+              }))
+            }))
+          }))
+        ],
+        [] as FilterConfiguration[]
+      )
+    ]
 
     return this
   }

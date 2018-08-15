@@ -551,6 +551,10 @@ export interface DataFn {
   data: DataExpression
 }
 
+export interface WithFn {
+  with: [Expression, FuncExpression]
+}
+
 export interface DefineFn {
   define: [string, Expression]
 }
@@ -720,6 +724,7 @@ export type Expression =
 
   // Scope
   | DataFn
+  | WithFn
   | DefineFn
   | ScopeFn
   | SignatureFn

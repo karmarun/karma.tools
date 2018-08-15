@@ -24,7 +24,13 @@ import {SidePanelSection, SidePanelSectionItem} from './section'
 import {Theme, withTheme, Colors} from '../../context/theme'
 import {SessionContext, withSession} from '../../context/session'
 import {LocaleContext, withLocale} from '../../context/locale'
-import {LocationActionContext, EntryListLocation, withLocationAction} from '../../context/location'
+
+import {
+  LocationActionContext,
+  ListRecordsLocation,
+  withLocationAction
+} from '../../context/location'
+
 import {ViewContext} from '../../api/viewContext'
 
 export const GroupStateStorageKey = 'sidePanelGroupState_v1'
@@ -158,7 +164,7 @@ export class SidePanel extends React.PureComponent<SidePanelProps, SidePanelStat
           id: refToString(viewContext.model),
           label: viewContext.name,
           href: this.props.locationActionContext.urlPathForLocation(
-            EntryListLocation(viewContext.slug)
+            ListRecordsLocation(viewContext.slug)
           )
         }
       })
@@ -202,7 +208,7 @@ export class SidePanel extends React.PureComponent<SidePanelProps, SidePanelStat
         title: searchResult.name,
         subtitle: searchResult.slug,
         href: this.props.locationActionContext.urlPathForLocation(
-          EntryListLocation(searchResult.slug)
+          ListRecordsLocation(searchResult.slug)
         )
       })
     )

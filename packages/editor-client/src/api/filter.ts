@@ -1,13 +1,5 @@
-import {expression as e, data as d, func as f, Expression} from '@karma.run/sdk'
-
-import {
-  Condition,
-  ValuePathSegmentType,
-  ConditionType,
-  ValuePath,
-  ValuePathSegment,
-  ListPathSegment
-} from '@karma.run/editor-common'
+import {expression as e, func as f, Expression} from '@karma.run/sdk'
+import {Condition, ValuePathSegmentType, ConditionType, ValuePath} from '@karma.run/editor-common'
 
 export function conditionExpression(value: Expression, condition: Condition): Expression {
   switch (condition.type) {
@@ -19,43 +11,51 @@ export function conditionExpression(value: Expression, condition: Condition): Ex
   }
 }
 
-export function pathExpression(expression: Expression, pathSegment: ValuePathSegment): Expression {
+export function pathExpression(
+  value: Expression,
+  path: ValuePath,
+  condition: Condition
+): Expression {
+  if (path.length === 0) return conditionExpression(value, condition)
+
+  const pathSegment = path[0]
+  const nextPath = path.slice(1)
+
   switch (pathSegment.type) {
     case ValuePathSegmentType.Struct:
-      return e.field(pathSegment.key, expression)
+      return pathExpression(e.field(pathSegment.key, value), nextPath, condition)
+
+    case ValuePathSegmentType.Tuple:
+      return e.indexTuple(value, pathSegment.index)
+
+    case ValuePathSegmentType.Union:
+      return e.if(
+        e.isCase(value, e.string(pathSegment.key)),
+        pathExpression(e.assertCase(pathSegment.key, value), nextPath, condition),
+        e.bool(false)
+      )
 
     case ValuePathSegmentType.List:
       return e.rightFoldList(
-        expression,
+        value,
         e.bool(false),
-        f.function(['aggregator', 'value'], e.or(e.scope('aggregator'), expression))
+        f.function(
+          ['aggregator', 'listValue'],
+          e.or(e.scope('aggregator'), pathExpression(e.scope('listValue'), nextPath, condition))
+        )
       )
 
     case ValuePathSegmentType.Optional:
-      return e.if(e.isPresent(expression), expression, e.bool(false))
+      return e.if(e.isPresent(value), pathExpression(value, nextPath, condition), e.bool(false))
 
     default:
       return e.bool(false)
   }
 }
 
-export function filterExpression(expression: Expression, condition: Condition): Expression {
-  function recurse(expression: Expression, path: ValuePath): Expression {
-    if (path.length === 0) return expression
-    return recurse(pathExpression(expression, path[path.length - 1]), path.slice(0, -1))
-  }
-
-  return recurse(conditionExpression(expression, condition), condition.path)
-}
-
-console.log(
-  JSON.stringify(
-    filterExpression(e.data(d.list(d.string('1234'), d.string('4321'))), {
-      path: [ListPathSegment()],
-      type: ConditionType.StringEqual,
-      value: '1234'
-    }),
-    undefined,
-    2
+export function filterExpression(value: Expression, condition: Condition): Expression {
+  return e.with(
+    value,
+    f.function(['value'], pathExpression(e.scope('value'), condition.path, condition))
   )
-)
+}
