@@ -1,3 +1,6 @@
+import {StorageType} from '../api/field'
+import {Ref} from '@karma.run/sdk'
+
 export enum ConditionType {
   // List
   ListLengthEqual = 'listLengthEqual',
@@ -11,7 +14,7 @@ export enum ConditionType {
   OptionalIsPresent = 'optionalIsPresent',
 
   // Union
-  UnionKeyEqual = 'unionKeyEqual',
+  UnionCaseEqual = 'unionCaseEqual',
 
   // Enum
   EnumEqual = 'enumEqual',
@@ -80,7 +83,7 @@ export const TypeCompatibilityMap = {
   // Incompatible
   [ConditionType.RefEqual]: undefined,
   [ConditionType.EnumEqual]: undefined,
-  [ConditionType.UnionKeyEqual]: undefined
+  [ConditionType.UnionCaseEqual]: undefined
 }
 
 export interface ListPathSegment {
@@ -202,7 +205,7 @@ export interface StringCondition extends BaseCondition {
 }
 
 export interface OptionalStringCondition extends BaseCondition {
-  type: ConditionType.RefEqual | ConditionType.UnionKeyEqual | ConditionType.EnumEqual
+  type: ConditionType.UnionCaseEqual | ConditionType.EnumEqual
   value: string | undefined
 }
 
@@ -214,7 +217,13 @@ export interface NumberCondition extends BaseCondition {
     | ConditionType.NumberEqual
     | ConditionType.NumberMin
     | ConditionType.NumberMax
+  storageType: StorageType
   value: number
+}
+
+export interface RefStringCondition extends BaseCondition {
+  type: ConditionType.RefEqual
+  value: Ref
 }
 
 export interface BooleanCondition extends BaseCondition {
@@ -233,6 +242,7 @@ export type Condition =
   | NumberCondition
   | OptionalStringCondition
   | BooleanCondition
+  | RefStringCondition
 
 export const enum FilterType {
   FullText = 'fullText',
@@ -301,10 +311,12 @@ export interface SimpleConditionConfiguration extends BaseConditionConfiguration
     | ConditionType.DateEqual
     | ConditionType.DateMin
     | ConditionType.DateMax
-    | ConditionType.NumberEqual
-    | ConditionType.NumberMin
-    | ConditionType.NumberMax
     | ConditionType.OptionalIsPresent
+}
+
+export interface NumberConditionConfiguration extends BaseConditionConfiguration {
+  type: ConditionType.NumberEqual | ConditionType.NumberMin | ConditionType.NumberMax
+  storageType: StorageType
 }
 
 export interface RefConditionConfiguration extends BaseConditionConfiguration {
@@ -312,13 +324,8 @@ export interface RefConditionConfiguration extends BaseConditionConfiguration {
   model: string
 }
 
-export interface EnumConditionConfiguration extends BaseConditionConfiguration {
-  type: ConditionType.EnumEqual
-  options: Option[]
-}
-
-export interface UnionConditionConfiguration extends BaseConditionConfiguration {
-  type: ConditionType.UnionKeyEqual
+export interface OptionsConditionConfiguration extends BaseConditionConfiguration {
+  type: ConditionType.EnumEqual | ConditionType.UnionCaseEqual
   options: Option[]
 }
 
@@ -330,9 +337,9 @@ export interface ConditionGroup {
 
 export type ConditionConfiguration =
   | SimpleConditionConfiguration
+  | NumberConditionConfiguration
   | RefConditionConfiguration
-  | EnumConditionConfiguration
-  | UnionConditionConfiguration
+  | OptionsConditionConfiguration
 
 export interface FilterFieldGroup {
   id: string
@@ -342,9 +349,10 @@ export interface FilterFieldGroup {
 
 export interface FilterConfiguration {
   id: string
-  label: string
+  type: string
+  label?: string
   depth: number
-  conditionGroups: ConditionGroup[]
+  conditions: ConditionConfiguration[]
 }
 
 export interface SortConfiguration {
@@ -362,7 +370,7 @@ export function labelForCondition(condition: ConditionType): string {
     case ConditionType.ListLengthEqual:
     case ConditionType.EnumEqual:
     case ConditionType.NumberEqual:
-    case ConditionType.UnionKeyEqual:
+    case ConditionType.UnionCaseEqual:
       return 'Equal'
 
     case ConditionType.StringStartsWith:
@@ -389,6 +397,45 @@ export function labelForCondition(condition: ConditionType): string {
 
     case ConditionType.OptionalIsPresent:
       return 'Present'
+  }
+
+  return condition
+}
+
+export function defaultValueForConditionConfiguration(
+  condition: ConditionConfiguration,
+  _oldValue: any
+): any {
+  switch (condition.type) {
+    case ConditionType.EnumEqual:
+    case ConditionType.UnionCaseEqual:
+      return condition.options[0]
+
+    case ConditionType.StringEqual:
+    case ConditionType.StringStartsWith:
+    case ConditionType.StringEndsWith:
+    case ConditionType.StringIncludes:
+    case ConditionType.StringRegExp:
+      return ''
+
+    case ConditionType.DateMin:
+    case ConditionType.DateMax:
+    case ConditionType.DateEqual:
+      return new Date()
+
+    case ConditionType.NumberMax:
+    case ConditionType.NumberMin:
+    case ConditionType.NumberEqual:
+    case ConditionType.ListLengthMin:
+    case ConditionType.ListLengthMax:
+    case ConditionType.ListLengthEqual:
+      return 0
+
+    case ConditionType.OptionalIsPresent:
+      return false
+
+    case ConditionType.RefEqual:
+      return undefined
   }
 
   return condition

@@ -1,36 +1,73 @@
 import React from 'react'
 import shortid from 'shortid'
 import {style} from 'typestyle'
+import memoizeOne from 'memoize-one'
+
 import {Ref} from '@karma.run/sdk'
 
 import {
   FilterConfiguration,
   labelForCondition,
   ConditionType,
-  ConditionConfiguration
+  ConditionConfiguration,
+  defaultValueForConditionConfiguration
 } from '@karma.run/editor-common'
 
 import {Spacing, marginLeftExceptFirst} from '../../ui/style'
-import {InputStyle, Button, Select, ButtonType, IconName, TextInput} from '../../ui'
+import {
+  InputStyle,
+  Button,
+  Select,
+  ButtonType,
+  IconName,
+  TextInput,
+  CheckboxInput,
+  NumberInput,
+  DateTimeInput
+} from '../../ui'
 
 // import {FilterRow, FilterRowStyle} from './filterRow'
 import {marginTopExceptFirst} from '../../ui/style'
 import {ModelRecord} from '../../context/session'
 
-import memoizeOne from 'memoize-one'
+import {AnyField} from '../../api/field'
 
 export function renderInputForConditionConfiguration(
-  conditionConfiguration: ConditionConfiguration,
+  config: ConditionConfiguration,
   value: any,
   onValueChange: (value: any) => void,
   _onSelectRecord: (model: Ref) => Promise<ModelRecord | undefined>
 ) {
-  switch (conditionConfiguration.type) {
+  switch (config.type) {
     case ConditionType.StringEqual:
-      return <TextInput value={value || ''} onChange={onValueChange} />
+    case ConditionType.StringStartsWith:
+    case ConditionType.StringEndsWith:
+    case ConditionType.StringIncludes:
+    case ConditionType.StringRegExp:
+      return <TextInput value={value} onChange={onValueChange} />
 
-    default:
-      return <div>NOT IMPLEMENTED</div>
+    case ConditionType.OptionalIsPresent:
+      return <CheckboxInput value={value} onChange={onValueChange} />
+
+    case ConditionType.NumberEqual:
+    case ConditionType.NumberMin:
+    case ConditionType.NumberMax:
+    case ConditionType.ListLengthEqual:
+    case ConditionType.ListLengthMin:
+    case ConditionType.ListLengthMax:
+      return <NumberInput value={value} onChange={onValueChange} />
+
+    case ConditionType.DateEqual:
+    case ConditionType.DateMin:
+    case ConditionType.DateMax:
+      return <DateTimeInput value={value} onChange={onValueChange} />
+
+    case ConditionType.EnumEqual:
+    case ConditionType.UnionCaseEqual:
+      return <Select options={config.options} value={value} onChange={onValueChange} />
+
+    case ConditionType.RefEqual:
+      return 'TODO'
   }
 }
 
@@ -73,6 +110,7 @@ export const FilterRowStyle = style({
 export interface FilterRowProps {
   index: number
   value: FilterRowValue
+  field: AnyField
   filterConfigurations: FilterConfiguration[]
   onAdd?: (index: number) => void
   onRemove?: (index: number) => void
@@ -103,8 +141,8 @@ export class FilterRowValue {
     return new FilterRowValue(id, undefined, undefined, this.id)
   }
 
-  public setConditionID(id: string | undefined) {
-    return new FilterRowValue(this.fieldID, id, undefined, this.id)
+  public setConditionID(id: string | undefined, value: any) {
+    return new FilterRowValue(this.fieldID, id, value, this.id)
   }
 
   public setValue(value: any) {
@@ -118,7 +156,20 @@ export class FilterRow extends React.Component<FilterRowProps> {
   }
 
   private handleConditionChange = (id: string | undefined) => {
-    this.props.onValueChange(this.props.value.setConditionID(id), this.props.index)
+    const filterConfiguration = this.props.filterConfigurations.find(
+      config => config.id === this.props.value.fieldID
+    )!
+
+    const conditionConfiguration = filterConfiguration.conditions.find(
+      condition => condition.id === id
+    )!
+
+    const value = defaultValueForConditionConfiguration(
+      conditionConfiguration,
+      this.props.value.value
+    )
+
+    this.props.onValueChange(this.props.value.setConditionID(id, value), this.props.index)
   }
 
   private handleValueChange = (value: any) => {
@@ -143,12 +194,13 @@ export class FilterRow extends React.Component<FilterRowProps> {
       const filterConfiguration = this.selectedFilterConfiguration(filterConfigurations, value)
       if (!filterConfiguration) return undefined
 
-      for (const group of filterConfiguration.conditionGroups) {
-        const condition = group.conditions.find(condition => condition.id === value.conditionID)
-        if (condition) return condition
-      }
+      const condition = filterConfiguration.conditions.find(
+        condition => condition.id === value.conditionID
+      )
 
-      return undefined
+      if (!condition) return undefined
+
+      return condition
     }
   )
 
@@ -157,9 +209,9 @@ export class FilterRow extends React.Component<FilterRowProps> {
       configuration =>
         ({
           key: configuration.id,
-          label: configuration.label,
+          label: `${configuration.label || 'Unlabeled'} (${configuration.type})`,
           depth: configuration.depth,
-          disabled: configuration.conditionGroups.length === 0
+          disabled: configuration.conditions.length === 0
         } as Select.Option)
     )
   })
@@ -170,15 +222,11 @@ export class FilterRow extends React.Component<FilterRowProps> {
 
       if (!filterConfiguration) return []
 
-      return filterConfiguration.conditionGroups.map(
-        group =>
+      return filterConfiguration.conditions.map(
+        condition =>
           ({
-            key: group.id,
-            label: group.label,
-            options: group.conditions.map(condition => ({
-              key: condition.id,
-              label: labelForCondition(condition.type)
-            }))
+            key: condition.id,
+            label: labelForCondition(condition.type)
           } as Select.Option)
       )
     }
@@ -252,6 +300,7 @@ export const FilterListStyle = style({
 
 export interface FilterListProps {
   value: FilterListValue
+  field: AnyField
   filterConfigurations: FilterConfiguration[]
   onSelectRecord(model: Ref): Promise<ModelRecord | undefined>
   onValueChange(value: FilterListValue): void
@@ -284,6 +333,7 @@ export class FilterList extends React.Component<FilterListProps> {
             key={value.id}
             index={index}
             value={value}
+            field={this.props.field}
             filterConfigurations={this.props.filterConfigurations}
             onAdd={this.handleAddAtIndex}
             onRemove={this.props.value.length !== 1 ? this.handleRemoveAtIndex : undefined}

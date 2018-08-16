@@ -739,6 +739,8 @@ export type Expression =
   | MatchRegexFn
   | SearchAllRegexFn
   | SearchRegexFn
+  | StringContainsFn
+  | SubstringIndexFn
 
   // Optional
   | IsPresentFn

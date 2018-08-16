@@ -1,4 +1,5 @@
 import React from 'react'
+import shortid from 'shortid'
 import {expression as e} from '@karma.run/sdk'
 
 import {
@@ -6,8 +7,11 @@ import {
   ModelType,
   SortConfiguration,
   FilterConfiguration,
-  TypedFieldOptions
+  TypedFieldOptions,
+  StorageType,
+  ConditionType
 } from '@karma.run/editor-common'
+
 import {ErrorField} from './error'
 
 import {
@@ -70,18 +74,6 @@ export interface NumberFieldConstructorOptions extends NumberFieldOptions {
   readonly storageType: StorageType
 }
 
-export const enum StorageType {
-  Float = 'float',
-  Int8 = 'int8',
-  Int16 = 'int16',
-  Int32 = 'int32',
-  Int64 = 'int64',
-  UInt8 = 'uint8',
-  UInt16 = 'uint16',
-  UInt32 = 'uint32',
-  UInt64 = 'uint64'
-}
-
 const validModelTypes: ModelType[] = [
   'float',
   'int8',
@@ -111,7 +103,7 @@ export class NumberField implements Field<NumberFieldValue> {
   }
 
   public readonly sortConfigurations: SortConfiguration[] = []
-  public readonly filterConfigurations: FilterConfiguration[] = []
+  public readonly filterConfigurations: FilterConfiguration[]
 
   public constructor(opts: NumberFieldConstructorOptions) {
     this.label = opts.label
@@ -120,6 +112,35 @@ export class NumberField implements Field<NumberFieldValue> {
     this.maxValue = opts.maxValue
     this.step = opts.step
     this.storageType = opts.storageType
+
+    this.filterConfigurations = [
+      {
+        id: shortid.generate(),
+        label: this.label,
+        depth: 0,
+        type: NumberField.type,
+        conditions: [
+          {
+            id: shortid.generate(),
+            type: ConditionType.NumberEqual,
+            path: [],
+            storageType: opts.storageType
+          },
+          {
+            id: shortid.generate(),
+            type: ConditionType.NumberMin,
+            path: [],
+            storageType: opts.storageType
+          },
+          {
+            id: shortid.generate(),
+            type: ConditionType.NumberMax,
+            path: [],
+            storageType: opts.storageType
+          }
+        ]
+      }
+    ]
   }
 
   public initialize() {
@@ -141,8 +162,9 @@ export class NumberField implements Field<NumberFieldValue> {
     )
   }
 
-  public transformRawValue(value: any) {
-    return value.toString()
+  public transformRawValue(value: unknown): NumberFieldValue {
+    if (typeof value !== 'number' && typeof value !== 'string') throw new Error('Invalid value!')
+    return {value: value.toString(), isValid: true, hasChanges: false}
   }
 
   public transformValueToExpression(value: NumberFieldValue) {

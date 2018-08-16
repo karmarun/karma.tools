@@ -106,18 +106,23 @@ export class StringField implements Field<StringFieldValue> {
       {
         id: shortid.generate(),
         depth: 0,
-        label: this.label!,
-        conditionGroups: [
+        type: StringField.type,
+        label: this.label,
+        conditions: [
           {
             id: shortid.generate(),
-            label: 'String',
-            conditions: [
-              {
-                id: shortid.generate(),
-                type: ConditionType.StringEqual,
-                path: []
-              }
-            ]
+            type: ConditionType.StringEqual,
+            path: []
+          },
+          {
+            id: shortid.generate(),
+            type: ConditionType.StringIncludes,
+            path: []
+          },
+          {
+            id: shortid.generate(),
+            type: ConditionType.StringRegExp,
+            path: []
           }
         ]
       }

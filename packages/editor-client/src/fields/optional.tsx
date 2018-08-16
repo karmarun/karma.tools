@@ -1,4 +1,5 @@
 import React from 'react'
+import shortid from 'shortid'
 import {expression as e} from '@karma.run/sdk'
 
 import {
@@ -6,7 +7,9 @@ import {
   KeyPath,
   TypedFieldOptions,
   SortConfiguration,
-  FilterConfiguration
+  FilterConfiguration,
+  OptionalPathSegment,
+  ConditionType
 } from '@karma.run/editor-common'
 
 import {ErrorField} from './error'
@@ -45,7 +48,7 @@ export class OptionalFieldEditComponent extends React.PureComponent<
     )
   }
 
-  private handleValueChange = (value: any) => {
+  private handleValueChange = (value: AnyFieldValue) => {
     this.props.onValueChange(
       {
         value: {
@@ -143,6 +146,21 @@ export class OptionalField implements Field<OptionalFieldValue> {
 
   public initialize(recursions: ReadonlyMap<string, AnyField>) {
     this.field.initialize(recursions)
+
+    this.filterConfigurations = [
+      {
+        id: shortid.generate(),
+        type: OptionalField.type,
+        label: this.label,
+        depth: 0,
+        conditions: [{id: shortid.generate(), type: ConditionType.OptionalIsPresent, path: []}]
+      },
+      ...this.field.filterConfigurations.map(config => ({
+        ...config,
+        depth: config.depth + 1
+      }))
+    ]
+
     return this
   }
 
@@ -162,12 +180,12 @@ export class OptionalField implements Field<OptionalFieldValue> {
   }
 
   public transformRawValue(value: any): OptionalFieldValue {
-    const isPresent = value == undefined
+    const isPresent = value != undefined
 
     return {
       value: {
         isPresent,
-        value: isPresent ? this.field.transformRawValue(value) : this.field.defaultValue
+        value: isPresent ? this.field.transformRawValue(value) : undefined
       },
       isValid: true,
       hasChanges: false
@@ -194,7 +212,7 @@ export class OptionalField implements Field<OptionalFieldValue> {
   }
 
   public valuePathForKeyPath(keyPath: KeyPath) {
-    return this.field.valuePathForKeyPath(keyPath)
+    return [OptionalPathSegment(), ...this.field.valuePathForKeyPath(keyPath)]
   }
 
   public valuesForKeyPath(value: OptionalFieldValue, keyPath: KeyPath) {

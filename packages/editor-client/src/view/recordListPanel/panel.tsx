@@ -9,8 +9,7 @@ import {
   Omit,
   refToString,
   SortConfiguration,
-  ReadonlyRefMap,
-  ConditionConfiguration
+  ReadonlyRefMap
 } from '@karma.run/editor-common'
 
 import {
@@ -199,31 +198,41 @@ export class RecordListPanel extends React.PureComponent<
   }
 
   private handleToggleFilter = () => {
-    this.setState({isFilterActive: !this.state.isFilterActive})
+    this.setState({isFilterActive: !this.state.isFilterActive}, () => {
+      this.loadRecords(0)
+    })
   }
 
   private conditionForFilterRowValue(value: FilterRowValue): Condition | undefined {
-    if (!value.fieldID || !value.conditionID || !value.value) return undefined
+    if (!value.fieldID || !value.conditionID) return undefined
 
     const viewContext = this.viewContext!
     const field = viewContext.filterConfigurations.find(config => config.id === value.fieldID)
 
     if (!field) return undefined
 
-    let conditionConfig: ConditionConfiguration | undefined
+    const condition = field.conditions.find(condition => condition.id === value.conditionID)
 
-    for (const group of field.conditionGroups) {
-      conditionConfig = group.conditions.find(condition => condition.id === value.conditionID)
-      if (conditionConfig) break
+    if (!condition) return undefined
+
+    switch (condition.type) {
+      case ConditionType.NumberEqual:
+      case ConditionType.NumberMin:
+      case ConditionType.NumberMax:
+        return {
+          path: condition.path,
+          type: condition.type,
+          storageType: condition.storageType,
+          value: value.value
+        }
+
+      default:
+        return {
+          path: condition.path,
+          type: condition.type,
+          value: value.value
+        } as Condition
     }
-
-    if (!conditionConfig) return undefined
-
-    return {
-      path: conditionConfig.path,
-      type: conditionConfig.type,
-      value: value.value
-    } as Condition
   }
 
   private handleFilterListValueChange = (value: FilterListValue) => {
@@ -367,6 +376,7 @@ export class RecordListPanel extends React.PureComponent<
             this.state.isFilterActive && (
               <FilterList
                 value={this.state.filterListValue}
+                field={viewContext.field}
                 filterConfigurations={viewContext.filterConfigurations}
                 onSelectRecord={() => ({} as any)}
                 onValueChange={this.handleFilterListValueChange}

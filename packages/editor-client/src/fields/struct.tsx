@@ -233,19 +233,22 @@ export class StructField implements Field<StructFieldValue> {
     ]
 
     this.filterConfigurations = [
-      {label: this.label || '', depth: 0, id: shortid.generate(), conditionGroups: []},
+      {
+        label: this.label,
+        depth: 0,
+        type: StructField.type,
+        id: shortid.generate(),
+        conditions: []
+      },
       ...this.fields.reduce(
         (acc, [key, field]) => [
           ...acc,
           ...field.filterConfigurations.map(config => ({
             ...config,
             depth: config.depth + 1,
-            conditionGroups: config.conditionGroups.map(group => ({
-              ...group,
-              conditions: group.conditions.map(condition => ({
-                ...condition,
-                path: [StructPathSegment(key), ...condition.path]
-              }))
+            conditions: config.conditions.map(condition => ({
+              ...condition,
+              path: [StructPathSegment(key), ...condition.path]
             }))
           }))
         ],
@@ -254,6 +257,10 @@ export class StructField implements Field<StructFieldValue> {
     ]
 
     return this
+  }
+
+  public get children() {
+    return this.fields.map(([_, field]) => field)
   }
 
   public renderListComponent() {

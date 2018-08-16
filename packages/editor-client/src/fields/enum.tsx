@@ -27,8 +27,15 @@ import {Select, SelectType} from '../ui/select'
 export class EnumFieldEditComponent extends React.PureComponent<
   EditComponentRenderProps<EnumField, EnumFieldValue>
 > {
-  private handleChange = (value: any) => {
-    this.props.onValueChange(value, this.props.changeKey)
+  private handleChange = (value?: string) => {
+    this.props.onValueChange(
+      {
+        value: value,
+        isValid: true,
+        hasChanges: true
+      },
+      this.props.changeKey
+    )
   }
 
   private getFieldOptions = memoizeOne(
