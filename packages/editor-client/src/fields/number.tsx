@@ -1,5 +1,4 @@
 import React from 'react'
-import shortid from 'shortid'
 import {expression as e} from '@karma.run/sdk'
 
 import {
@@ -9,7 +8,8 @@ import {
   FilterConfiguration,
   TypedFieldOptions,
   StorageType,
-  ConditionType
+  ConditionType,
+  NumberConditionConfiguration
 } from '@karma.run/editor-common'
 
 import {ErrorField} from './error'
@@ -114,32 +114,11 @@ export class NumberField implements Field<NumberFieldValue> {
     this.storageType = opts.storageType
 
     this.filterConfigurations = [
-      {
-        id: shortid.generate(),
-        label: this.label,
-        depth: 0,
-        type: NumberField.type,
-        conditions: [
-          {
-            id: shortid.generate(),
-            type: ConditionType.NumberEqual,
-            path: [],
-            storageType: opts.storageType
-          },
-          {
-            id: shortid.generate(),
-            type: ConditionType.NumberMin,
-            path: [],
-            storageType: opts.storageType
-          },
-          {
-            id: shortid.generate(),
-            type: ConditionType.NumberMax,
-            path: [],
-            storageType: opts.storageType
-          }
-        ]
-      }
+      FilterConfiguration(NumberField.type, NumberField.type, this.label, [
+        NumberConditionConfiguration(ConditionType.NumberEqual, opts.storageType),
+        NumberConditionConfiguration(ConditionType.NumberMin, opts.storageType),
+        NumberConditionConfiguration(ConditionType.NumberMax, opts.storageType)
+      ])
     ]
   }
 

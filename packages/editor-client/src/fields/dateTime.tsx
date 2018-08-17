@@ -5,7 +5,9 @@ import {
   Model,
   SortConfiguration,
   FilterConfiguration,
-  TypedFieldOptions
+  TypedFieldOptions,
+  SimpleConditionConfiguration,
+  ConditionType
 } from '@karma.run/editor-common'
 
 import {
@@ -65,11 +67,19 @@ export class DateTimeField implements Field<DateTimeFieldValue> {
 
   public readonly defaultValue: DateTimeFieldValue = {value: '', isValid: false, hasChanges: false}
   public readonly sortConfigurations: SortConfiguration[] = []
-  public readonly filterConfigurations: FilterConfiguration[] = []
+  public readonly filterConfigurations: FilterConfiguration[]
 
   public constructor(opts?: DateTimeFieldOptions) {
     this.label = opts && opts.label
     this.description = opts && opts.description
+
+    this.filterConfigurations = [
+      FilterConfiguration(DateTimeField.type, DateTimeField.type, this.label, [
+        SimpleConditionConfiguration(ConditionType.DateEqual),
+        SimpleConditionConfiguration(ConditionType.DateMin),
+        SimpleConditionConfiguration(ConditionType.DateMax)
+      ])
+    ]
   }
 
   public initialize() {

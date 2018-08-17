@@ -184,9 +184,7 @@ export namespace PanelToolbar {
 
       '> .drawer': {
         borderTop: solidBorderWithColor(Color.neutral.light1),
-        padding: Spacing.medium,
-        maxHeight: '30vh',
-        overflowY: 'auto'
+        padding: Spacing.medium
       },
 
       '&::after': bottomShadow(1)

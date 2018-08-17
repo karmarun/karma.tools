@@ -5,7 +5,9 @@ import {
   Model,
   SortConfiguration,
   FilterConfiguration,
-  TypedFieldOptions
+  TypedFieldOptions,
+  SimpleConditionConfiguration,
+  ConditionType
 } from '@karma.run/editor-common'
 
 import {
@@ -70,12 +72,17 @@ export class BoolField implements Field<BoolFieldValue> {
   }
 
   public readonly sortConfigurations: SortConfiguration[]
-  public readonly filterConfigurations: FilterConfiguration[] = []
+  public readonly filterConfigurations: FilterConfiguration[]
 
   public constructor(opts?: BoolFieldOptions) {
     this.label = opts && opts.label
     this.description = opts && opts.description
     this.sortConfigurations = []
+    this.filterConfigurations = [
+      FilterConfiguration(BoolField.type, BoolField.type, this.label, [
+        SimpleConditionConfiguration(ConditionType.BoolEqual)
+      ])
+    ]
   }
 
   public initialize() {

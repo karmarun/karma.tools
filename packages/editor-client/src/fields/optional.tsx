@@ -1,5 +1,4 @@
 import React from 'react'
-import shortid from 'shortid'
 import {expression as e} from '@karma.run/sdk'
 
 import {
@@ -9,7 +8,9 @@ import {
   SortConfiguration,
   FilterConfiguration,
   OptionalPathSegment,
-  ConditionType
+  ConditionType,
+  SimpleConditionConfiguration,
+  filterConfigurationPrependPath
 } from '@karma.run/editor-common'
 
 import {ErrorField} from './error'
@@ -148,17 +149,12 @@ export class OptionalField implements Field<OptionalFieldValue> {
     this.field.initialize(recursions)
 
     this.filterConfigurations = [
-      {
-        id: shortid.generate(),
-        type: OptionalField.type,
-        label: this.label,
-        depth: 0,
-        conditions: [{id: shortid.generate(), type: ConditionType.OptionalIsPresent, path: []}]
-      },
-      ...this.field.filterConfigurations.map(config => ({
-        ...config,
-        depth: config.depth + 1
-      }))
+      FilterConfiguration(OptionalField.type, OptionalField.type, this.label, [
+        SimpleConditionConfiguration(ConditionType.OptionalIsPresent)
+      ]),
+      ...this.field.filterConfigurations.map(config =>
+        filterConfigurationPrependPath(config, OptionalField.type, [OptionalPathSegment()])
+      )
     ]
 
     return this

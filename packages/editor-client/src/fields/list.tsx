@@ -11,7 +11,11 @@ import {
   FilterConfiguration,
   ValuePath,
   ValuePathSegmentType,
-  flatMap
+  flatMap,
+  SimpleConditionConfiguration,
+  ConditionType,
+  filterConfigurationPrependPath,
+  ListPathSegment
 } from '@karma.run/editor-common'
 
 import {
@@ -306,7 +310,8 @@ export class ListField implements Field<ListFieldValue> {
 
   public readonly defaultValue: ListFieldValue = {value: [], isValid: true, hasChanges: false}
   public readonly sortConfigurations: SortConfiguration[] = []
-  public readonly filterConfigurations: FilterConfiguration[] = []
+
+  public filterConfigurations!: FilterConfiguration[]
 
   public readonly field: AnyField
 
@@ -318,6 +323,18 @@ export class ListField implements Field<ListFieldValue> {
 
   public initialize(recursions: ReadonlyMap<string, AnyField>) {
     this.field.initialize(recursions)
+
+    this.filterConfigurations = [
+      FilterConfiguration(ListField.type, ListField.type, this.label, [
+        SimpleConditionConfiguration(ConditionType.ListLengthEqual),
+        SimpleConditionConfiguration(ConditionType.ListLengthMin),
+        SimpleConditionConfiguration(ConditionType.ListLengthMax)
+      ]),
+      ...this.field.filterConfigurations.map(config =>
+        filterConfigurationPrependPath(config, ListField.type, [ListPathSegment()])
+      )
+    ]
+
     return this
   }
 

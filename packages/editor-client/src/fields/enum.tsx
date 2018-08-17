@@ -7,7 +7,9 @@ import {
   SortConfiguration,
   FilterConfiguration,
   convertKeyToLabel,
-  TypedFieldOptions
+  TypedFieldOptions,
+  OptionsConditionConfiguration,
+  ConditionType
 } from '@karma.run/editor-common'
 
 import {ErrorField} from './error'
@@ -95,12 +97,21 @@ export class EnumField implements Field<EnumFieldValue> {
   }
 
   public readonly sortConfigurations: SortConfiguration[] = []
-  public readonly filterConfigurations: FilterConfiguration[] = []
+  public readonly filterConfigurations: FilterConfiguration[]
 
   public constructor(opts: EnumFieldConstructorOptions) {
     this.label = opts.label
     this.description = opts.description
     this.options = opts.options
+
+    this.filterConfigurations = [
+      FilterConfiguration(EnumField.type, EnumField.type, this.label, [
+        OptionsConditionConfiguration(
+          ConditionType.EnumEqual,
+          this.options.map(([key, label]) => ({key, label}))
+        )
+      ])
+    ]
   }
 
   public initialize() {

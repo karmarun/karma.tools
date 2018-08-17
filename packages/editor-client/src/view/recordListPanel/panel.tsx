@@ -135,6 +135,7 @@ export interface RecordListPanelProps {
   headerPrefix: string
   toolbarActions: ToolbarAction[]
   recordActions: RecordAction[]
+  onSelectRecord: (model: Ref) => Promise<ModelRecord | undefined>
 }
 
 export interface RecordListPanelState {
@@ -211,7 +212,7 @@ export class RecordListPanel extends React.PureComponent<
 
     if (!field) return undefined
 
-    const condition = field.conditions.find(condition => condition.id === value.conditionID)
+    const condition = field.conditions.find(condition => condition.type === value.conditionID)
 
     if (!condition) return undefined
 
@@ -219,11 +220,13 @@ export class RecordListPanel extends React.PureComponent<
       case ConditionType.NumberEqual:
       case ConditionType.NumberMin:
       case ConditionType.NumberMax:
+        const numberValue = Number(value.value)
+
         return {
           path: condition.path,
           type: condition.type,
           storageType: condition.storageType,
-          value: value.value
+          value: isNaN(numberValue) ? 0 : numberValue
         }
 
       default:
@@ -378,7 +381,7 @@ export class RecordListPanel extends React.PureComponent<
                 value={this.state.filterListValue}
                 field={viewContext.field}
                 filterConfigurations={viewContext.filterConfigurations}
-                onSelectRecord={() => ({} as any)}
+                onSelectRecord={this.props.onSelectRecord}
                 onValueChange={this.handleFilterListValueChange}
               />
             )

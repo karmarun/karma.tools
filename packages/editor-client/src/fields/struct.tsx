@@ -1,5 +1,4 @@
 import React from 'react'
-import shortid from 'shortid'
 import {style} from 'typestyle'
 import {data as d} from '@karma.run/sdk'
 
@@ -14,7 +13,8 @@ import {
   SortConfiguration,
   FilterConfiguration,
   FieldOptions,
-  TypedFieldOptions
+  TypedFieldOptions,
+  filterConfigurationPrependPath
 } from '@karma.run/editor-common'
 
 import {
@@ -233,24 +233,15 @@ export class StructField implements Field<StructFieldValue> {
     ]
 
     this.filterConfigurations = [
-      {
-        label: this.label,
-        depth: 0,
-        type: StructField.type,
-        id: shortid.generate(),
-        conditions: []
-      },
+      FilterConfiguration(StructField.type, StructField.type, this.label, []),
       ...this.fields.reduce(
         (acc, [key, field]) => [
           ...acc,
-          ...field.filterConfigurations.map(config => ({
-            ...config,
-            depth: config.depth + 1,
-            conditions: config.conditions.map(condition => ({
-              ...condition,
-              path: [StructPathSegment(key), ...condition.path]
-            }))
-          }))
+          ...field.filterConfigurations.map(config =>
+            filterConfigurationPrependPath(config, `${StructField.type}[${key}]`, [
+              StructPathSegment(key)
+            ])
+          )
         ],
         [] as FilterConfiguration[]
       )

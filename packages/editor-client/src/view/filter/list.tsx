@@ -10,7 +10,8 @@ import {
   labelForCondition,
   ConditionType,
   ConditionConfiguration,
-  defaultValueForConditionConfiguration
+  defaultValueForConditionConfiguration,
+  refToPrettyString
 } from '@karma.run/editor-common'
 
 import {Spacing, marginLeftExceptFirst} from '../../ui/style'
@@ -23,7 +24,8 @@ import {
   TextInput,
   CheckboxInput,
   NumberInput,
-  DateTimeInput
+  DateTimeInput,
+  FlexList
 } from '../../ui'
 
 // import {FilterRow, FilterRowStyle} from './filterRow'
@@ -36,7 +38,7 @@ export function renderInputForConditionConfiguration(
   config: ConditionConfiguration,
   value: any,
   onValueChange: (value: any) => void,
-  _onSelectRecord: (model: Ref) => Promise<ModelRecord | undefined>
+  onSelectRecord: (model: Ref) => Promise<ModelRecord | undefined>
 ) {
   switch (config.type) {
     case ConditionType.StringEqual:
@@ -46,6 +48,7 @@ export function renderInputForConditionConfiguration(
     case ConditionType.StringRegExp:
       return <TextInput value={value} onChange={onValueChange} />
 
+    case ConditionType.BoolEqual:
     case ConditionType.OptionalIsPresent:
       return <CheckboxInput value={value} onChange={onValueChange} />
 
@@ -64,10 +67,52 @@ export function renderInputForConditionConfiguration(
 
     case ConditionType.EnumEqual:
     case ConditionType.UnionCaseEqual:
-      return <Select options={config.options} value={value} onChange={onValueChange} />
+      return (
+        <Select
+          options={config.options}
+          value={value}
+          onChange={onValueChange}
+          disableUnselectedOption
+        />
+      )
 
     case ConditionType.RefEqual:
-      return 'TODO'
+      return (
+        <RefSelect
+          model={config.model}
+          value={value}
+          onValueChange={onValueChange}
+          onSelectRecord={onSelectRecord}
+        />
+      )
+  }
+}
+
+export interface RefSelectProps {
+  value: Ref | undefined
+  model: Ref
+  onValueChange: (value: Ref) => void
+  onSelectRecord: (model: Ref) => Promise<ModelRecord | undefined>
+}
+
+export class RefSelect extends React.Component<RefSelectProps> {
+  private handleButtonTrigger = async () => {
+    const result = await this.props.onSelectRecord(this.props.model)
+    if (result) this.props.onValueChange(result.id)
+  }
+
+  public render() {
+    return (
+      <FlexList spacing="large">
+        <Button
+          icon={IconName.SelectDocument}
+          type={ButtonType.Icon}
+          label={'Select'}
+          onTrigger={this.handleButtonTrigger}
+        />
+        {this.props.value && <div>{refToPrettyString(this.props.value)}</div>}
+      </FlexList>
+    )
   }
 }
 
@@ -114,8 +159,8 @@ export interface FilterRowProps {
   filterConfigurations: FilterConfiguration[]
   onAdd?: (index: number) => void
   onRemove?: (index: number) => void
-  onSelectRecord(model: Ref): Promise<ModelRecord | undefined>
-  onValueChange(value: FilterRowValue, index: number): void
+  onSelectRecord: (model: Ref) => Promise<ModelRecord | undefined>
+  onValueChange: (value: FilterRowValue, index: number) => void
 }
 
 export class FilterRowValue {
@@ -161,7 +206,7 @@ export class FilterRow extends React.Component<FilterRowProps> {
     )!
 
     const conditionConfiguration = filterConfiguration.conditions.find(
-      condition => condition.id === id
+      condition => condition.type === id
     )!
 
     const value = defaultValueForConditionConfiguration(
@@ -195,7 +240,7 @@ export class FilterRow extends React.Component<FilterRowProps> {
       if (!filterConfiguration) return undefined
 
       const condition = filterConfiguration.conditions.find(
-        condition => condition.id === value.conditionID
+        condition => condition.type === value.conditionID
       )
 
       if (!condition) return undefined
@@ -209,7 +254,7 @@ export class FilterRow extends React.Component<FilterRowProps> {
       configuration =>
         ({
           key: configuration.id,
-          label: `${configuration.label || 'Unlabeled'} (${configuration.type})`,
+          label: `${configuration.label} (${configuration.type})`,
           depth: configuration.depth,
           disabled: configuration.conditions.length === 0
         } as Select.Option)
@@ -225,7 +270,7 @@ export class FilterRow extends React.Component<FilterRowProps> {
       return filterConfiguration.conditions.map(
         condition =>
           ({
-            key: condition.id,
+            key: condition.type,
             label: labelForCondition(condition.type)
           } as Select.Option)
       )

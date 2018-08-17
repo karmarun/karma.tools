@@ -25,7 +25,11 @@ import {
   firstKey,
   ObjectMap,
   TypedFieldOptions,
-  FieldOptions
+  FieldOptions,
+  filterConfigurationPrependPath,
+  UnionPathSegment,
+  OptionsConditionConfiguration,
+  ConditionType
 } from '@karma.run/editor-common'
 
 import {ErrorField} from './error'
@@ -172,6 +176,26 @@ export class UnionField implements Field<UnionFieldValue> {
     this.fieldMap = new Map(
       this.fields.map(([key, _, field]) => [key, field] as [string, AnyField])
     )
+
+    this.filterConfigurations = [
+      FilterConfiguration(UnionField.type, UnionField.type, this.label, [
+        OptionsConditionConfiguration(
+          ConditionType.UnionCaseEqual,
+          this.fields.map(([key, label]) => ({key, label}))
+        )
+      ]),
+      ...this.fields.reduce(
+        (acc, [key, _label, field]) => [
+          ...acc,
+          ...field.filterConfigurations.map(config =>
+            filterConfigurationPrependPath(config, `${UnionField.type}[${key}]`, [
+              UnionPathSegment(key)
+            ])
+          )
+        ],
+        [] as FilterConfiguration[]
+      )
+    ]
 
     return this
   }

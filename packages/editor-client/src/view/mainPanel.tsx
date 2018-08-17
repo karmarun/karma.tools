@@ -377,6 +377,7 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
             disabled={disabled}
             onEditRecord={this.handleEditRecord}
             onDeleteRecord={this.handleDeleteRecord}
+            onSelectRecord={this.handleSelectRecord}
           />
         )
 
@@ -387,6 +388,7 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
             disabled={disabled}
             onBack={this.handleBack}
             onRecordSelected={this.handleBack}
+            onSelectRecord={this.handleSelectRecord}
           />
         )
 

@@ -6,7 +6,9 @@ import {
   SortConfiguration,
   FilterConfiguration,
   FieldOptions,
-  TypedFieldOptions
+  TypedFieldOptions,
+  RefConditionConfiguration,
+  ConditionType
 } from '@karma.run/editor-common'
 
 import {
@@ -289,7 +291,7 @@ export class RefField implements Field<RefFieldValue> {
   }
 
   public readonly sortConfigurations: SortConfiguration[] = []
-  public readonly filterConfigurations: FilterConfiguration[] = []
+  public readonly filterConfigurations: FilterConfiguration[]
 
   public readonly disableEditing: boolean
 
@@ -298,6 +300,12 @@ export class RefField implements Field<RefFieldValue> {
     this.description = opts.description
     this.model = opts.model
     this.disableEditing = opts.disableEditing || false
+
+    this.filterConfigurations = [
+      FilterConfiguration(RefField.type, RefField.type, this.label, [
+        RefConditionConfiguration(ConditionType.RefEqual, this.model)
+      ])
+    ]
   }
 
   public initialize() {
