@@ -10,9 +10,9 @@ import {
   SortConfiguration,
   FilterConfiguration,
   ValuePath,
-  ValuePathSegmentType,
   TypedFieldOptions,
-  flatMap
+  flatMap,
+  MapPathSegment
 } from '@karma.run/editor-common'
 
 import {
@@ -284,7 +284,7 @@ export class MapField implements Field<MapFieldValue> {
   }
 
   public valuePathForKeyPath(keyPath: KeyPath): ValuePath {
-    return [{type: ValuePathSegmentType.Map}, ...this.field.valuePathForKeyPath(keyPath.slice(1))]
+    return [MapPathSegment(), ...this.field.valuePathForKeyPath(keyPath.slice(1))]
   }
 
   public valuesForKeyPath(value: MapFieldValue, keyPath: KeyPath) {

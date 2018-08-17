@@ -2,7 +2,6 @@ import React from 'react'
 import {Ref} from '@karma.run/sdk'
 
 import {
-  Filter,
   Sort,
   ConditionType,
   Condition,
@@ -143,7 +142,6 @@ export interface RecordListPanelState {
   limit: number
   offset: number
   hasMore: boolean
-  filter?: Filter
   sort?: Sort
   sortValue?: SortConfiguration
   sortDescending: boolean
@@ -288,13 +286,23 @@ export class RecordListPanel extends React.PureComponent<
     }
 
     if (this.state.quickSearchValue.trim() !== '') {
+      const quickSearchFilters: Condition[] = []
+
       for (const keyPath of this.viewContext.displayKeyPaths) {
         const valuePath = this.viewContext.field.valuePathForKeyPath(keyPath)
 
-        filters.push({
-          type: ConditionType.StringIncludes,
+        quickSearchFilters.push({
+          type: ConditionType.ExtractedStringIncludes,
           path: valuePath,
           value: this.state.quickSearchValue.trim()
+        })
+      }
+
+      if (quickSearchFilters.length > 0) {
+        filters.push({
+          type: ConditionType.Or,
+          path: [],
+          value: quickSearchFilters
         })
       }
     }

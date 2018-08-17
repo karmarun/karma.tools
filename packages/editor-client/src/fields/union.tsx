@@ -272,6 +272,8 @@ export class UnionField implements Field<UnionFieldValue> {
   }
 
   public valuePathForKeyPath(keyPath: KeyPath): ValuePath {
+    if (keyPath.length === 0) return []
+
     const key = keyPath[0]
     const field = this.fieldMap.get(key.toString())
 
@@ -283,11 +285,13 @@ export class UnionField implements Field<UnionFieldValue> {
     ]
   }
 
-  public valuesForKeyPath(value: UnionFieldValue, keyPath: KeyPath) {
+  public valuesForKeyPath(value: UnionFieldValue, keyPath: KeyPath): AnyFieldValue[] {
+    if (keyPath.length === 0) return [value]
+
     const key = keyPath[0].toString()
     const field = this.fieldMap.get(key)
 
-    if (!field) return []
+    if (!field || !value.value.values[key]) return []
 
     return field.valuesForKeyPath(value.value.values[key], keyPath.slice(1))
   }

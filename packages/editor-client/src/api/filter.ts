@@ -78,6 +78,18 @@ export function conditionExpression(value: Expression, condition: Condition): Ex
       if (!condition.value) return e.bool(true)
       return e.equal(e.data(d.ref(condition.value)), value)
 
+    case ConditionType.ExtractedStringIncludes:
+      return e.stringContains(
+        e.joinStrings(e.string(''), e.extractStrings(value)),
+        e.string(condition.value)
+      )
+
+    case ConditionType.Or:
+      return e.or(...condition.value.map(condition => filterExpression(value, condition)))
+
+    case ConditionType.And:
+      return e.and(...condition.value.map(condition => filterExpression(value, condition)))
+
     case ConditionType.NumberEqual:
       switch (condition.storageType) {
         case StorageType.Float:

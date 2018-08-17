@@ -10,7 +10,6 @@ import {
   SortConfiguration,
   FilterConfiguration,
   ValuePath,
-  ValuePathSegmentType,
   flatMap,
   SimpleConditionConfiguration,
   ConditionType,
@@ -382,7 +381,7 @@ export class ListField implements Field<ListFieldValue> {
   }
 
   public valuePathForKeyPath(keyPath: KeyPath): ValuePath {
-    return [{type: ValuePathSegmentType.Map}, ...this.field.valuePathForKeyPath(keyPath.slice(1))]
+    return [ListPathSegment(), ...this.field.valuePathForKeyPath(keyPath.slice(1))]
   }
 
   public valuesForKeyPath(value: ListFieldValue, keyPath: KeyPath) {

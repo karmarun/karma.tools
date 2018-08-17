@@ -40,7 +40,12 @@ export enum ConditionType {
   DateMax = 'dateMax',
 
   // Ref
-  RefEqual = 'refEqual'
+  RefEqual = 'refEqual',
+
+  // Other
+  ExtractedStringIncludes = 'extractedStringIncludes',
+  Or = 'or',
+  And = 'and'
 }
 
 export enum ValuePathSegmentType {
@@ -120,6 +125,7 @@ export interface StringCondition extends BaseCondition {
     | ConditionType.StringEndsWith
     | ConditionType.StringIncludes
     | ConditionType.StringRegExp
+    | ConditionType.ExtractedStringIncludes
   value: string
 }
 
@@ -155,6 +161,11 @@ export interface DateCondition extends BaseCondition {
   value: Date | string
 }
 
+export interface CompositeCondition extends BaseCondition {
+  type: ConditionType.Or | ConditionType.And
+  value: Condition[]
+}
+
 export type Condition =
   | StringCondition
   | DateCondition
@@ -162,38 +173,7 @@ export type Condition =
   | OptionalStringCondition
   | BooleanCondition
   | RefStringCondition
-
-export const enum FilterType {
-  FullText = 'fullText',
-  Composite = 'composite',
-  Condition = 'condition'
-}
-
-export interface FullTextFilter {
-  type: FilterType.FullText
-  value: string
-}
-export function FullTextFilter(value: string): FullTextFilter {
-  return {type: FilterType.FullText, value}
-}
-
-export interface CompositeFilter {
-  type: FilterType.Composite
-  filters: Filter[]
-}
-export function CompositeFilter(filters: Filter[]): CompositeFilter {
-  return {type: FilterType.Composite, filters}
-}
-
-export interface ValueFilter {
-  type: FilterType.Condition
-  condition: Condition
-}
-export function ValueFilter(condition: Condition): ValueFilter {
-  return {type: FilterType.Condition, condition}
-}
-
-export type Filter = CompositeFilter | FullTextFilter | ValueFilter
+  | CompositeCondition
 
 export enum SortType {
   Date = 'date',
@@ -231,6 +211,7 @@ export interface SimpleConditionConfiguration extends BaseConditionConfiguration
     | ConditionType.DateMax
     | ConditionType.OptionalIsPresent
     | ConditionType.BoolEqual
+    | ConditionType.ExtractedStringIncludes
 }
 
 export function SimpleConditionConfiguration(

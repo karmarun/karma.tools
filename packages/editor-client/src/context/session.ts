@@ -86,7 +86,7 @@ export interface SessionContext extends EditorData {
     limit: number,
     offset: number,
     sort: Sort,
-    filters: Condition[]
+    conditions: Condition[]
   ): Promise<ModelRecord[]>
 
   getReferrers(id: Ref, limit: number, offset: number): Promise<ModelRecord[]>

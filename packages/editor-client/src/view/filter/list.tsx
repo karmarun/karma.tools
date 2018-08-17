@@ -49,6 +49,7 @@ export function renderInputForConditionConfiguration(
     case ConditionType.StringEndsWith:
     case ConditionType.StringIncludes:
     case ConditionType.StringRegExp:
+    case ConditionType.ExtractedStringIncludes:
       return <TextInput value={value} onChange={onValueChange} />
 
     case ConditionType.BoolEqual:
