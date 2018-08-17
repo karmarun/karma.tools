@@ -18,55 +18,47 @@ import {
 
 export class Panel extends React.Component {
   public render() {
-    return <div className={Panel.Style}>{this.props.children}</div>
+    return <div className={PanelStyle}>{this.props.children}</div>
   }
 }
 
-export namespace Panel {
-  export const Style = style({
-    $debugName: 'Panel',
-    flexGrow: 1,
+export const PanelStyle = style({
+  $debugName: 'Panel',
+  flexGrow: 1,
 
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    overflowY: 'scroll'
-  })
-}
+  display: 'flex',
+  flexDirection: 'column',
+  height: '100%',
+  overflowY: 'scroll'
+})
 
-export namespace PanelContent {
-  export interface Props {
-    title: React.ReactNode
-    content: React.ReactNode
-  }
+export interface PanelContentProps {
+  title: React.ReactNode
+  content: React.ReactNode
 }
 
 export class PanelContent extends React.Component {
   public render() {
-    return <div className={PanelContent.Style}>{this.props.children}</div>
+    return <div className={PanelContentStyle}>{this.props.children}</div>
   }
 }
 
-export namespace PanelContent {
-  export const Style = style({
-    $debugName: 'PanelContent',
-    padding: Spacing.large,
-    flexGrow: 1
-  })
+export const PanelContentStyle = style({
+  $debugName: 'PanelContent',
+  padding: Spacing.large,
+  flexGrow: 1
+})
+
+export interface PanelHeaderProps {
+  title?: React.ReactNode
+  description?: React.ReactNode
+  markerColor?: string
 }
 
-export namespace PanelHeader {
-  export interface Props {
-    title?: React.ReactNode
-    description?: React.ReactNode
-    markerColor?: string
-  }
-}
-
-export class PanelHeader extends React.Component<PanelHeader.Props> {
+export class PanelHeader extends React.Component<PanelHeaderProps> {
   public render() {
     return (
-      <div className={PanelHeader.Style}>
+      <div className={PanelHeaderStyle}>
         {this.props.markerColor && (
           <div className={`marker`} style={{backgroundColor: this.props.markerColor}} />
         )}
@@ -79,45 +71,43 @@ export class PanelHeader extends React.Component<PanelHeader.Props> {
   }
 }
 
-export namespace PanelHeader {
-  export const Style = style({
-    $debugName: 'PanelHeader',
+export const PanelHeaderStyle = style({
+  $debugName: 'PanelHeader',
 
-    width: '100%',
+  width: '100%',
 
-    backgroundColor: Color.neutral.light4,
-    borderBottom: solidBorderWithColor(Color.neutral.light1),
+  backgroundColor: Color.neutral.light4,
+  borderBottom: solidBorderWithColor(Color.neutral.light1),
 
-    display: 'flex',
-    flexDirection: 'row',
-    flexShrink: 0,
+  display: 'flex',
+  flexDirection: 'row',
+  flexShrink: 0,
 
-    $nest: {
-      '> .marker': {
-        width: MarkerWidth,
-        flexShrink: 0
-      },
-      '> .content': {
-        padding: Spacing.medium,
+  $nest: {
+    '> .marker': {
+      width: MarkerWidth,
+      flexShrink: 0
+    },
+    '> .content': {
+      padding: Spacing.medium,
 
-        $nest: {
-          '> .title': {
-            fontSize: FontSize.largest,
-            fontWeight: FontWeight.bold,
-            color: Color.primary.base
-          },
+      $nest: {
+        '> .title': {
+          fontSize: FontSize.largest,
+          fontWeight: FontWeight.bold,
+          color: Color.primary.base
+        },
 
-          '> .description': {
-            fontWeight: FontWeight.light,
-            color: Color.primary.base,
-            marginTop: Spacing.small,
-            $nest: {p: {margin: 0, ...marginTopExceptFirst(Spacing.small)}}
-          }
+        '> .description': {
+          fontWeight: FontWeight.light,
+          color: Color.primary.base,
+          marginTop: Spacing.small,
+          $nest: {p: {margin: 0, ...marginTopExceptFirst(Spacing.small)}}
         }
       }
     }
-  })
-}
+  }
+})
 
 export interface PanelToolbarProps {
   left?: React.ReactNode
@@ -128,7 +118,7 @@ export interface PanelToolbarProps {
 export class PanelToolbar extends React.PureComponent<PanelToolbarProps> {
   public render() {
     return (
-      <div className={PanelToolbar.Style}>
+      <div className={PanelToolbarStyle}>
         <div className="content">
           <div className="left">{this.props.left}</div>
           <div className="right">{this.props.right}</div>
@@ -140,57 +130,55 @@ export class PanelToolbar extends React.PureComponent<PanelToolbarProps> {
   }
 }
 
-export namespace PanelToolbar {
-  export const Style = style({
-    $debugName: 'PanelToolbar',
+export const PanelToolbarStyle = style({
+  $debugName: 'PanelToolbar',
 
-    position: 'sticky',
-    top: 0,
-    zIndex: 10,
+  position: 'sticky',
+  top: 0,
+  zIndex: 10,
 
-    width: '100%',
-    fontSize: FontSize.medium,
+  width: '100%',
+  fontSize: FontSize.medium,
 
-    backgroundColor: Color.neutral.light5,
-    color: Color.neutral.dark2,
+  backgroundColor: Color.neutral.light5,
+  color: Color.neutral.dark2,
 
-    $nest: {
-      '> .content': {
-        display: 'flex',
-        alignItems: 'center',
-        padding: Spacing.medium,
-        minHeight: '5rem',
+  $nest: {
+    '> .content': {
+      display: 'flex',
+      alignItems: 'center',
+      padding: Spacing.medium,
+      minHeight: '5rem',
 
-        $nest: {
-          '> .left': {
-            flexGrow: 1
-          },
+      $nest: {
+        '> .left': {
+          flexGrow: 1
+        },
 
-          '> .right': {
-            flexShrink: 0,
+        '> .right': {
+          flexShrink: 0,
 
-            display: 'flex',
-            justifyContent: 'flex-end',
+          display: 'flex',
+          justifyContent: 'flex-end',
 
-            $nest: {
-              '> *': {
-                marginRight: Spacing.largest,
-                $nest: {'&:last-child': {marginRight: 0}}
-              }
+          $nest: {
+            '> *': {
+              marginRight: Spacing.largest,
+              $nest: {'&:last-child': {marginRight: 0}}
             }
           }
         }
-      },
+      }
+    },
 
-      '> .drawer': {
-        borderTop: solidBorderWithColor(Color.neutral.light1),
-        padding: Spacing.medium
-      },
+    '> .drawer': {
+      borderTop: solidBorderWithColor(Color.neutral.light1),
+      padding: Spacing.medium
+    },
 
-      '&::after': bottomShadow(1)
-    }
-  })
-}
+    '&::after': bottomShadow(1)
+  }
+})
 
 export const enum MessageBarType {
   Success = 'success',
@@ -227,14 +215,12 @@ export const MessageBarStyle = style({
   }
 })
 
-export namespace ViewContextPanelHeader {
-  export interface Props {
-    viewContext: ViewContext
-    prefix: string
-  }
+export interface ViewContextPanelHeaderProps {
+  viewContext: ViewContext
+  prefix: string
 }
 
-export class ViewContextPanelHeader extends React.PureComponent<ViewContextPanelHeader.Props> {
+export class ViewContextPanelHeader extends React.PureComponent<ViewContextPanelHeaderProps> {
   public render() {
     const title = `${this.props.prefix} / ${this.props.viewContext.name}`
     const description = this.props.viewContext.description ? (

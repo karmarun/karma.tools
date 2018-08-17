@@ -12,7 +12,8 @@ import {
   DefaultBorderRadiusPx,
   Select,
   SelectType,
-  SearchInput
+  SearchInput,
+  SearchInputResultItem
 } from '../../ui'
 
 import * as storage from '../../util/storage'
@@ -99,7 +100,7 @@ export class SidePanel extends React.PureComponent<SidePanelProps, SidePanelStat
     this.setState({searchValue, searchResults})
   }
 
-  private handleSearchItemClick = (item: SearchInput.ResultItem) => {
+  private handleSearchItemClick = (item: SearchInputResultItem) => {
     this.setState({searchValue: '', searchResults: []})
     this.handleViewContextClick(item.href)
   }
@@ -202,7 +203,7 @@ export class SidePanel extends React.PureComponent<SidePanelProps, SidePanelStat
       )
     }
 
-    const searchInputResults: SearchInput.ResultItem[] = this.state.searchResults.map(
+    const searchInputResults: SearchInputResultItem[] = this.state.searchResults.map(
       searchResult => ({
         id: searchResult.model,
         title: searchResult.name,

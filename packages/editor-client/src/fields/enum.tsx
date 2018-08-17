@@ -24,7 +24,7 @@ import {
 
 import {FieldComponent, FieldLabel} from '../ui/field'
 import {CardSection} from '../ui/card'
-import {Select, SelectType} from '../ui/select'
+import {Select, SelectOption, SelectType} from '../ui/select'
 
 export class EnumFieldEditComponent extends React.PureComponent<
   EditComponentRenderProps<EnumField, EnumFieldValue>
@@ -41,7 +41,7 @@ export class EnumFieldEditComponent extends React.PureComponent<
   }
 
   private getFieldOptions = memoizeOne(
-    (options: EnumFieldOption[]): Select.Option[] => {
+    (options: EnumFieldOption[]): SelectOption[] => {
       return options.map(([key, label]) => ({key, label}))
     }
   )

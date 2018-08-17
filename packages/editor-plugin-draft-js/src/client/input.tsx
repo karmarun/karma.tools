@@ -113,34 +113,30 @@ export interface LinkType {
   label?: string
 }
 
-export namespace RichTextInput {
-  export interface Props {
-    onOpenBlockEditor: (key: string, data?: AnyFieldValue) => Promise<AnyFieldValue | undefined>
-    onOpenLinkEditor: (data?: AnyFieldValue) => Promise<AnyFieldValue | undefined>
-    onChange: (value: EditorState) => void
-    value: EditorState
-    disabled?: boolean
-    controls?: Set<Control>
-    styleGroups?: StyleGroup[]
-    blocks?: BlockType[]
-    links?: LinkType[]
-    elements?: CustomElement[]
-    linkEntityType: string
-    maxLength?: number
-  }
-
-  export interface State {
-    isFocused: boolean
-  }
+export interface RichTextInputProps {
+  onOpenBlockEditor: (key: string, data?: AnyFieldValue) => Promise<AnyFieldValue | undefined>
+  onOpenLinkEditor: (data?: AnyFieldValue) => Promise<AnyFieldValue | undefined>
+  onChange: (value: EditorState) => void
+  value: EditorState
+  disabled?: boolean
+  controls?: Set<Control>
+  styleGroups?: StyleGroup[]
+  blocks?: BlockType[]
+  links?: LinkType[]
+  elements?: CustomElement[]
+  linkEntityType: string
+  maxLength?: number
 }
 
-namespace CustomBlock {
-  export interface Props {
-    blockProps: {style: React.CSSProperties}
-  }
+export interface RichTextInputState {
+  isFocused: boolean
 }
 
-const CustomBlock: React.StatelessComponent<CustomBlock.Props> = props => {
+export interface CustomBlockProps {
+  blockProps: {style: React.CSSProperties}
+}
+
+const CustomBlock: React.StatelessComponent<CustomBlockProps> = props => {
   return (
     <div style={props.blockProps.style}>
       <EditorBlock {...props} />
@@ -148,16 +144,14 @@ const CustomBlock: React.StatelessComponent<CustomBlock.Props> = props => {
   )
 }
 
-namespace CustomImmutableBlock {
-  export interface Props {
-    blockProps: {
-      content?: string
-      style: React.CSSProperties
-    }
+export interface CustomImmutableBlockProps {
+  blockProps: {
+    content?: string
+    style: React.CSSProperties
   }
 }
 
-const CustomImmutableBlock: React.StatelessComponent<CustomImmutableBlock.Props> = props => {
+const CustomImmutableBlock: React.StatelessComponent<CustomImmutableBlockProps> = props => {
   return (
     <div style={{...props.blockProps.style, userSelect: 'none'}}>{props.blockProps.content}</div>
   )
@@ -225,10 +219,10 @@ const UnknownEntityRenderer: React.StatelessComponent = props => {
   return <a className={UnknownEntityRendererStyle}>{props.children}</a>
 }
 
-export class RichTextInput extends React.Component<RichTextInput.Props, RichTextInput.State> {
+export class RichTextInput extends React.Component<RichTextInputProps, RichTextInputState> {
   private editorRef!: Editor
 
-  constructor(props: RichTextInput.Props) {
+  constructor(props: RichTextInputProps) {
     super(props)
     this.state = {
       isFocused: false

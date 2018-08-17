@@ -55,18 +55,16 @@ export const FlexListStyle = style({
   }
 })
 
-export namespace FlexList {
-  export interface Props {
-    direction?: 'row' | 'column'
-    justifyContent?: 'start' | 'end'
-    alignItems?: 'start' | 'center' | 'end'
-    spacing?: 'none' | 'small' | 'medium' | 'large'
-    wrap?: boolean
-    fill?: boolean
-  }
+export interface FlexListProps {
+  direction?: 'row' | 'column'
+  justifyContent?: 'start' | 'end'
+  alignItems?: 'start' | 'center' | 'end'
+  spacing?: 'none' | 'small' | 'medium' | 'large'
+  wrap?: boolean
+  fill?: boolean
 }
 
-export const FlexList: React.StatelessComponent<FlexList.Props> = props => {
+export const FlexList: React.StatelessComponent<FlexListProps> = props => {
   return (
     <div
       className={FlexListStyle}
@@ -85,14 +83,12 @@ export const FlexItemStyle = style({
   $debugName: 'FlexItem'
 })
 
-export namespace FlexItem {
-  export interface Props {
-    grow?: number
-    shrink?: number
-  }
+export interface FlexItemProps {
+  grow?: number
+  shrink?: number
 }
 
-export const FlexItem: React.StatelessComponent<FlexItem.Props> = props => {
+export const FlexItem: React.StatelessComponent<FlexItemProps> = props => {
   return (
     <div className={FlexItemStyle} style={{flexGrow: props.grow, flexShrink: props.shrink}}>
       {props.children}

@@ -54,11 +54,11 @@ export const SelectStyle = style({
   }
 })
 
-function isOptionGroup(option: Select.Option): option is Select.OptionGroup {
+function isOptionGroup(option: SelectOption): option is SelectOptionGroup {
   return Array.isArray((option as any).options)
 }
 
-function renderOptionGroup(optionGroup: Select.OptionGroup) {
+function renderOptionGroup(optionGroup: SelectOptionGroup) {
   return (
     <optgroup key={optionGroup.key} label={optionGroup.label}>
       {optionGroup.options.map(option => renderOptionEntry(option))}
@@ -66,7 +66,7 @@ function renderOptionGroup(optionGroup: Select.OptionGroup) {
   )
 }
 
-function renderOptionEntry(optionEntry: Select.OptionEntry) {
+function renderOptionEntry(optionEntry: SelectOptionEntry) {
   return (
     <option key={optionEntry.key} value={optionEntry.key} disabled={optionEntry.disabled}>
       {'\u00a0\u00a0'.repeat(optionEntry.depth || 0)}
@@ -80,35 +80,33 @@ export const enum SelectType {
   Transparent = 'transparent'
 }
 
-export namespace Select {
-  export interface OptionGroup {
-    key: string
-    label: string
-    options: OptionEntry[]
-  }
-
-  export interface OptionEntry {
-    key: string
-    label: string
-    disabled?: boolean
-    depth?: number
-  }
-
-  export type Option = OptionGroup | OptionEntry
-
-  export interface Props {
-    type?: SelectType
-    options: Option[]
-    disableUnselectedOption?: boolean
-    unselectedLabel?: string
-    value?: string | undefined
-    disabled?: boolean
-    id?: string | number
-    onChange: (key: string | undefined, id?: string | number) => void
-  }
+export interface SelectOptionGroup {
+  key: string
+  label: string
+  options: SelectOptionEntry[]
 }
 
-export class Select extends React.PureComponent<Select.Props> {
+export interface SelectOptionEntry {
+  key: string
+  label: string
+  disabled?: boolean
+  depth?: number
+}
+
+export type SelectOption = SelectOptionGroup | SelectOptionEntry
+
+export interface SelectProps {
+  type?: SelectType
+  options: SelectOption[]
+  disableUnselectedOption?: boolean
+  unselectedLabel?: string
+  value?: string | undefined
+  disabled?: boolean
+  id?: string | number
+  onChange: (key: string | undefined, id?: string | number) => void
+}
+
+export class Select extends React.PureComponent<SelectProps> {
   private handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (e.currentTarget.value === '') {
       this.props.onChange(undefined, this.props.id)
@@ -124,10 +122,10 @@ export class Select extends React.PureComponent<Select.Props> {
     switch (this.props.type) {
       default:
       case SelectType.Light:
-        style = Select.LightStyle
+        style = SelectLightStyle
         break
       case SelectType.Transparent:
-        style = Select.TransparentStyle
+        style = SelectTransparentStyle
         break
     }
 
@@ -148,18 +146,16 @@ export class Select extends React.PureComponent<Select.Props> {
   }
 }
 
-export namespace Select {
-  export const LightStyle = style({
-    $debugName: 'SelectLight',
-    backgroundColor: Color.primary.light5,
-    color: Color.primary.base
-  })
+export const SelectLightStyle = style({
+  $debugName: 'SelectLight',
+  backgroundColor: Color.primary.light5,
+  color: Color.primary.base
+})
 
-  export const TransparentStyle = style({
-    $debugName: 'SelectTransparent',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    color: Color.primary.base,
-    padding: '0.4rem 1rem',
-    paddingRight: '2.6rem'
-  })
-}
+export const SelectTransparentStyle = style({
+  $debugName: 'SelectTransparent',
+  backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  color: Color.primary.base,
+  padding: '0.4rem 1rem',
+  paddingRight: '2.6rem'
+})

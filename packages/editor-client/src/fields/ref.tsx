@@ -23,7 +23,7 @@ import {FieldComponent, FieldLabel} from '../ui/field'
 import {CardSection, Card, CardFooter} from '../ui/card'
 import {withSession, SessionContext, ModelRecord} from '../context/session'
 import {LocaleContext, withLocale} from '../context/locale'
-import {LoadingIndicator, LoadingIndicatorStyle} from '../ui/loader'
+import {LoadingIndicator, LoadingIndicatorType} from '../ui/loader'
 import {DescriptionView} from '../ui/descriptionView'
 import {Button, ButtonType} from '../ui/button'
 import {IconName} from '../ui/icon'
@@ -128,7 +128,7 @@ export class RefFieldEditComponent extends React.PureComponent<
     } else if (this.state.isLoadingRecord) {
       content = (
         <CardSection>
-          <LoadingIndicator style={LoadingIndicatorStyle.Dark} />
+          <LoadingIndicator style={LoadingIndicatorType.Dark} />
         </CardSection>
       )
     } else if (record) {

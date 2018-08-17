@@ -37,64 +37,58 @@ const LoaderIcon: React.StatelessComponent = () => (
   </svg>
 )
 
-export enum LoadingIndicatorStyle {
+export enum LoadingIndicatorType {
   Light = 'light',
   Dark = 'dark'
 }
 
-export namespace LoadingIndicator {
-  export interface Props {
-    style?: LoadingIndicatorStyle
-  }
+export interface LoadingIndicatorProps {
+  style?: LoadingIndicatorType
 }
 
-export class LoadingIndicator extends React.Component<LoadingIndicator.Props> {
+export class LoadingIndicator extends React.Component<LoadingIndicatorProps> {
   public render() {
     return (
       <div
-        className={LoadingIndicator.Style}
-        data-style={this.props.style || LoadingIndicatorStyle.Light}>
+        className={LoadingIndicatorStyle}
+        data-style={this.props.style || LoadingIndicatorType.Light}>
         <LoaderIcon />
       </div>
     )
   }
 }
 
-export namespace LoadingIndicator {
-  export const Style = style({
-    $debugName: 'LoadingIndicator',
+export const LoadingIndicatorStyle = style({
+  $debugName: 'LoadingIndicator',
 
-    $nest: {
-      '&[data-style="light"] svg path, &[data-style="light"] svg rect': {
-        fill: Color.neutral.white
-      },
+  $nest: {
+    '&[data-style="light"] svg path, &[data-style="light"] svg rect': {
+      fill: Color.neutral.white
+    },
 
-      '&[data-style="dark"] svg path, &[data-style="dark"] svg rect': {
-        fill: Color.neutral.dark2
-      }
+    '&[data-style="dark"] svg path, &[data-style="dark"] svg rect': {
+      fill: Color.neutral.dark2
     }
-  })
-}
+  }
+})
 
-export class CenteredLoadingIndicator extends React.Component<LoadingIndicator.Props> {
+export class CenteredLoadingIndicator extends React.Component<LoadingIndicatorProps> {
   public render() {
     return (
-      <div className={CenteredLoadingIndicator.Style}>
+      <div className={CenteredLoadingIndicatorStyle}>
         <LoadingIndicator style={this.props.style} />
       </div>
     )
   }
 }
 
-export namespace CenteredLoadingIndicator {
-  export const Style = style({
-    $debugName: 'CenteredLoadingIndicator',
+export const CenteredLoadingIndicatorStyle = style({
+  $debugName: 'CenteredLoadingIndicator',
 
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
 
-    width: '100%',
-    height: '100%'
-  })
-}
+  width: '100%',
+  height: '100%'
+})

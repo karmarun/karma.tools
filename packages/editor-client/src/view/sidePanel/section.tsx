@@ -1,7 +1,7 @@
 import * as React from 'react'
 
 import {style} from 'typestyle'
-import {Icon, IconName, Color, Spacing, FontWeight} from '../../ui'
+import {Icon, IconName, Color, Spacing, FontWeight, IconStyle} from '../../ui'
 
 export interface SidePanelSectionItem {
   id: string
@@ -44,7 +44,7 @@ export class SidePanelSection extends React.Component<SidePanelSectionProps> {
     }
 
     return (
-      <div className={SidePanelSection.Style}>
+      <div className={SidePanelSectionStyle}>
         <div className="header" onClick={this.handleHeaderClick}>
           <Icon name={this.props.isOpen ? IconName.SectionCollapse : IconName.SectionUncollapse} />
           {this.props.label}
@@ -55,51 +55,49 @@ export class SidePanelSection extends React.Component<SidePanelSectionProps> {
   }
 }
 
-export namespace SidePanelSection {
-  export const Style = style({
-    $debugName: 'SidePanelSection',
+export const SidePanelSectionStyle = style({
+  $debugName: 'SidePanelSection',
 
-    marginBottom: Spacing.larger,
-    fontSize: '1.6rem',
+  marginBottom: Spacing.larger,
+  fontSize: '1.6rem',
 
-    $nest: {
-      '> .header': {
-        display: 'flex',
-        alignItems: 'center',
-        cursor: 'pointer',
-        fontWeight: FontWeight.medium,
+  $nest: {
+    '> .header': {
+      display: 'flex',
+      alignItems: 'center',
+      cursor: 'pointer',
+      fontWeight: FontWeight.medium,
 
-        $nest: {
-          [`> .${Icon.Style}`]: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            fill: Color.neutral.white,
-            marginRight: Spacing.medium
-          }
+      $nest: {
+        [`> .${IconStyle}`]: {
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          fill: Color.neutral.white,
+          marginRight: Spacing.medium
         }
-      },
+      }
+    },
 
-      '> .itemWrapper': {
-        marginTop: Spacing.large,
-        paddingLeft: Spacing.largest,
+    '> .itemWrapper': {
+      marginTop: Spacing.large,
+      paddingLeft: Spacing.largest,
 
-        $nest: {
-          '> .content': {
-            display: 'flex',
-            flexDirection: 'column',
+      $nest: {
+        '> .content': {
+          display: 'flex',
+          flexDirection: 'column',
 
-            $nest: {
-              '> .item': {
-                fontSize: '0.9em',
-                marginBottom: Spacing.medium,
-                width: '100%',
-                opacity: 0.5,
+          $nest: {
+            '> .item': {
+              fontSize: '0.9em',
+              marginBottom: Spacing.medium,
+              width: '100%',
+              opacity: 0.5,
 
-                $nest: {
-                  '&[href]': {
-                    opacity: 1
-                  }
+              $nest: {
+                '&[href]': {
+                  opacity: 1
                 }
               }
             }
@@ -107,5 +105,5 @@ export namespace SidePanelSection {
         }
       }
     }
-  })
-}
+  }
+})

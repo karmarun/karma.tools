@@ -15,17 +15,20 @@ import {
 } from '@karma.run/editor-common'
 
 import {Spacing, marginLeftExceptFirst} from '../../ui/style'
+
 import {
   InputStyle,
   Button,
   Select,
+  SelectOption,
   ButtonType,
   IconName,
   TextInput,
   CheckboxInput,
   NumberInput,
   DateTimeInput,
-  FlexList
+  FlexList,
+  ButtonStyle
 } from '../../ui'
 
 // import {FilterRow, FilterRowStyle} from './filterRow'
@@ -142,7 +145,7 @@ export const FilterRowStyle = style({
       display: 'flex',
 
       $nest: {
-        [`> .${Button.Style}`]: marginLeftExceptFirst(Spacing.medium)
+        [`> .${ButtonStyle}`]: marginLeftExceptFirst(Spacing.medium)
       }
     },
 
@@ -257,7 +260,7 @@ export class FilterRow extends React.Component<FilterRowProps> {
           label: `${configuration.label} (${configuration.type})`,
           depth: configuration.depth,
           disabled: configuration.conditions.length === 0
-        } as Select.Option)
+        } as SelectOption)
     )
   })
 
@@ -272,7 +275,7 @@ export class FilterRow extends React.Component<FilterRowProps> {
           ({
             key: condition.type,
             label: labelForCondition(condition.type)
-          } as Select.Option)
+          } as SelectOption)
       )
     }
   )

@@ -51,6 +51,30 @@ export interface ListFieldItemProps {
   onRemove: (index: number) => void
 }
 
+export const ListFieldItemStyle = style({
+  $debugName: 'ListFieldItem',
+  marginTop: Spacing.small,
+
+  $nest: {
+    '> .header': {
+      display: 'flex',
+      padding: Spacing.medium,
+      color: Color.neutral.dark1,
+      fontStyle: 'italic',
+
+      $nest: {
+        Button: {
+          marginLeft: Spacing.small
+        }
+      }
+    },
+
+    '&:first-child': {
+      marginTop: 0
+    }
+  }
+})
+
 export class ListFieldItem extends React.Component<ListFieldItemProps> {
   public render() {
     const headerStyle: React.CSSProperties = {
@@ -58,7 +82,7 @@ export class ListFieldItem extends React.Component<ListFieldItemProps> {
     }
 
     return (
-      <div className={ListFieldItem.Style}>
+      <div className={ListFieldItemStyle}>
         <div className="header" style={headerStyle}>
           {this.props.label}
           <FlexFiller />
@@ -105,32 +129,6 @@ export class ListFieldItem extends React.Component<ListFieldItemProps> {
       </div>
     )
   }
-}
-
-export namespace ListFieldItem {
-  export const Style = style({
-    $debugName: 'ListFieldItem',
-    marginTop: Spacing.small,
-
-    $nest: {
-      '> .header': {
-        display: 'flex',
-        padding: Spacing.medium,
-        color: Color.neutral.dark1,
-        fontStyle: 'italic',
-
-        $nest: {
-          Button: {
-            marginLeft: Spacing.small
-          }
-        }
-      },
-
-      '&:first-child': {
-        marginTop: 0
-      }
-    }
-  })
 }
 
 export class ListFieldEditComponent extends React.PureComponent<

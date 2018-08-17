@@ -14,23 +14,21 @@ import {
 
 import {Markdown} from './markdown'
 
-export namespace FieldComponent {
-  export interface Props {
-    className?: string
-    depth: number
-    index: number
-  }
+export interface FieldComponentProps {
+  className?: string
+  depth: number
+  index: number
 }
 
-export class FieldComponent extends React.Component<FieldComponent.Props> {
+export class FieldComponent extends React.Component<FieldComponentProps> {
   public render() {
     const style: React.CSSProperties = {
       backgroundColor: fieldColorForDepthAndIndex(this.props.depth, this.props.index)
     }
 
     const classname = classNames(
-      FieldComponent.Style,
-      this.props.depth === 0 ? FieldComponent.RootStyle : undefined,
+      FieldComponentStyle,
+      this.props.depth === 0 ? FieldComponentRootStyle : undefined,
       this.props.className
     )
 
@@ -42,45 +40,41 @@ export class FieldComponent extends React.Component<FieldComponent.Props> {
   }
 }
 
-export namespace FieldComponent {
-  export const Style = style({
-    $debugName: 'Field',
-    padding: Spacing.medium,
-    color: Color.primary.base
-  })
+export const FieldComponentStyle = style({
+  $debugName: 'Field',
+  padding: Spacing.medium,
+  color: Color.primary.base
+})
 
-  export const RootStyle = style({
-    $debugName: 'RootField',
-    marginTop: Spacing.medium,
-    borderRadius: DefaultBorderRadiusPx,
+export const FieldComponentRootStyle = style({
+  $debugName: 'RootField',
+  marginTop: Spacing.medium,
+  borderRadius: DefaultBorderRadiusPx,
 
-    $nest: {
-      '&:first-child': {
-        marginTop: 0,
-        borderTopLeftRadius: DefaultBorderRadiusPx,
-        borderTopRightRadius: DefaultBorderRadiusPx
-      },
+  $nest: {
+    '&:first-child': {
+      marginTop: 0,
+      borderTopLeftRadius: DefaultBorderRadiusPx,
+      borderTopRightRadius: DefaultBorderRadiusPx
+    },
 
-      '&:last-child': {
-        borderBottomLeftRadius: DefaultBorderRadiusPx,
-        borderBottomRightRadius: DefaultBorderRadiusPx
-      }
+    '&:last-child': {
+      borderBottomLeftRadius: DefaultBorderRadiusPx,
+      borderBottomRightRadius: DefaultBorderRadiusPx
     }
-  })
-}
-
-export namespace FieldLabel {
-  export interface Props {
-    label?: string
-    description?: string
-    depth: number
-    index: number
-    leftContent?: React.ReactNode
-    rightContent?: React.ReactNode
   }
+})
+
+export interface FieldLabelProps {
+  label?: string
+  description?: string
+  depth: number
+  index: number
+  leftContent?: React.ReactNode
+  rightContent?: React.ReactNode
 }
 
-export class FieldLabel extends React.Component<FieldLabel.Props> {
+export class FieldLabel extends React.Component<FieldLabelProps> {
   public render() {
     if (
       !this.props.label &&
@@ -92,7 +86,7 @@ export class FieldLabel extends React.Component<FieldLabel.Props> {
     }
 
     return (
-      <div className={FieldLabel.Style}>
+      <div className={FieldLabelStyle}>
         {this.props.leftContent && <div className="leftContent">{this.props.leftContent}</div>}
         <div className="content">
           {this.props.label && <div className="label">{this.props.label}</div>}
@@ -108,75 +102,69 @@ export class FieldLabel extends React.Component<FieldLabel.Props> {
   }
 }
 
-export namespace FieldLabel {
-  export const Style = style({
-    $debugName: 'FieldLabel',
-    display: 'flex',
-    marginBottom: Spacing.medium,
+export const FieldLabelStyle = style({
+  $debugName: 'FieldLabel',
+  display: 'flex',
+  marginBottom: Spacing.medium,
 
-    $nest: {
-      '> .leftContent': {
-        marginRight: Spacing.medium
-      },
+  $nest: {
+    '> .leftContent': {
+      marginRight: Spacing.medium
+    },
 
-      '> .rightContent': {
-        marginLeft: Spacing.medium
-      },
+    '> .rightContent': {
+      marginLeft: Spacing.medium
+    },
 
-      '> .content': {
-        flexGrow: 1,
+    '> .content': {
+      flexGrow: 1,
 
-        $nest: {
-          '> .label': {
-            color: Color.primary.base,
-            fontWeight: FontWeight.bold,
-            fontSize: '1.5rem'
-          },
-          '> .description': {
-            color: Color.neutral.dark2,
-            fontSize: FontSize.small,
-            fontWeight: FontWeight.medium,
-            marginTop: Spacing.small
-          }
+      $nest: {
+        '> .label': {
+          color: Color.primary.base,
+          fontWeight: FontWeight.bold,
+          fontSize: '1.5rem'
+        },
+        '> .description': {
+          color: Color.neutral.dark2,
+          fontSize: FontSize.small,
+          fontWeight: FontWeight.medium,
+          marginTop: Spacing.small
         }
-      },
+      }
+    },
 
-      '&:only-child': {marginBottom: 0}
-    }
-  })
-}
+    '&:only-child': {marginBottom: 0}
+  }
+})
 
 export class FieldInset extends React.Component {
   public render() {
     if (this.props.children == undefined) return null
 
-    return <div className={FieldInset.Style}>{this.props.children}</div>
+    return <div className={FieldInsetStyle}>{this.props.children}</div>
   }
 }
 
-export namespace FieldInset {
-  export const Style = style({
-    $debugName: 'FieldInset',
-    marginLeft: Spacing.medium,
-    position: 'relative',
+export const FieldInsetStyle = style({
+  $debugName: 'FieldInset',
+  marginLeft: Spacing.medium,
+  position: 'relative',
 
-    $nest: {...innerShadow()}
-  })
+  $nest: {...innerShadow()}
+})
+
+export interface FieldWrapperProps {
+  className?: string
+  depth: number
+  index: number
 }
 
-export namespace FieldWrapper {
-  export interface Props {
-    className?: string
-    depth: number
-    index: number
-  }
-}
-
-export class FieldWrapper extends React.Component<FieldWrapper.Props> {
+export class FieldWrapper extends React.Component<FieldWrapperProps> {
   public render() {
     const classname = classNames(
-      FieldWrapper.Style,
-      this.props.depth === 0 ? FieldWrapper.RootStyle : undefined,
+      FieldWrapperStyle,
+      this.props.depth === 0 ? FieldWrapperRootStyle : undefined,
       this.props.className
     )
 
@@ -184,49 +172,45 @@ export class FieldWrapper extends React.Component<FieldWrapper.Props> {
   }
 }
 
-export namespace FieldWrapper {
-  export const Style = style({
-    $debugName: 'FieldWrapper',
-    $nest: {
-      [`&:last-child > .${FieldInset.Style}::after`]: {
-        content: 'none'
-      }
+export const FieldWrapperStyle = style({
+  $debugName: 'FieldWrapper',
+  $nest: {
+    [`&:last-child > .${FieldInsetStyle}::after`]: {
+      content: 'none'
     }
-  })
-
-  export const RootStyle = style({
-    $debugName: 'RootFieldWrapper',
-    marginTop: Spacing.medium,
-
-    $nest: {
-      '&:first-child': {
-        marginTop: 0
-      },
-
-      [`> .${FieldComponent.RootStyle}:first-child`]: {
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0
-      },
-
-      [`> .${FieldComponent.RootStyle}:last-child`]: {
-        borderRadius: DefaultBorderRadiusPx
-      }
-    }
-  })
-}
-
-export namespace FieldErrors {
-  export interface Props {
-    errors?: string[]
   }
+})
+
+export const FieldWrapperRootStyle = style({
+  $debugName: 'RootFieldWrapper',
+  marginTop: Spacing.medium,
+
+  $nest: {
+    '&:first-child': {
+      marginTop: 0
+    },
+
+    [`> .${FieldComponentRootStyle}:first-child`]: {
+      borderBottomLeftRadius: 0,
+      borderBottomRightRadius: 0
+    },
+
+    [`> .${FieldComponentRootStyle}:last-child`]: {
+      borderRadius: DefaultBorderRadiusPx
+    }
+  }
+})
+
+export interface FieldErrorsProps {
+  errors?: string[]
 }
 
-export class FieldErrors extends React.Component<FieldErrors.Props> {
+export class FieldErrors extends React.Component<FieldErrorsProps> {
   public render() {
     if (!this.props.errors || this.props.errors.length === 0) return null
 
     return (
-      <div className={FieldErrors.Style}>
+      <div className={FieldErrorsStyle}>
         {this.props.errors.map(error => {
           return <div key={error}>{error}</div>
         })}
@@ -235,19 +219,17 @@ export class FieldErrors extends React.Component<FieldErrors.Props> {
   }
 }
 
-export namespace FieldErrors {
-  export const Style = style({
-    $debugName: 'FieldErrors',
+export const FieldErrorsStyle = style({
+  $debugName: 'FieldErrors',
 
-    padding: Spacing.medium,
-    marginTop: Spacing.medium,
+  padding: Spacing.medium,
+  marginTop: Spacing.medium,
 
-    border: `1px solid ${Color.error.light1}`,
-    backgroundColor: Color.error.light2,
-    color: Color.error.dark1,
+  border: `1px solid ${Color.error.light1}`,
+  backgroundColor: Color.error.light2,
+  color: Color.error.dark1,
 
-    $nest: {
-      '&:first-child': {marginTop: 0}
-    }
-  })
-}
+  $nest: {
+    '&:first-child': {marginTop: 0}
+  }
+})
