@@ -275,7 +275,7 @@ export interface NotFn {
 }
 
 export interface SwitchCaseFn {
-  switchCase: [Expression, ObjectMap<FuncExpression>]
+  switchCase: [Expression, ObjectMap<FunctionFn>]
 }
 
 export interface SwitchModelRefFn {
@@ -294,11 +294,11 @@ export interface AllFn {
 }
 
 export interface CreateFn {
-  create: [Expression, FuncExpression]
+  create: [Expression, FunctionFn]
 }
 
 export interface CreateMultipleFn {
-  createMultiple: [Expression, ObjectMap<FuncExpression>]
+  createMultiple: [Expression, ObjectMap<FunctionFn>]
 }
 
 export interface DeleteFn {
@@ -374,7 +374,7 @@ export interface ConcatListsFn {
 }
 
 export interface FilterListFn {
-  filterList: [Expression, FuncExpression]
+  filterList: [Expression, FunctionFn]
 }
 
 export interface FirstFn {
@@ -386,7 +386,7 @@ export interface InListFn {
 }
 
 export interface MapListFn {
-  mapList: [Expression, FuncExpression]
+  mapList: [Expression, FunctionFn]
 }
 
 export interface LengthFn {
@@ -394,11 +394,11 @@ export interface LengthFn {
 }
 
 export interface MemSortFn {
-  memSort: [Expression, FuncExpression]
+  memSort: [Expression, FunctionFn]
 }
 
 export interface MemSortFunctionFn {
-  memSortFunction: [Expression, FuncExpression]
+  memSortFunction: [Expression, FunctionFn]
 }
 
 export interface ReverseListFn {
@@ -413,16 +413,16 @@ export interface ReduceListFn {
   reduceList: {
     initial: Expression
     value: Expression
-    reducer: FuncExpression
+    reducer: FunctionFn
   }
 }
 
 export interface RightFoldListFn {
-  rightFoldList: [Expression, Expression, FuncExpression]
+  rightFoldList: [Expression, Expression, FunctionFn]
 }
 
 export interface LeftFoldListFn {
-  leftFoldList: [Expression, Expression, FuncExpression]
+  leftFoldList: [Expression, Expression, FunctionFn]
 }
 
 // Struct
@@ -462,7 +462,7 @@ export interface KeyFn {
 }
 
 export interface MapMapFn {
-  mapMap: [Expression, FuncExpression]
+  mapMap: [Expression, FunctionFn]
 }
 
 export interface SetKeyFn {
@@ -473,7 +473,7 @@ export interface SetKeyFn {
 // ---
 
 export interface MapSetFn {
-  mapSet: [Expression, FuncExpression]
+  mapSet: [Expression, FunctionFn]
 }
 
 // Optional
@@ -552,7 +552,7 @@ export interface DataFn {
 }
 
 export interface WithFn {
-  with: [Expression, FuncExpression]
+  with: [Expression, FunctionFn]
 }
 
 export interface DefineFn {
@@ -564,7 +564,7 @@ export interface ScopeFn {
 }
 
 export interface SignatureFn {
-  signature: FuncExpression
+  signature: FunctionFn
 }
 
 // Other
@@ -773,6 +773,7 @@ export type Expression =
   | MapListFn
   | LengthFn
   | MemSortFn
+  | MemSortFunctionFn
   | ReverseListFn
   | SliceFn
   | ReduceListFn
@@ -871,7 +872,6 @@ export type Expression =
   | FloatToIntFn
   | IntToFloatFn
 
-export type FuncExpression = FunctionFn
 export type StringExpression = string | Expression
 export type NumberExpression = number | Expression
 export type DateExpression = string | number | Date | Expression

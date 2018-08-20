@@ -2,12 +2,10 @@ import * as t from './types'
 
 import {
   buildExpression as build,
-  ExpressionContext,
   ModelContext,
-  createContext,
-  DataContext
+  BuilderExpressionContext,
+  BuilderDataContext
 } from './builder'
-
 import {mapObject, ObjectMap} from './util'
 
 export const enum DefaultTags {
@@ -42,8 +40,8 @@ export function createRef(model: string, id: string): t.Ref {
 }
 
 export function createModel(
-  creator: (m: ModelContext, d: DataContext, ref: t.ScopeFn) => t.DataExpression,
-  context: ExpressionContext = createContext()
+  creator: (m: ModelContext, d: BuilderDataContext, ref: t.ScopeFn) => t.DataExpression,
+  context: BuilderExpressionContext = new BuilderExpressionContext()
 ) {
   return build(
     e => e.create(e.tag(DefaultTags.Model), ref => context.data((d, m) => creator(m, d, ref))),
@@ -54,7 +52,7 @@ export function createModel(
 export function createTag(
   tag: string,
   model: t.Expression,
-  context: ExpressionContext = createContext()
+  context: BuilderExpressionContext = new BuilderExpressionContext()
 ) {
   return build(
     e =>
@@ -79,8 +77,10 @@ export function getModels() {
 }
 
 export function createModels(
-  creators: ObjectMap<(m: ModelContext, d: DataContext, refs: t.ScopeFn) => t.DataExpression>,
-  context: ExpressionContext = createContext()
+  creators: ObjectMap<
+    (m: ModelContext, d: BuilderDataContext, refs: t.ScopeFn) => t.DataExpression
+  >,
+  context: BuilderExpressionContext = new BuilderExpressionContext()
 ) {
   const functions = mapObject(creators, creator => (refs: t.ScopeFn) =>
     context.data((d, m) => creator(m, d, refs))

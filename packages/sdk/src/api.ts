@@ -1,5 +1,5 @@
 import axios, {AxiosError} from 'axios'
-import {FuncExpression, Ref} from './types'
+import {Ref, FunctionFn} from './types'
 import {ObjectMap} from './util'
 import {isRef} from './helpers'
 
@@ -140,7 +140,7 @@ async function binaryGetRequest(url: string, signature?: string, codec = Codec.J
 export async function query(
   url: string,
   signature: string,
-  expression: FuncExpression,
+  expression: FunctionFn,
   codec = Codec.JSON
 ) {
   return await postRequest(url, expression, signature, codec)
@@ -208,7 +208,7 @@ export class Client {
     this.codec = codec
   }
 
-  public query(expression: FuncExpression) {
+  public query(expression: FunctionFn) {
     if (!this.signature) throw new Error("Can't query without session!")
     return query(this.url, this.signature, expression, this.codec)
   }
