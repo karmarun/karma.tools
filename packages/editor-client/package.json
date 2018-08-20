@@ -1,6 +1,6 @@
 {
   "name": "@karma.run/editor-client",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "main": "./lib/cjs/index.js",
   "module": "./lib/es6/index.js",
   "types": "./lib/types/index.d.ts",
@@ -21,7 +21,7 @@
     "prepare": "run-s clean copy:license build"
   },
   "dependencies": {
-    "@karma.run/editor-common": "^0.13.0",
+    "@karma.run/editor-common": "^0.14.0",
     "@karma.run/sdk": "^0.5.0-beta.0",
     "axios": "^0.18.0",
     "classnames": "^2.2.5",
