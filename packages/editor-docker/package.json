@@ -7,6 +7,7 @@
     "start": "karma-editor server"
   },
   "dependencies": {
-    "@karma.run/editor": "^0.14.0"
+    "@karma.run/editor": "^0.14.0",
+    "@karma.run/editor-plugin-media": "^0.14.0"
   }
 }
