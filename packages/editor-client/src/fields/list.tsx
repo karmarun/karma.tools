@@ -10,8 +10,11 @@ import {
   SortConfiguration,
   FilterConfiguration,
   ValuePath,
-  ValuePathSegmentType,
-  flatMap
+  flatMap,
+  SimpleConditionConfiguration,
+  ConditionType,
+  filterConfigurationPrependPath,
+  ListPathSegment
 } from '@karma.run/editor-common'
 
 import {
@@ -47,6 +50,30 @@ export interface ListFieldItemProps {
   onRemove: (index: number) => void
 }
 
+export const ListFieldItemStyle = style({
+  $debugName: 'ListFieldItem',
+  marginTop: Spacing.small,
+
+  $nest: {
+    '> .header': {
+      display: 'flex',
+      padding: Spacing.medium,
+      color: Color.neutral.dark1,
+      fontStyle: 'italic',
+
+      $nest: {
+        Button: {
+          marginLeft: Spacing.small
+        }
+      }
+    },
+
+    '&:first-child': {
+      marginTop: 0
+    }
+  }
+})
+
 export class ListFieldItem extends React.Component<ListFieldItemProps> {
   public render() {
     const headerStyle: React.CSSProperties = {
@@ -54,7 +81,7 @@ export class ListFieldItem extends React.Component<ListFieldItemProps> {
     }
 
     return (
-      <div className={ListFieldItem.Style}>
+      <div className={ListFieldItemStyle}>
         <div className="header" style={headerStyle}>
           {this.props.label}
           <FlexFiller />
@@ -103,32 +130,6 @@ export class ListFieldItem extends React.Component<ListFieldItemProps> {
   }
 }
 
-export namespace ListFieldItem {
-  export const Style = style({
-    $debugName: 'ListFieldItem',
-    marginTop: Spacing.small,
-
-    $nest: {
-      '> .header': {
-        display: 'flex',
-        padding: Spacing.medium,
-        color: Color.neutral.dark1,
-        fontStyle: 'italic',
-
-        $nest: {
-          Button: {
-            marginLeft: Spacing.small
-          }
-        }
-      },
-
-      '&:first-child': {
-        marginTop: 0
-      }
-    }
-  })
-}
-
 export class ListFieldEditComponent extends React.PureComponent<
   EditComponentRenderProps<ListField, ListFieldValue>
 > {
@@ -142,7 +143,8 @@ export class ListFieldEditComponent extends React.PureComponent<
         value: Object.assign([...this.props.value.value], {
           [index]: {...this.props.value.value[index], value}
         }),
-        isValid: true
+        isValid: true,
+        hasChanges: true
       },
       this.props.changeKey
     )
@@ -158,7 +160,14 @@ export class ListFieldEditComponent extends React.PureComponent<
       value: this.props.field.field.defaultValue
     })
 
-    this.props.onValueChange({value: newValue, isValid: true}, this.props.changeKey)
+    this.props.onValueChange(
+      {
+        value: newValue,
+        isValid: true,
+        hasChanges: true
+      },
+      this.props.changeKey
+    )
   }
 
   public removeValueAt(index: number) {
@@ -167,7 +176,14 @@ export class ListFieldEditComponent extends React.PureComponent<
     const newValue = [...this.props.value.value]
     newValue.splice(index, 1)
 
-    this.props.onValueChange({value: newValue, isValid: true}, this.props.changeKey)
+    this.props.onValueChange(
+      {
+        value: newValue,
+        isValid: true,
+        hasChanges: true
+      },
+      this.props.changeKey
+    )
   }
 
   private moveFieldToIndex(index: number, toIndex: number) {
@@ -178,7 +194,14 @@ export class ListFieldEditComponent extends React.PureComponent<
     const moveValue = newValue.splice(index, 1)
     newValue.splice(toIndex, 0, ...moveValue)
 
-    this.props.onValueChange({value: newValue, isValid: true}, this.props.changeKey)
+    this.props.onValueChange(
+      {
+        value: newValue,
+        isValid: true,
+        hasChanges: true
+      },
+      this.props.changeKey
+    )
   }
 
   private handleInsertFieldAt = (index: number) => {
@@ -282,9 +305,10 @@ export class ListField implements Field<ListFieldValue> {
   public readonly label?: string
   public readonly description?: string
 
-  public readonly defaultValue: ListFieldValue = {value: [], isValid: true}
+  public readonly defaultValue: ListFieldValue = {value: [], isValid: true, hasChanges: false}
   public readonly sortConfigurations: SortConfiguration[] = []
-  public readonly filterConfigurations: FilterConfiguration[] = []
+
+  public filterConfigurations!: FilterConfiguration[]
 
   public readonly field: AnyField
 
@@ -296,6 +320,18 @@ export class ListField implements Field<ListFieldValue> {
 
   public initialize(recursions: ReadonlyMap<string, AnyField>) {
     this.field.initialize(recursions)
+
+    this.filterConfigurations = [
+      FilterConfiguration(ListField.type, ListField.type, this.label, [
+        SimpleConditionConfiguration(ConditionType.ListLengthEqual),
+        SimpleConditionConfiguration(ConditionType.ListLengthMin),
+        SimpleConditionConfiguration(ConditionType.ListLengthMax)
+      ]),
+      ...this.field.filterConfigurations.map(config =>
+        filterConfigurationPrependPath(config, ListField.type, [ListPathSegment()])
+      )
+    ]
+
     return this
   }
 
@@ -321,7 +357,8 @@ export class ListField implements Field<ListFieldValue> {
         key,
         value: this.field.transformRawValue(value)
       })),
-      isValid: true
+      isValid: true,
+      hasChanges: false
     }
   }
 
@@ -344,7 +381,7 @@ export class ListField implements Field<ListFieldValue> {
   }
 
   public valuePathForKeyPath(keyPath: KeyPath): ValuePath {
-    return [{type: ValuePathSegmentType.Map}, ...this.field.valuePathForKeyPath(keyPath.slice(1))]
+    return [ListPathSegment(), ...this.field.valuePathForKeyPath(keyPath.slice(1))]
   }
 
   public valuesForKeyPath(value: ListFieldValue, keyPath: KeyPath) {
@@ -359,7 +396,7 @@ export class ListField implements Field<ListFieldValue> {
       newValue.push({id, value: await this.field.onSave(mapValue, context)})
     }
 
-    return {value: newValue, isValid: true}
+    return {value: newValue, isValid: true, hasChanges: true}
   }
 
   public async onDelete(value: ListFieldValue, context: DeleteContext): Promise<ListFieldValue> {
@@ -370,7 +407,7 @@ export class ListField implements Field<ListFieldValue> {
       newValue.push({id, value: await this.field.onDelete(mapValue, context)})
     }
 
-    return {value: newValue, isValid: true}
+    return {value: newValue, isValid: true, hasChanges: true}
   }
 
   public static type = 'list'

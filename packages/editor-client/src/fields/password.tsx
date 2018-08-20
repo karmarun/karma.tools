@@ -33,7 +33,8 @@ export class PasswordFieldEditComponent extends React.PureComponent<
           ...this.props.value.value,
           password: value
         },
-        isValid: true
+        isValid: true,
+        hasChanges: true
       },
       this.props.changeKey
     )
@@ -46,7 +47,8 @@ export class PasswordFieldEditComponent extends React.PureComponent<
           ...this.props.value.value,
           passwordConfirm: value
         },
-        isValid: true
+        isValid: true,
+        hasChanges: true
       },
       this.props.changeKey
     )
@@ -109,7 +111,8 @@ export class PasswordField implements Field<PasswordFieldValue> {
       password: '',
       passwordConfirm: ''
     },
-    isValid: true
+    isValid: true,
+    hasChanges: false
   }
 
   public readonly sortConfigurations: SortConfiguration[] = []
@@ -149,7 +152,8 @@ export class PasswordField implements Field<PasswordFieldValue> {
         password: '',
         passwordConfirm: ''
       },
-      isValid: true
+      isValid: true,
+      hasChanges: true
     }
   }
 
@@ -173,7 +177,8 @@ export class PasswordField implements Field<PasswordFieldValue> {
           password: '',
           passwordConfirm: ''
         },
-        isValid: true
+        isValid: true,
+        hasChanges: true
       }
     }
 

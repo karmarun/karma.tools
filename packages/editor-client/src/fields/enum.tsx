@@ -7,7 +7,9 @@ import {
   SortConfiguration,
   FilterConfiguration,
   convertKeyToLabel,
-  TypedFieldOptions
+  TypedFieldOptions,
+  OptionsConditionConfiguration,
+  ConditionType
 } from '@karma.run/editor-common'
 
 import {ErrorField} from './error'
@@ -22,17 +24,24 @@ import {
 
 import {FieldComponent, FieldLabel} from '../ui/field'
 import {CardSection} from '../ui/card'
-import {Select, SelectType} from '../ui/select'
+import {Select, SelectOption, SelectType} from '../ui/select'
 
 export class EnumFieldEditComponent extends React.PureComponent<
   EditComponentRenderProps<EnumField, EnumFieldValue>
 > {
-  private handleChange = (value: any) => {
-    this.props.onValueChange(value, this.props.changeKey)
+  private handleChange = (value?: string) => {
+    this.props.onValueChange(
+      {
+        value: value,
+        isValid: true,
+        hasChanges: true
+      },
+      this.props.changeKey
+    )
   }
 
   private getFieldOptions = memoizeOne(
-    (options: EnumFieldOption[]): Select.Option[] => {
+    (options: EnumFieldOption[]): SelectOption[] => {
       return options.map(([key, label]) => ({key, label}))
     }
   )
@@ -81,14 +90,28 @@ export class EnumField implements Field<EnumFieldValue> {
   public readonly description?: string
   public readonly options: EnumFieldOption[]
 
-  public readonly defaultValue: EnumFieldValue = {value: undefined, isValid: false}
+  public readonly defaultValue: EnumFieldValue = {
+    value: undefined,
+    isValid: false,
+    hasChanges: false
+  }
+
   public readonly sortConfigurations: SortConfiguration[] = []
-  public readonly filterConfigurations: FilterConfiguration[] = []
+  public readonly filterConfigurations: FilterConfiguration[]
 
   public constructor(opts: EnumFieldConstructorOptions) {
     this.label = opts.label
     this.description = opts.description
     this.options = opts.options
+
+    this.filterConfigurations = [
+      FilterConfiguration(EnumField.type, EnumField.type, this.label, [
+        OptionsConditionConfiguration(
+          ConditionType.EnumEqual,
+          this.options.map(([key, label]) => ({key, label}))
+        )
+      ])
+    ]
   }
 
   public initialize() {
@@ -110,8 +133,9 @@ export class EnumField implements Field<EnumFieldValue> {
     )
   }
 
-  public transformRawValue(value: any) {
-    return value
+  public transformRawValue(value: unknown): EnumFieldValue {
+    if (typeof value !== 'string') throw new Error('Invalid value.')
+    return {value, isValid: true, hasChanges: false}
   }
 
   public transformValueToExpression(value: EnumFieldValue) {

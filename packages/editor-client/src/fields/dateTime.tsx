@@ -5,7 +5,9 @@ import {
   Model,
   SortConfiguration,
   FilterConfiguration,
-  TypedFieldOptions
+  TypedFieldOptions,
+  SimpleConditionConfiguration,
+  ConditionType
 } from '@karma.run/editor-common'
 
 import {
@@ -22,10 +24,13 @@ import {CardSection} from '../ui/card'
 import {ErrorField} from './error'
 
 export class DateTimeFieldEditComponent extends React.PureComponent<
-  EditComponentRenderProps<DateTimeField, DateTimeValue>
+  EditComponentRenderProps<DateTimeField, DateTimeFieldValue>
 > {
   private handleChange = (value: string | Date) => {
-    this.props.onValueChange({value, isValid: value instanceof Date}, this.props.changeKey)
+    this.props.onValueChange(
+      {value, isValid: value instanceof Date, hasChanges: true},
+      this.props.changeKey
+    )
   }
 
   public render() {
@@ -54,30 +59,38 @@ export interface DateTimeFieldOptions {
   readonly description?: string
 }
 
-export type DateTimeValue = FieldValue<string | Date, string>
+export type DateTimeFieldValue = FieldValue<string | Date, string>
 
-export class DateTimeField implements Field<DateTimeValue> {
+export class DateTimeField implements Field<DateTimeFieldValue> {
   public readonly label?: string
   public readonly description?: string
 
-  public readonly defaultValue: DateTimeValue = {isValid: false, value: ''}
+  public readonly defaultValue: DateTimeFieldValue = {value: '', isValid: false, hasChanges: false}
   public readonly sortConfigurations: SortConfiguration[] = []
-  public readonly filterConfigurations: FilterConfiguration[] = []
+  public readonly filterConfigurations: FilterConfiguration[]
 
   public constructor(opts?: DateTimeFieldOptions) {
     this.label = opts && opts.label
     this.description = opts && opts.description
+
+    this.filterConfigurations = [
+      FilterConfiguration(DateTimeField.type, DateTimeField.type, this.label, [
+        SimpleConditionConfiguration(ConditionType.DateEqual),
+        SimpleConditionConfiguration(ConditionType.DateMin),
+        SimpleConditionConfiguration(ConditionType.DateMax)
+      ])
+    ]
   }
 
   public initialize() {
     return this
   }
 
-  public renderListComponent(props: ListRenderProps<DateTimeValue>) {
+  public renderListComponent(props: ListRenderProps<DateTimeFieldValue>) {
     return <CardSection>{props.value}</CardSection>
   }
 
-  public renderEditComponent(props: EditRenderProps<DateTimeValue>) {
+  public renderEditComponent(props: EditRenderProps<DateTimeFieldValue>) {
     return (
       <DateTimeFieldEditComponent
         label={this.label}
@@ -88,11 +101,12 @@ export class DateTimeField implements Field<DateTimeValue> {
     )
   }
 
-  public transformRawValue(value: any) {
-    return {value: new Date(value), isValid: true}
+  public transformRawValue(value: unknown): DateTimeFieldValue {
+    if (typeof value !== 'string') throw new Error('Invalid value.')
+    return {value: new Date(value), isValid: true, hasChanges: false}
   }
 
-  public transformValueToExpression(value: DateTimeValue) {
+  public transformValueToExpression(value: DateTimeFieldValue) {
     if (!(value.value instanceof Date)) return e.null()
     return e.dateTime(value.value.toISOString())
   }
@@ -113,7 +127,7 @@ export class DateTimeField implements Field<DateTimeValue> {
     return []
   }
 
-  public valuesForKeyPath(value: DateTimeValue) {
+  public valuesForKeyPath(value: DateTimeFieldValue) {
     return [value]
   }
 

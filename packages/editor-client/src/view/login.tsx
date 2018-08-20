@@ -13,7 +13,8 @@ import {
   TextInput,
   CenteredLoadingIndicator,
   MessageBar,
-  MessageBarType
+  MessageBarType,
+  ButtonStyle
 } from '../ui'
 
 import {NotificationContext, withNotification} from '../context/notification'
@@ -109,7 +110,7 @@ export const LoginFormStyle = style({
                   }
                 },
 
-                [`.${Button.Style}`]: {
+                [`.${ButtonStyle}`]: {
                   width: '100%'
                 }
               }

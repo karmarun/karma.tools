@@ -14,7 +14,12 @@ import {Field, FieldValue} from '../api/field'
 export type NullFieldValue = FieldValue<null, never>
 
 export class NullField implements Field<NullFieldValue> {
-  public readonly defaultValue: NullFieldValue = {value: null, isValid: true}
+  public readonly defaultValue: NullFieldValue = {
+    value: null,
+    isValid: true,
+    hasChanges: false
+  }
+
   public readonly sortConfigurations: SortConfiguration[] = []
   public readonly filterConfigurations: FilterConfiguration[] = []
 
@@ -31,7 +36,11 @@ export class NullField implements Field<NullFieldValue> {
   }
 
   public transformRawValue(): NullFieldValue {
-    return {value: null, isValid: true}
+    return {
+      value: null,
+      isValid: true,
+      hasChanges: true
+    }
   }
 
   public transformValueToExpression() {

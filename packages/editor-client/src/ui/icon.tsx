@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { style } from 'typestyle'
-import { StatelessComponent } from 'react'
+import {style} from 'typestyle'
+import {StatelessComponent} from 'react'
 
 const ArrowDownIcon: StatelessComponent = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21 21">
@@ -332,28 +332,24 @@ function nodeForIconName(name: IconName): React.ReactNode {
   }
 }
 
-export namespace Icon {
-  export interface Props {
-    name: IconName
-  }
+export interface IconProps {
+  name: IconName
 }
 
-export class Icon extends React.Component<Icon.Props> {
+export class Icon extends React.Component<IconProps> {
   public render() {
-    return <span className={Icon.Style}>{nodeForIconName(this.props.name)}</span>
+    return <span className={IconStyle}>{nodeForIconName(this.props.name)}</span>
   }
 }
 
-export namespace Icon {
-  export const Style = style({
-    $debugName: 'Icon',
-    display: 'inline-block',
-    height: '1em',
+export const IconStyle = style({
+  $debugName: 'Icon',
+  display: 'inline-block',
+  height: '1em',
 
-    $nest: {
-      '> svg': {
-        height: '100%'
-      }
+  $nest: {
+    '> svg': {
+      height: '100%'
     }
-  })
-}
+  }
+})

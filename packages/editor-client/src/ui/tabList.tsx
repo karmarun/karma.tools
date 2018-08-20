@@ -120,26 +120,24 @@ export interface EditableTabOption {
   disabled: boolean
 }
 
-export namespace EditableTab {
-  export interface Props {
-    active?: boolean
-    value: string
-    index: number
-    options?: ReadonlyArray<EditableTabOption>
-    onClick: (index: number) => void
-    onChange: (index: number, value: string) => void
-    onRemove: (index: number) => void
-  }
-
-  export interface State {
-    editing: boolean
-  }
+export interface EditableTabProps {
+  active?: boolean
+  value: string
+  index: number
+  options?: ReadonlyArray<EditableTabOption>
+  onClick: (index: number) => void
+  onChange: (index: number, value: string) => void
+  onRemove: (index: number) => void
 }
 
-export class EditableTab extends React.PureComponent<EditableTab.Props, EditableTab.State> {
+export interface EditableTabState {
+  editing: boolean
+}
+
+export class EditableTab extends React.PureComponent<EditableTabProps, EditableTabState> {
   private inputElement: HTMLInputElement | HTMLSelectElement | null = null
 
-  constructor(props: EditableTab.Props) {
+  constructor(props: EditableTabProps) {
     super(props)
     this.state = {editing: false}
   }
@@ -238,18 +236,16 @@ export class EditableTab extends React.PureComponent<EditableTab.Props, Editable
   }
 }
 
-export namespace Tab {
-  export interface Props {
-    noGrow?: boolean
-    active?: boolean
-    icon?: IconName
-    value?: string
-    index?: number
-    onClick: (index: number) => void
-  }
+export interface TabProps {
+  noGrow?: boolean
+  active?: boolean
+  icon?: IconName
+  value?: string
+  index?: number
+  onClick: (index: number) => void
 }
 
-export class Tab extends React.Component<Tab.Props> {
+export class Tab extends React.Component<TabProps> {
   private handleClick = () => {
     this.props.onClick(this.props.index || 0)
   }
@@ -276,21 +272,19 @@ export const TabListStyle = style({
   overflow: 'hidden'
 })
 
-export namespace EditableTabList {
-  export type Value = {id: string; key: string}
+export type EditableTabListValue = {id: string; key: string}
 
-  export interface Props {
-    values: Value[]
-    activeTab?: number
-    options?: ReadonlyArray<string>
-    onChangeActiveTab: (index: number) => void
-    onChangeAt: (index: number, value: string) => void
-    onInsertAt: (index: number, value: string) => void
-    onRemoveAt: (index: number) => void
-  }
+export interface EditableTabListProps {
+  values: EditableTabListValue[]
+  activeTab?: number
+  options?: ReadonlyArray<string>
+  onChangeActiveTab: (index: number) => void
+  onChangeAt: (index: number, value: string) => void
+  onInsertAt: (index: number, value: string) => void
+  onRemoveAt: (index: number) => void
 }
 
-export class EditableTabList extends React.PureComponent<EditableTabList.Props> {
+export class EditableTabList extends React.PureComponent<EditableTabListProps> {
   tabElements: (EditableTab | null)[] = []
 
   private handleTabClick = (index: number) => {
@@ -372,17 +366,15 @@ export class EditableTabList extends React.PureComponent<EditableTabList.Props> 
   }
 }
 
-export namespace TabList {
-  export type Value = {key: string; value: string}
+export type TabListValue = {key: string; value: string}
 
-  export interface Props {
-    values: Value[]
-    selectedIndex?: number
-    onChangeActiveTab: (index: number) => void
-  }
+export interface TabListProps {
+  values: TabListValue[]
+  selectedIndex?: number
+  onChangeActiveTab: (index: number) => void
 }
 
-export class TabList extends React.Component<TabList.Props> {
+export class TabList extends React.Component<TabListProps> {
   private handleTabClick = (index: number) => {
     this.props.onChangeActiveTab(index)
   }

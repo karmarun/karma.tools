@@ -6,12 +6,8 @@ import {
   ValuePathSegmentType,
   ValuePathSegment,
   Condition,
-  ValuePath,
-  StructPathSegment,
-  ConditionType,
   EditorContext,
   RefMap,
-  escapeRegExp,
   ViewContextOptions,
   ViewContextOptionsWithModel,
   unserializeModel
@@ -51,6 +47,7 @@ import {
 
 import {ViewContext} from '../api/viewContext'
 import {FieldRegistry, AnyFieldValue} from '../api/field'
+import {filterExpression} from '../api/filter'
 
 export const defaultModelGroupID: string = 'default'
 export const defaultEditorContextID: string = 'default'
@@ -195,6 +192,7 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
       getReferrers: this.getReferrers,
       saveRecord: this.saveRecord,
       deleteRecord: this.deleteRecord,
+      query: this.query,
       increaseUnsavedChangesCount: this.increaseUnsavedChangesCount,
       decreaseUnsavedChangesCount: this.decreaseUnsavedChangesCount,
       setDevelopmentMode: this.setDevelopmentMode
@@ -302,26 +300,11 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
     )
 
     if (filters.length > 0) {
-      for (const filter of filters) {
-        if (filter.type === ConditionType.StringIncludes) {
-          listExpression = buildExpression(e =>
-            e.filterList(listExpression, (_, value) =>
-              e.matchRegex(
-                escapeRegExp(filter.value),
-                filterValueExpression(value, [StructPathSegment('value'), ...filter.path])
-              )
-            )
-          )
-        }
-      }
-    }
-
-    function filterValueExpression(value: Expression, valuePath: ValuePath) {
-      for (const segment of valuePath) {
-        value = expressionForValuePathSegment(value, segment)
-      }
-
-      return value
+      listExpression = buildExpression(e =>
+        e.filterList(listExpression, (_, value) =>
+          e.and(...filters.map(filter => filterExpression(e.field('value', value), filter)))
+        )
+      )
     }
 
     function expressionForValuePathSegment(value: Expression, segment: ValuePathSegment) {
@@ -448,6 +431,16 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
       this.props.config.karmaDataURL,
       this.state.session.signature,
       buildFunction(e => () => e.delete(e.data(d => d.ref(id))))
+    )
+  }
+
+  public query = async (expression: Expression): Promise<any> => {
+    if (!this.state.session) throw new Error('No session!')
+
+    return query(
+      this.props.config.karmaDataURL,
+      this.state.session.signature,
+      buildFunction(() => () => expression)
     )
   }
 

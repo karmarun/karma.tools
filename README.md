@@ -10,6 +10,7 @@ Administrative editor for karma.data.
 
 - [@karma.run/editor-plugin-slate](packages/editor-plugin-slate)
 - [@karma.run/editor-plugin-media](packages/editor-plugin-media)
+- [@karma.run/editor-plugin-draft-js (Deprecated)](packages/editor-plugin-draft-js)
 
 ## [@karma.run/sdk](packages/sdk)
 

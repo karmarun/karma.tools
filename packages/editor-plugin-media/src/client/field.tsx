@@ -109,7 +109,11 @@ export class MediaFieldEditComponent extends React.PureComponent<
       )
 
       this.props.onValueChange(
-        {value: {...this.props.value.value, uploadedMedia: response}, isValid: true},
+        {
+          value: {...this.props.value.value, uploadedMedia: response},
+          isValid: true,
+          hasChanges: true
+        },
         this.props.changeKey
       )
     } catch (err) {
@@ -229,7 +233,12 @@ export class MediaField implements Field<MediaFieldValue> {
   public readonly label?: string
   public readonly description?: string
 
-  public readonly defaultValue: MediaFieldValue = {value: {}, isValid: true}
+  public readonly defaultValue: MediaFieldValue = {
+    value: {},
+    isValid: true,
+    hasChanges: false
+  }
+
   public readonly sortConfigurations: SortConfiguration[] = []
   public readonly filterConfigurations: FilterConfiguration[] = []
 
@@ -259,7 +268,11 @@ export class MediaField implements Field<MediaFieldValue> {
   }
 
   public transformRawValue(value: any): MediaFieldValue {
-    return {value: {media: unserializeMedia(value)}, isValid: true}
+    return {
+      value: {media: unserializeMedia(value)},
+      isValid: true,
+      hasChanges: false
+    }
   }
 
   private mediaTypeExpressionForMedia(media: Media): DataExpression {
@@ -371,13 +384,13 @@ export class MediaField implements Field<MediaFieldValue> {
         signature
       )
 
-      return {value: {media: response}, isValid: true}
+      return {value: {media: response}, isValid: true, hasChanges: true}
     } else if (isNew && media) {
       const response = await copyMedia(apiPath, media.id, signature)
-      return {value: {media: {...media, ...response}}, isValid: true}
+      return {value: {media: {...media, ...response}}, isValid: true, hasChanges: true}
     }
 
-    return {value: {media}, isValid: true}
+    return {value: {media}, isValid: true, hasChanges: true}
   }
 
   public async onDelete(value: MediaFieldValue, context: DeleteContext): Promise<MediaFieldValue> {

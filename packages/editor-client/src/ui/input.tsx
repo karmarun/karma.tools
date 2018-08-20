@@ -43,24 +43,22 @@ export const enum TextInputType {
   Dark = 'dark'
 }
 
-export namespace TextInput {
-  export interface Props {
-    type?: TextInputType
-    onChange?: (value: string, id?: string | number) => void
-    onFocus?: (id?: string | number) => void
-    onBlur?: (id?: string | number) => void
-    id?: string | number
-    name?: string
-    value: string
-    placeholder?: string
-    isPassword?: boolean
-    disabled?: boolean
-    minLength?: number
-    maxLength?: number
-  }
+export interface TextInputProps {
+  type?: TextInputType
+  onChange?: (value: string, id?: string | number) => void
+  onFocus?: (id?: string | number) => void
+  onBlur?: (id?: string | number) => void
+  id?: string | number
+  name?: string
+  value: string
+  placeholder?: string
+  isPassword?: boolean
+  disabled?: boolean
+  minLength?: number
+  maxLength?: number
 }
 
-export class TextInput extends React.Component<TextInput.Props> {
+export class TextInput extends React.Component<TextInputProps> {
   private handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (this.props.onChange) this.props.onChange(e.currentTarget.value, this.props.id)
   }
@@ -79,13 +77,13 @@ export class TextInput extends React.Component<TextInput.Props> {
     switch (this.props.type) {
       default:
       case TextInputType.Lighter:
-        style = TextInput.LighterStyle
+        style = TextInputLighterStyle
         break
       case TextInputType.Light:
-        style = TextInput.LightStyle
+        style = TextInputLightStyle
         break
       case TextInputType.Dark:
-        style = TextInput.DarkStyle
+        style = TextInputDarkStyle
         break
     }
 
@@ -107,55 +105,53 @@ export class TextInput extends React.Component<TextInput.Props> {
   }
 }
 
-export namespace TextInput {
-  export const LighterStyle = style({
-    $debugName: 'TextInputLighter',
-    padding: `${Spacing.small} ${Spacing.medium}`,
-    backgroundColor: Color.neutral.white,
-    color: Color.primary.base,
+export const TextInputLighterStyle = style({
+  $debugName: 'TextInputLighter',
+  padding: `${Spacing.small} ${Spacing.medium}`,
+  backgroundColor: Color.neutral.white,
+  color: Color.primary.base,
 
-    $nest: {
-      '&::placeholder': {
-        color: '#8E8E8E',
-        fontStyle: 'italic'
-      }
+  $nest: {
+    '&::placeholder': {
+      color: '#8E8E8E',
+      fontStyle: 'italic'
     }
-  })
+  }
+})
 
-  export const LightStyle = style({
-    $debugName: 'TextInputLight',
-    padding: `${Spacing.small} ${Spacing.medium}`,
-    backgroundColor: Color.primary.light5,
-    color: Color.primary.base,
+export const TextInputLightStyle = style({
+  $debugName: 'TextInputLight',
+  padding: `${Spacing.small} ${Spacing.medium}`,
+  backgroundColor: Color.primary.light5,
+  color: Color.primary.base,
 
-    $nest: {
-      '&::placeholder': {
-        color: Color.primary.base
-      }
+  $nest: {
+    '&::placeholder': {
+      color: Color.primary.base
     }
-  })
+  }
+})
 
-  export const DarkStyle = style({
-    $debugName: 'TextInputDark',
-    padding: `0.8rem ${Spacing.largest}`,
-    backgroundColor: Color.primary.light1,
-    border: 'none',
-    color: Color.primary.base,
-    fontWeight: FontWeight.light,
+export const TextInputDarkStyle = style({
+  $debugName: 'TextInputDark',
+  padding: `0.8rem ${Spacing.largest}`,
+  backgroundColor: Color.primary.light1,
+  border: 'none',
+  color: Color.primary.base,
+  fontWeight: FontWeight.light,
 
-    $nest: {
-      '&:focus': {
-        backgroundColor: Color.neutral.dark1,
-        boxShadow: `0 0 0 2px ${Color.focus}`,
-        outline: 'none'
-      },
+  $nest: {
+    '&:focus': {
+      backgroundColor: Color.neutral.dark1,
+      boxShadow: `0 0 0 2px ${Color.focus}`,
+      outline: 'none'
+    },
 
-      '&::placeholder': {
-        color: Color.neutral.light5
-      }
+    '&::placeholder': {
+      color: Color.neutral.light5
     }
-  })
-}
+  }
+})
 
 export const TextAreaInputStyle = style({
   $debugName: 'TextAreaInput',
@@ -164,21 +160,19 @@ export const TextAreaInputStyle = style({
   resize: 'none'
 })
 
-export namespace TextAreaInput {
-  export interface Props {
-    onChange?: (value: string, id?: string | number) => void
-    onFocus?: (id?: string | number) => void
-    onBlur?: (id?: string | number) => void
-    id?: string | number
-    name?: string
-    value: string
-    placeholder?: string
-    disabled?: boolean
-    autoresize?: boolean
-  }
+export interface TextAreaInputProps {
+  onChange?: (value: string, id?: string | number) => void
+  onFocus?: (id?: string | number) => void
+  onBlur?: (id?: string | number) => void
+  id?: string | number
+  name?: string
+  value: string
+  placeholder?: string
+  disabled?: boolean
+  autoresize?: boolean
 }
 
-export class TextAreaInput extends React.Component<TextAreaInput.Props> {
+export class TextAreaInput extends React.Component<TextAreaInputProps> {
   private textArea!: HTMLTextAreaElement
 
   public componentDidMount() {
@@ -223,17 +217,15 @@ export class TextAreaInput extends React.Component<TextAreaInput.Props> {
   }
 }
 
-export namespace NumberInput {
-  export interface Props {
-    onChange: (value: string) => void
-    value: string
-    placeholder?: string
-    disabled?: boolean
-    step?: number
-  }
+export interface NumberInputProps {
+  onChange: (value: string) => void
+  value: string
+  placeholder?: string
+  disabled?: boolean
+  step?: number
 }
 
-export class NumberInput extends React.Component<NumberInput.Props> {
+export class NumberInput extends React.Component<NumberInputProps> {
   private handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.props.onChange(e.currentTarget.value)
   }
@@ -269,17 +261,15 @@ export const CheckboxInputStyle = style({
   }
 })
 
-export namespace CheckboxInput {
-  export interface Props {
-    onChange: (value: boolean) => void
-    value: boolean
-    placeholder?: string
-    isPassword?: boolean
-    disabled?: boolean
-  }
+export interface CheckboxInputProps {
+  onChange: (value: boolean) => void
+  value: boolean
+  placeholder?: string
+  isPassword?: boolean
+  disabled?: boolean
 }
 
-export class CheckboxInput extends React.Component<CheckboxInput.Props> {
+export class CheckboxInput extends React.Component<CheckboxInputProps> {
   private handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.props.onChange(e.currentTarget.checked)
   }
@@ -303,15 +293,13 @@ export const DateTimeInputStyle = style({
   color: Color.primary.base
 })
 
-export namespace DateTimeInput {
-  export interface Props {
-    onChange: (value: Date | string) => void
-    value: Date | string
-    disabled?: boolean
-  }
+export interface DateTimeInputProps {
+  onChange: (value: Date | string) => void
+  value: Date | string
+  disabled?: boolean
 }
 
-export class DateTimeInput extends React.Component<DateTimeInput.Props> {
+export class DateTimeInput extends React.Component<DateTimeInputProps> {
   private handleChange = (date: React.ChangeEvent<any> | moment.Moment | string) => {
     if (moment.isMoment(date)) {
       this.props.onChange(date.toDate())
@@ -355,14 +343,12 @@ export const DropAreaFileInputStyle = style({
   }
 })
 
-export namespace DropAreaFileInput {
-  export interface Props {
-    text: string
-    onFileDrop: (file: File) => void
-  }
+export interface DropAreaFileInputProps {
+  text: string
+  onFileDrop: (file: File) => void
 }
 
-export class DropAreaFileInput extends React.Component<DropAreaFileInput.Props> {
+export class DropAreaFileInput extends React.Component<DropAreaFileInputProps> {
   private fileInputElement?: HTMLInputElement | null
 
   private handleClick = () => {

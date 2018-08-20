@@ -8,10 +8,10 @@ import {
   LoginLocation,
   NotFoundLocation,
   NoPermissionLocation,
-  EntryNewLocation,
-  EntryEditLocation,
-  EntryDeleteLocation,
-  EntryListLocation,
+  NewRecordLocation,
+  EditRecordLocation,
+  DeleteRecordLocation,
+  ListRecordsLocation,
   DashboardLocation,
   LocationContext,
   LocationActionContext
@@ -26,13 +26,13 @@ export function urlPathForLocation(basePath: string, location: AppLocation): str
       return `${basePath}/login`
     case LocationType.Dashboard:
       return `${basePath}/`
-    case LocationType.EntryList:
+    case LocationType.ListRecords:
       return `${basePath}/records/${location.slug}`
-    case LocationType.EntryNew:
+    case LocationType.NewRecord:
       return `${basePath}/records/${location.slug}/new`
-    case LocationType.EntryEdit:
+    case LocationType.EditRecord:
       return `${basePath}/records/${location.slug}/edit/${location.id}`
-    case LocationType.EntryDelete:
+    case LocationType.DeleteRecord:
       return `${basePath}/records/${location.slug}/delete/${location.id}`
     case LocationType.NotFound:
       return `${basePath}/404`
@@ -66,19 +66,19 @@ export function locationForURLPath(basePath: string, url: string): AppLocation {
   if ((matchArray = url.match(/^\/403(\/?)$/))) return NoPermissionLocation()
 
   if ((matchArray = url.match(/^\/records\/(.+?)\/new(\/?)$/))) {
-    return EntryNewLocation(matchArray[1])
+    return NewRecordLocation(matchArray[1])
   }
 
   if ((matchArray = url.match(/^\/records\/(.+?)\/edit\/(.+?)(\/?)$/))) {
-    return EntryEditLocation(matchArray[1], matchArray[2])
+    return EditRecordLocation(matchArray[1], matchArray[2])
   }
 
   if ((matchArray = url.match(/^\/records\/(.+?)\/delete\/(.+?)(\/?)$/))) {
-    return EntryDeleteLocation(matchArray[1], matchArray[2])
+    return DeleteRecordLocation(matchArray[1], matchArray[2])
   }
 
   if ((matchArray = url.match(/^\/records\/(.+?)(\/?)$/))) {
-    return EntryListLocation(matchArray[1])
+    return ListRecordsLocation(matchArray[1])
   }
 
   if (url === '' || url.match(/^\/((records)(\/)?)?$/)) {
@@ -165,7 +165,7 @@ export function sessionContextMiddleware(
   }
 
   if (
-    location.type === LocationType.EntryList &&
+    location.type === LocationType.ListRecords &&
     !sessionContext.viewContextSlugMap.get(location.slug)
   ) {
     return NotFoundLocation()

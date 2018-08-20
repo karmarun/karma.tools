@@ -417,6 +417,14 @@ export interface ReduceListFn {
   }
 }
 
+export interface RightFoldListFn {
+  rightFoldList: [Expression, Expression, FuncExpression]
+}
+
+export interface LeftFoldListFn {
+  leftFoldList: [Expression, Expression, FuncExpression]
+}
+
 // Struct
 // ------
 
@@ -541,6 +549,10 @@ export interface BeforeFn {
 
 export interface DataFn {
   data: DataExpression
+}
+
+export interface WithFn {
+  with: [Expression, FuncExpression]
 }
 
 export interface DefineFn {
@@ -712,6 +724,7 @@ export type Expression =
 
   // Scope
   | DataFn
+  | WithFn
   | DefineFn
   | ScopeFn
   | SignatureFn
@@ -726,6 +739,8 @@ export type Expression =
   | MatchRegexFn
   | SearchAllRegexFn
   | SearchRegexFn
+  | StringContainsFn
+  | SubstringIndexFn
 
   // Optional
   | IsPresentFn
@@ -761,6 +776,8 @@ export type Expression =
   | ReverseListFn
   | SliceFn
   | ReduceListFn
+  | LeftFoldListFn
+  | RightFoldListFn
 
   // User / Permission
   | CurrentUserFn

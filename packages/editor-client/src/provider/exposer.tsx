@@ -1,4 +1,6 @@
 import React from 'react'
+import {Expression} from '@karma.run/sdk'
+
 import {SessionContext, withSession} from '../context/session'
 import {expose} from '../util/other'
 
@@ -19,6 +21,10 @@ export class ProviderExposer extends React.Component<ProviderExposerProps> {
 
         this.props.sessionContext.setDevelopmentMode(developmentMode)
         return `Set development mode to: ${developmentMode}`
+      },
+
+      query: (expression: Expression) => {
+        return this.props.sessionContext.query(expression)
       }
     })
   }

@@ -25,7 +25,11 @@ import {
   firstKey,
   ObjectMap,
   TypedFieldOptions,
-  FieldOptions
+  FieldOptions,
+  filterConfigurationPrependPath,
+  UnionPathSegment,
+  OptionsConditionConfiguration,
+  ConditionType
 } from '@karma.run/editor-common'
 
 import {ErrorField} from './error'
@@ -43,7 +47,11 @@ export class UnionFieldEditComponent extends React.PureComponent<
 
     if (!selectedKey) {
       return this.props.onValueChange(
-        {value: {selectedKey, values: value.value.values}, isValid: true},
+        {
+          value: {selectedKey, values: value.value.values},
+          isValid: true,
+          hasChanges: true
+        },
         this.props.changeKey
       )
     }
@@ -54,7 +62,8 @@ export class UnionFieldEditComponent extends React.PureComponent<
     this.props.onValueChange(
       {
         value: {selectedKey, values: {...value.value.values, [selectedKey]: selectedValue}},
-        isValid: true
+        isValid: true,
+        hasChanges: true
       },
       this.props.changeKey
     )
@@ -71,7 +80,8 @@ export class UnionFieldEditComponent extends React.PureComponent<
           ...this.props.value.value,
           values: {...this.props.value.value.values, [key]: value}
         },
-        isValid: true
+        isValid: true,
+        hasChanges: true
       },
       this.props.changeKey
     )
@@ -146,7 +156,12 @@ export class UnionField implements Field<UnionFieldValue> {
   public fields: UnionFieldChildTuple[]
   public fieldMap!: ReadonlyMap<string, AnyField>
 
-  public defaultValue: UnionFieldValue = {value: {values: {}}, isValid: true}
+  public defaultValue: UnionFieldValue = {
+    value: {values: {}},
+    isValid: true,
+    hasChanges: false
+  }
+
   public sortConfigurations: SortConfiguration[] = []
   public filterConfigurations: FilterConfiguration[] = []
 
@@ -161,6 +176,26 @@ export class UnionField implements Field<UnionFieldValue> {
     this.fieldMap = new Map(
       this.fields.map(([key, _, field]) => [key, field] as [string, AnyField])
     )
+
+    this.filterConfigurations = [
+      FilterConfiguration(UnionField.type, UnionField.type, this.label, [
+        OptionsConditionConfiguration(
+          ConditionType.UnionCaseEqual,
+          this.fields.map(([key, label]) => ({key, label}))
+        )
+      ]),
+      ...this.fields.reduce(
+        (acc, [key, _label, field]) => [
+          ...acc,
+          ...field.filterConfigurations.map(config =>
+            filterConfigurationPrependPath(config, `${UnionField.type}[${key}]`, [
+              UnionPathSegment(key)
+            ])
+          )
+        ],
+        [] as FilterConfiguration[]
+      )
+    ]
 
     return this
   }
@@ -186,16 +221,20 @@ export class UnionField implements Field<UnionFieldValue> {
     return field
   }
 
-  public transformRawValue(value: any): UnionFieldValue {
-    const key = firstKey(value)
-    const unionValue = value[key]
+  public transformRawValue(value: unknown): UnionFieldValue {
+    if (typeof value !== 'object') throw new Error('Invalid value.')
+
+    const objectValue = value as ObjectMap<unknown>
+    const key = firstKey(objectValue)
+    const unionValue = objectValue[key]
 
     return {
       value: {
         selectedKey: key,
         values: {[key]: this.fieldForKey(key).transformRawValue(unionValue)}
       },
-      isValid: true
+      isValid: true,
+      hasChanges: false
     }
   }
 
@@ -233,6 +272,8 @@ export class UnionField implements Field<UnionFieldValue> {
   }
 
   public valuePathForKeyPath(keyPath: KeyPath): ValuePath {
+    if (keyPath.length === 0) return []
+
     const key = keyPath[0]
     const field = this.fieldMap.get(key.toString())
 
@@ -244,11 +285,13 @@ export class UnionField implements Field<UnionFieldValue> {
     ]
   }
 
-  public valuesForKeyPath(value: UnionFieldValue, keyPath: KeyPath) {
+  public valuesForKeyPath(value: UnionFieldValue, keyPath: KeyPath): AnyFieldValue[] {
+    if (keyPath.length === 0) return [value]
+
     const key = keyPath[0].toString()
     const field = this.fieldMap.get(key)
 
-    if (!field) return []
+    if (!field || !value.value.values[key]) return []
 
     return field.valuesForKeyPath(value.value.values[key], keyPath.slice(1))
   }
@@ -269,7 +312,8 @@ export class UnionField implements Field<UnionFieldValue> {
           )
         }
       },
-      isValid: true
+      isValid: true,
+      hasChanges: true
     }
   }
 
@@ -288,7 +332,8 @@ export class UnionField implements Field<UnionFieldValue> {
           )
         }
       },
-      isValid: true
+      isValid: true,
+      hasChanges: true
     }
   }
 

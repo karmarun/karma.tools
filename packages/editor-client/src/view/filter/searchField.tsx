@@ -23,14 +23,12 @@ export const QuickSearchFieldStyle = style({
   }
 })
 
-export namespace QuickSearchField {
-  export interface Props {
-    value: string
-    onChange: (value: string) => void
-  }
+export interface QuickSearchFieldProps {
+  value: string
+  onChange: (value: string) => void
 }
 
-export class QuickSearchField extends React.Component<QuickSearchField.Props> {
+export class QuickSearchField extends React.Component<QuickSearchFieldProps> {
   public render() {
     return (
       <div className={QuickSearchFieldStyle}>

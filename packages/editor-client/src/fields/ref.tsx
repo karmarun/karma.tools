@@ -6,7 +6,9 @@ import {
   SortConfiguration,
   FilterConfiguration,
   FieldOptions,
-  TypedFieldOptions
+  TypedFieldOptions,
+  RefConditionConfiguration,
+  ConditionType
 } from '@karma.run/editor-common'
 
 import {
@@ -21,7 +23,7 @@ import {FieldComponent, FieldLabel} from '../ui/field'
 import {CardSection, Card, CardFooter} from '../ui/card'
 import {withSession, SessionContext, ModelRecord} from '../context/session'
 import {LocaleContext, withLocale} from '../context/locale'
-import {LoadingIndicator, LoadingIndicatorStyle} from '../ui/loader'
+import {LoadingIndicator, LoadingIndicatorType} from '../ui/loader'
 import {DescriptionView} from '../ui/descriptionView'
 import {Button, ButtonType} from '../ui/button'
 import {IconName} from '../ui/icon'
@@ -50,7 +52,14 @@ export class RefFieldEditComponent extends React.PureComponent<
 
     if (record) {
       this.setState({record})
-      this.props.onValueChange({value: record.id, isValid: true}, this.props.changeKey)
+      this.props.onValueChange(
+        {
+          value: record.id,
+          isValid: true,
+          hasChanges: true
+        },
+        this.props.changeKey
+      )
     }
   }
 
@@ -59,7 +68,14 @@ export class RefFieldEditComponent extends React.PureComponent<
 
     if (record) {
       this.setState({record})
-      this.props.onValueChange({value: record.id, isValid: true}, this.props.changeKey)
+      this.props.onValueChange(
+        {
+          value: record.id,
+          isValid: true,
+          hasChanges: true
+        },
+        this.props.changeKey
+      )
     }
   }
 
@@ -68,7 +84,14 @@ export class RefFieldEditComponent extends React.PureComponent<
 
     if (record) {
       this.setState({record})
-      this.props.onValueChange({value: record.id, isValid: true}, this.props.changeKey)
+      this.props.onValueChange(
+        {
+          value: record.id,
+          isValid: true,
+          hasChanges: true
+        },
+        this.props.changeKey
+      )
     }
   }
 
@@ -105,7 +128,7 @@ export class RefFieldEditComponent extends React.PureComponent<
     } else if (this.state.isLoadingRecord) {
       content = (
         <CardSection>
-          <LoadingIndicator style={LoadingIndicatorStyle.Dark} />
+          <LoadingIndicator style={LoadingIndicatorType.Dark} />
         </CardSection>
       )
     } else if (record) {
@@ -261,9 +284,14 @@ export class RefField implements Field<RefFieldValue> {
   public readonly description?: string
   public readonly model: Ref
 
-  public readonly defaultValue: RefFieldValue = {value: undefined, isValid: true}
+  public readonly defaultValue: RefFieldValue = {
+    value: undefined,
+    isValid: true,
+    hasChanges: true
+  }
+
   public readonly sortConfigurations: SortConfiguration[] = []
-  public readonly filterConfigurations: FilterConfiguration[] = []
+  public readonly filterConfigurations: FilterConfiguration[]
 
   public readonly disableEditing: boolean
 
@@ -272,6 +300,12 @@ export class RefField implements Field<RefFieldValue> {
     this.description = opts.description
     this.model = opts.model
     this.disableEditing = opts.disableEditing || false
+
+    this.filterConfigurations = [
+      FilterConfiguration(RefField.type, RefField.type, this.label, [
+        RefConditionConfiguration(ConditionType.RefEqual, this.model)
+      ])
+    ]
   }
 
   public initialize() {
@@ -295,7 +329,12 @@ export class RefField implements Field<RefFieldValue> {
 
   public transformRawValue(value: unknown): RefFieldValue {
     if (!isRef(value)) throw new Error('Invalid value')
-    return {value: value, isValid: true}
+
+    return {
+      value: value,
+      isValid: true,
+      hasChanges: true
+    }
   }
 
   public transformValueToExpression(value: RefFieldValue) {

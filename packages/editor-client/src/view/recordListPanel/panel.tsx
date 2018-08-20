@@ -2,7 +2,6 @@ import React from 'react'
 import {Ref} from '@karma.run/sdk'
 
 import {
-  Filter,
   Sort,
   ConditionType,
   Condition,
@@ -29,6 +28,7 @@ import {LocaleContext, withLocale} from '../../context/locale'
 import {ViewContext} from '../../api/viewContext'
 
 import {ToolbarFilter} from './filterToolbar'
+import {FilterList, FilterListValue, defaultFilterListValue, FilterRowValue} from '../filter/list'
 import {RecordItem} from './recordItem'
 
 export interface ToolbarAction {
@@ -134,6 +134,7 @@ export interface RecordListPanelProps {
   headerPrefix: string
   toolbarActions: ToolbarAction[]
   recordActions: RecordAction[]
+  onSelectRecord: (model: Ref) => Promise<ModelRecord | undefined>
 }
 
 export interface RecordListPanelState {
@@ -141,11 +142,12 @@ export interface RecordListPanelState {
   limit: number
   offset: number
   hasMore: boolean
-  filter?: Filter
   sort?: Sort
   sortValue?: SortConfiguration
   sortDescending: boolean
   quickSearchValue: string
+  isFilterActive: boolean
+  filterListValue: FilterListValue
 }
 
 export class RecordListPanel extends React.PureComponent<
@@ -157,7 +159,9 @@ export class RecordListPanel extends React.PureComponent<
     offset: 0,
     hasMore: true,
     sortDescending: false,
-    quickSearchValue: ''
+    quickSearchValue: '',
+    isFilterActive: false,
+    filterListValue: defaultFilterListValue
   }
 
   private handleNextPage = () => {
@@ -190,6 +194,52 @@ export class RecordListPanel extends React.PureComponent<
         this.loadRecords(this.state.offset)
       }
     )
+  }
+
+  private handleToggleFilter = () => {
+    this.setState({isFilterActive: !this.state.isFilterActive}, () => {
+      this.loadRecords(0)
+    })
+  }
+
+  private conditionForFilterRowValue(value: FilterRowValue): Condition | undefined {
+    if (!value.fieldID || !value.conditionID) return undefined
+
+    const viewContext = this.viewContext!
+    const field = viewContext.filterConfigurations.find(config => config.id === value.fieldID)
+
+    if (!field) return undefined
+
+    const condition = field.conditions.find(condition => condition.type === value.conditionID)
+
+    if (!condition) return undefined
+
+    switch (condition.type) {
+      case ConditionType.NumberEqual:
+      case ConditionType.NumberMin:
+      case ConditionType.NumberMax:
+        const numberValue = Number(value.value)
+
+        return {
+          path: condition.path,
+          type: condition.type,
+          storageType: condition.storageType,
+          value: isNaN(numberValue) ? 0 : numberValue
+        }
+
+      default:
+        return {
+          path: condition.path,
+          type: condition.type,
+          value: value.value
+        } as Condition
+    }
+  }
+
+  private handleFilterListValueChange = (value: FilterListValue) => {
+    this.setState({filterListValue: value}, () => {
+      this.loadRecords(0)
+    })
   }
 
   private get viewContext(): ViewContext | undefined {
@@ -227,14 +277,32 @@ export class RecordListPanel extends React.PureComponent<
 
     const filters: Condition[] = []
 
+    if (this.state.isFilterActive) {
+      filters.push(
+        ...(this.state.filterListValue
+          .map(value => this.conditionForFilterRowValue(value))
+          .filter(value => Boolean(value)) as Condition[])
+      )
+    }
+
     if (this.state.quickSearchValue.trim() !== '') {
+      const quickSearchFilters: Condition[] = []
+
       for (const keyPath of this.viewContext.displayKeyPaths) {
         const valuePath = this.viewContext.field.valuePathForKeyPath(keyPath)
 
-        filters.push({
-          type: ConditionType.StringIncludes,
+        quickSearchFilters.push({
+          type: ConditionType.ExtractedStringIncludes,
           path: valuePath,
           value: this.state.quickSearchValue.trim()
+        })
+      }
+
+      if (quickSearchFilters.length > 0) {
+        filters.push({
+          type: ConditionType.Or,
+          path: [],
+          value: quickSearchFilters
         })
       }
     }
@@ -306,12 +374,25 @@ export class RecordListPanel extends React.PureComponent<
                 sortValue={this.sortValue}
                 sortDescending={this.state.sortDescending}
                 onSortChange={this.handleSortChange}
-                filterConfigurations={[]}
                 quickSearchValue={this.state.quickSearchValue}
                 onQuickSearchChange={this.handleQuickSearchChange}
                 disableQuickSearch={viewContext.displayKeyPaths.length === 0}
+                onToggleFilter={this.handleToggleFilter}
+                filterConfigurations={viewContext.filterConfigurations}
+                isFilterActive={this.state.isFilterActive}
               />
             </FlexList>
+          }
+          drawer={
+            this.state.isFilterActive && (
+              <FilterList
+                value={this.state.filterListValue}
+                field={viewContext.field}
+                filterConfigurations={viewContext.filterConfigurations}
+                onSelectRecord={this.props.onSelectRecord}
+                onValueChange={this.handleFilterListValueChange}
+              />
+            )
           }
         />
         <PanelContent>

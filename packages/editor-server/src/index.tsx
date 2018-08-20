@@ -13,7 +13,7 @@ import express from 'express'
 import {SignatureHeader, Tag, query, buildFunction, getTags, Ref} from '@karma.run/sdk'
 import {EditorContext, ViewContextOptionsWithModel} from '@karma.run/editor-common'
 
-import {ServerPlugin} from './plugin'
+import {ServerPlugin, PluginContext} from './plugin'
 export * from './plugin'
 
 const cacheOptions = {maxAge: '1d'}
@@ -74,17 +74,33 @@ export function editorMiddleware(opts: MiddlewareOptions): express.Router {
   const reactDateTimePath = require.resolve('react-datetime')
   const reactDateTimeCSSPath = path.join(path.dirname(reactDateTimePath), 'css/react-datetime.css')
 
+  const pluginHeaderElements: React.ReactNode[] = []
   const pluginIdentifiers: string[] = []
 
   if (opts.plugins && opts.plugins.length) {
     for (const plugin of opts.plugins) {
-      if (plugin.registerRoutes) {
-        const pluginRouter = express.Router()
-        plugin.registerRoutes({karmaDataURL: opts.karmaDataURL}, pluginRouter)
-        router.use(`${basePath}/api/plugin/${plugin.name}`, pluginRouter)
+      const pluginContext: PluginContext = {
+        basePath,
+        karmaDataURL: opts.karmaDataURL,
+        pluginBasePath: `${basePath}/api/plugin/${plugin.name}`
       }
 
       const identifier = `${plugin.name}@${plugin.version}`
+
+      if (plugin.registerRoutes) {
+        const pluginRouter = express.Router()
+        plugin.registerRoutes(pluginContext, pluginRouter)
+        router.use(pluginContext.pluginBasePath, pluginRouter)
+      }
+
+      if (plugin.registerHeaderElements) {
+        pluginHeaderElements.push(
+          <React.Fragment key={identifier}>
+            {plugin.registerHeaderElements(pluginContext)}
+          </React.Fragment>
+        )
+      }
+
       pluginIdentifiers.push(identifier)
       console.info(`Initialized plugin: ${identifier}`)
     }
@@ -167,6 +183,9 @@ export function editorMiddleware(opts: MiddlewareOptions): express.Router {
             href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i"
             rel="stylesheet"
           />
+
+          {pluginHeaderElements}
+
           <script
             id="Config"
             type="application/json"

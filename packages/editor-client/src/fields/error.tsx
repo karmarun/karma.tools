@@ -44,7 +44,12 @@ export class ErrorField implements Field<ErrorFieldValue> {
   public readonly description?: string
   public readonly message: string
 
-  public readonly defaultValue: ErrorFieldValue = {value: undefined, isValid: false}
+  public readonly defaultValue: ErrorFieldValue = {
+    value: undefined,
+    isValid: false,
+    hasChanges: false
+  }
+
   public readonly sortConfigurations: SortConfiguration[] = []
   public readonly filterConfigurations: FilterConfiguration[] = []
 

@@ -11,7 +11,8 @@ import {
   refToString,
   convertKeyToLabel,
   slugify,
-  TypedFieldOptions
+  TypedFieldOptions,
+  FilterConfiguration
 } from '@karma.run/editor-common'
 
 import {FieldRegistry, AnyField} from './field'
@@ -37,6 +38,7 @@ export class ViewContext {
   public readonly displayKeyPaths: KeyPath[]
 
   public readonly sortConfigurations: SortConfiguration[]
+  public readonly filterConfigurations: FilterConfiguration[]
 
   public constructor(opts: ViewContextConstructorOptions) {
     this.model = opts.model
@@ -65,6 +67,8 @@ export class ViewContext {
         path: [StructPathSegment('value'), ...config.path]
       }))
     ]
+
+    this.filterConfigurations = this.field.filterConfigurations
   }
 
   public serialize() {
@@ -86,13 +90,20 @@ export class ViewContext {
     ignoreTypes: string[] = [],
     options: ViewContextOptions = {}
   ): ViewContext {
+    const name = options.name || (tag ? convertKeyToLabel(tag) : `Model: ${id[1]}`)
+
     return new ViewContext({
+      name,
       model: id,
       color: options.color || stringToColor(refToString(id)),
-      name: options.name || (tag ? convertKeyToLabel(tag) : `Model: ${id[1]}`),
       description: options.description,
       slug: options.slug || slugify(tag || id[1]),
-      field: inferFieldFromModel(model, registry, ignoreTypes, options.field),
+      field: inferFieldFromModel(
+        model,
+        registry,
+        ignoreTypes,
+        options.field ? {...options.field, label: options.field.label || name} : {label: name}
+      ),
       displayKeyPaths: options.displayKeyPaths || inferDisplayKeyPaths(model)
     })
   }

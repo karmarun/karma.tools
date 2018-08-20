@@ -36,29 +36,27 @@ export const SearchInputStyle = style({
   }
 })
 
-export namespace SearchInput {
-  export interface ResultItem {
-    id: Ref
-    title: string
-    href: string
-  }
-
-  export interface State {
-    selectedIndex: number
-    hasFocus: boolean
-  }
-
-  export interface Props {
-    value: string
-    placeholder?: string
-    results: ResultItem[]
-    onItemSubmit: (item: ResultItem) => void
-    onChange: (value: string) => void
-  }
+export interface SearchInputResultItem {
+  id: Ref
+  title: string
+  href: string
 }
 
-export class SearchInput extends React.Component<SearchInput.Props, SearchInput.State> {
-  constructor(props: SearchInput.Props) {
+export interface SearchInputState {
+  selectedIndex: number
+  hasFocus: boolean
+}
+
+export interface SearchInputProps {
+  value: string
+  placeholder?: string
+  results: SearchInputResultItem[]
+  onItemSubmit: (item: SearchInputResultItem) => void
+  onChange: (value: string) => void
+}
+
+export class SearchInput extends React.Component<SearchInputProps, SearchInputState> {
+  constructor(props: SearchInputProps) {
     super(props)
     this.state = {selectedIndex: 0, hasFocus: false}
   }
@@ -82,7 +80,7 @@ export class SearchInput extends React.Component<SearchInput.Props, SearchInput.
     })
   }
 
-  private handleItemClick = (item: SearchInput.ResultItem) => {
+  private handleItemClick = (item: SearchInputResultItem) => {
     this.props.onItemSubmit(item)
   }
 
@@ -166,15 +164,13 @@ export const SearchInputItemStyle = style({
   }
 })
 
-export namespace SearchInputItem {
-  export interface Props {
-    item: SearchInput.ResultItem
-    selected: boolean
-    onMouseDown: (item: SearchInput.ResultItem) => void
-  }
+export interface SearchInputItemProps {
+  item: SearchInputResultItem
+  selected: boolean
+  onMouseDown: (item: SearchInputResultItem) => void
 }
 
-export class SearchInputItem extends React.Component<SearchInputItem.Props> {
+export class SearchInputItem extends React.Component<SearchInputItemProps> {
   private handleMouseDown = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
     this.props.onMouseDown(this.props.item)

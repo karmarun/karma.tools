@@ -6,13 +6,11 @@ import {FontSize, Spacing, Color, FontWeight} from '../ui/style'
 
 import * as storage from '../util/storage'
 
-export namespace ErrorView {
-  export interface Props {
-    error: any
-  }
+export interface ErrorViewProps {
+  error: any
 }
 
-export class ErrorView extends React.Component<ErrorView.Props> {
+export class ErrorView extends React.Component<ErrorViewProps> {
   private handleReloadClick = () => {
     location.reload()
   }
@@ -24,7 +22,7 @@ export class ErrorView extends React.Component<ErrorView.Props> {
 
   public render() {
     return (
-      <div className={ErrorView.Style}>
+      <div className={ErrorViewStyle}>
         <div className="content">
           <div className="emote">:(</div>
           <div className="title">An unrecoverable error occured:</div>
@@ -43,57 +41,55 @@ export class ErrorView extends React.Component<ErrorView.Props> {
   }
 }
 
-export namespace ErrorView {
-  export const Style = style({
-    $debugName: 'ErrorView',
+export const ErrorViewStyle = style({
+  $debugName: 'ErrorView',
 
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
 
-    width: '100%',
-    height: '100%',
+  width: '100%',
+  height: '100%',
 
-    textAlign: 'center',
+  textAlign: 'center',
 
-    background: Color.primary.base,
+  background: Color.primary.base,
 
-    $nest: {
-      '> .content': {
-        width: '35rem',
+  $nest: {
+    '> .content': {
+      width: '35rem',
 
-        $nest: {
-          '> .emote': {
-            fontSize: '6rem',
-            fontWeight: 'bold',
-            marginBottom: Spacing.largest
-          },
+      $nest: {
+        '> .emote': {
+          fontSize: '6rem',
+          fontWeight: 'bold',
+          marginBottom: Spacing.largest
+        },
 
-          '> .title': {
-            fontSize: FontSize.large,
-            fontWeight: FontWeight.bold,
-            marginBottom: Spacing.medium
-          },
+        '> .title': {
+          fontSize: FontSize.large,
+          fontWeight: FontWeight.bold,
+          marginBottom: Spacing.medium
+        },
 
-          '> .text': {
-            fontSize: FontSize.medium,
-            marginBottom: Spacing.largest
-          },
+        '> .text': {
+          fontSize: FontSize.medium,
+          marginBottom: Spacing.largest
+        },
 
-          '> .buttonWrapper': {
-            display: 'flex',
-            flexDirection: 'column',
-            width: '100%',
+        '> .buttonWrapper': {
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
 
-            $nest: {
-              '> Button': {
-                marginBottom: Spacing.large
-              }
+          $nest: {
+            '> Button': {
+              marginBottom: Spacing.large
             }
           }
         }
       }
     }
-  })
-}
+  }
+})

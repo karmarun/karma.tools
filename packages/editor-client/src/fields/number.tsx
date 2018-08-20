@@ -6,8 +6,12 @@ import {
   ModelType,
   SortConfiguration,
   FilterConfiguration,
-  TypedFieldOptions
+  TypedFieldOptions,
+  StorageType,
+  ConditionType,
+  NumberConditionConfiguration
 } from '@karma.run/editor-common'
+
 import {ErrorField} from './error'
 
 import {
@@ -26,7 +30,14 @@ export class NumberFieldEditComponent extends React.PureComponent<
   EditComponentRenderProps<NumberField, NumberFieldValue>
 > {
   private handleChange = (value: string) => {
-    this.props.onValueChange({value: value, isValid: true}, this.props.changeKey)
+    this.props.onValueChange(
+      {
+        value: value,
+        isValid: true,
+        hasChanges: true
+      },
+      this.props.changeKey
+    )
   }
 
   public render() {
@@ -63,18 +74,6 @@ export interface NumberFieldConstructorOptions extends NumberFieldOptions {
   readonly storageType: StorageType
 }
 
-export const enum StorageType {
-  Float = 'float',
-  Int8 = 'int8',
-  Int16 = 'int16',
-  Int32 = 'int32',
-  Int64 = 'int64',
-  UInt8 = 'uint8',
-  UInt16 = 'uint16',
-  UInt32 = 'uint32',
-  UInt64 = 'uint64'
-}
-
 const validModelTypes: ModelType[] = [
   'float',
   'int8',
@@ -97,9 +96,14 @@ export class NumberField implements Field<NumberFieldValue> {
   public readonly step?: number
   public readonly storageType: StorageType
 
-  public readonly defaultValue: NumberFieldValue = {value: '', isValid: true}
+  public readonly defaultValue: NumberFieldValue = {
+    value: '',
+    isValid: true,
+    hasChanges: false
+  }
+
   public readonly sortConfigurations: SortConfiguration[] = []
-  public readonly filterConfigurations: FilterConfiguration[] = []
+  public readonly filterConfigurations: FilterConfiguration[]
 
   public constructor(opts: NumberFieldConstructorOptions) {
     this.label = opts.label
@@ -108,6 +112,14 @@ export class NumberField implements Field<NumberFieldValue> {
     this.maxValue = opts.maxValue
     this.step = opts.step
     this.storageType = opts.storageType
+
+    this.filterConfigurations = [
+      FilterConfiguration(NumberField.type, NumberField.type, this.label, [
+        NumberConditionConfiguration(ConditionType.NumberEqual, opts.storageType),
+        NumberConditionConfiguration(ConditionType.NumberMin, opts.storageType),
+        NumberConditionConfiguration(ConditionType.NumberMax, opts.storageType)
+      ])
+    ]
   }
 
   public initialize() {
@@ -129,8 +141,9 @@ export class NumberField implements Field<NumberFieldValue> {
     )
   }
 
-  public transformRawValue(value: any) {
-    return value.toString()
+  public transformRawValue(value: unknown): NumberFieldValue {
+    if (typeof value !== 'number' && typeof value !== 'string') throw new Error('Invalid value!')
+    return {value: value.toString(), isValid: true, hasChanges: false}
   }
 
   public transformValueToExpression(value: NumberFieldValue) {

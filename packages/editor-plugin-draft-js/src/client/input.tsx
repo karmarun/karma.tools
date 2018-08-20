@@ -30,7 +30,9 @@ import {
   ButtonType,
   Select,
   SelectType,
-  IconName
+  IconName,
+  Spacing,
+  AnyFieldValue
 } from '@karma.run/editor-client'
 
 export const RichTextInputStyle = style({
@@ -41,21 +43,31 @@ export const RichTextInputStyle = style({
   fontSize: '1em',
   lineHeight: 1.2,
   color: Color.primary.base,
+  borderRadius: DefaultBorderRadiusPx,
+  border: `1px solid ${Color.neutral.light1}`,
+
+  position: 'relative',
 
   $nest: {
-    '&[data-focused] &_content': {
-      backgroundColor: Color.neutral.white,
-      boxShadow: `0 0 0 2px ${Color.focus}`
+    '> .toolbar': {
+      position: 'sticky',
+      top: '5rem',
+
+      padding: Spacing.small,
+      backgroundColor: Color.neutral.light2
     },
 
-    '&_content': {
+    '> .editor': {
       width: '100%',
-      padding: '0.6rem 1rem',
-      maxHeight: '30vh',
+
       overflowY: 'auto',
-      border: `1px solid ${Color.neutral.light1}`,
-      backgroundColor: Color.neutral.light4,
-      borderRadius: DefaultBorderRadiusPx
+      padding: Spacing.medium,
+
+      $nest: {
+        '&:not(:first-child)': {
+          borderTop: `1px solid ${Color.neutral.light1}`
+        }
+      }
     }
   }
 })
@@ -101,40 +113,30 @@ export interface LinkType {
   label?: string
 }
 
-export namespace RichTextInput {
-  export interface Props {
-    onOpenBlockEditor: (
-      key: string,
-      data: any,
-      done: (data: any) => void,
-      cancel: () => void
-    ) => void
-
-    onOpenLinkEditor: (data: any, done: (data: any) => void, cancel: () => void) => void
-    onChange: (value: EditorState) => void
-    value: EditorState
-    disabled?: boolean
-    controls?: Set<Control>
-    styleGroups?: StyleGroup[]
-    blocks?: BlockType[]
-    links?: LinkType[]
-    elements?: CustomElement[]
-    linkEntityType: string
-    maxLength?: number
-  }
-
-  export interface State {
-    isFocused: boolean
-  }
+export interface RichTextInputProps {
+  onOpenBlockEditor: (key: string, data?: AnyFieldValue) => Promise<AnyFieldValue | undefined>
+  onOpenLinkEditor: (data?: AnyFieldValue) => Promise<AnyFieldValue | undefined>
+  onChange: (value: EditorState) => void
+  value: EditorState
+  disabled?: boolean
+  controls?: Set<Control>
+  styleGroups?: StyleGroup[]
+  blocks?: BlockType[]
+  links?: LinkType[]
+  elements?: CustomElement[]
+  linkEntityType: string
+  maxLength?: number
 }
 
-namespace CustomBlock {
-  export interface Props {
-    blockProps: {style: React.CSSProperties}
-  }
+export interface RichTextInputState {
+  isFocused: boolean
 }
 
-const CustomBlock: React.StatelessComponent<CustomBlock.Props> = props => {
+export interface CustomBlockProps {
+  blockProps: {style: React.CSSProperties}
+}
+
+const CustomBlock: React.StatelessComponent<CustomBlockProps> = props => {
   return (
     <div style={props.blockProps.style}>
       <EditorBlock {...props} />
@@ -142,16 +144,14 @@ const CustomBlock: React.StatelessComponent<CustomBlock.Props> = props => {
   )
 }
 
-namespace CustomImmutableBlock {
-  export interface Props {
-    blockProps: {
-      content?: string
-      style: React.CSSProperties
-    }
+export interface CustomImmutableBlockProps {
+  blockProps: {
+    content?: string
+    style: React.CSSProperties
   }
 }
 
-const CustomImmutableBlock: React.StatelessComponent<CustomImmutableBlock.Props> = props => {
+const CustomImmutableBlock: React.StatelessComponent<CustomImmutableBlockProps> = props => {
   return (
     <div style={{...props.blockProps.style, userSelect: 'none'}}>{props.blockProps.content}</div>
   )
@@ -219,10 +219,10 @@ const UnknownEntityRenderer: React.StatelessComponent = props => {
   return <a className={UnknownEntityRendererStyle}>{props.children}</a>
 }
 
-export class RichTextInput extends React.Component<RichTextInput.Props, RichTextInput.State> {
+export class RichTextInput extends React.Component<RichTextInputProps, RichTextInputState> {
   private editorRef!: Editor
 
-  constructor(props: RichTextInput.Props) {
+  constructor(props: RichTextInputProps) {
     super(props)
     this.state = {
       isFocused: false
@@ -654,7 +654,7 @@ export class RichTextInput extends React.Component<RichTextInput.Props, RichText
     return entity.getType() === this.props.linkEntityType
   }
 
-  private handleLinkClick = () => {
+  private handleLinkClick = async () => {
     const selection = this.props.value.getSelection()
     const contentState = this.props.value.getCurrentContent()
 
@@ -662,23 +662,22 @@ export class RichTextInput extends React.Component<RichTextInput.Props, RichText
       .getBlockForKey(selection.getStartKey())
       .getEntityAt(selection.getStartOffset())
 
-    let data: any
+    let data: AnyFieldValue | undefined
 
     if (entityKey) {
       const entity = contentState.getEntity(entityKey)
       data = entity.getData()
     }
 
-    this.props.onOpenLinkEditor(
-      data,
-      data => {
-        this.applyEntity(this.props.linkEntityType, data)
-        this.editorRef.focus()
-      },
-      () => {
-        this.editorRef.focus()
-      }
-    )
+    const newData = await this.props.onOpenLinkEditor(data)
+
+    if (newData) {
+      this.applyEntity(this.props.linkEntityType, newData)
+      this.editorRef.focus()
+    } else {
+      this.removeEntity()
+      this.editorRef.focus()
+    }
   }
 
   private handleRemoveLinkClick = () => {
@@ -690,7 +689,7 @@ export class RichTextInput extends React.Component<RichTextInput.Props, RichText
       <Button
         key={control}
         selected={this.isControlActive(control)}
-        type={ButtonType.Icon}
+        type={ButtonType.Light}
         data={control}
         icon={iconForControl(control)}
         onMouseDown={this.handleControlClick}
@@ -728,7 +727,7 @@ export class RichTextInput extends React.Component<RichTextInput.Props, RichText
     return this.props.value.getCurrentInlineStyle()
   }
 
-  private handleBlockChange = (newBlock: string | undefined) => {
+  private handleBlockChange = async (newBlock: string | undefined) => {
     if (!this.props.blocks) return
     if (!newBlock) return this.setBlockType('unstyled')
 
@@ -742,25 +741,23 @@ export class RichTextInput extends React.Component<RichTextInput.Props, RichText
     if (!blockSpec) return
 
     if (blockSpec.dataKey) {
-      const data = block.getData().toJS()[blockSpec.dataKey]
-      this.props.onOpenBlockEditor(
-        blockSpec.dataKey,
-        data,
-        data => {
-          this.setBlockType(blockSpec.type, {[blockSpec.dataKey!]: data})
-          this.editorRef.focus()
-        },
-        () => {
-          this.editorRef.focus()
-        }
-      )
+      const data = block.getData().get(blockSpec.dataKey)
+      const newData = await this.props.onOpenBlockEditor(blockSpec.dataKey, data)
+
+      if (newData) {
+        this.setBlockType(blockSpec.type, {[blockSpec.dataKey]: newData})
+        this.editorRef.focus()
+      } else {
+        this.setBlockType('unstyled')
+        this.editorRef.focus()
+      }
     } else {
       this.setBlockType(blockSpec.type)
       setTimeout(() => this.editorRef.focus(), 0)
     }
   }
 
-  private handleBlockEdit = () => {
+  private handleBlockEdit = async () => {
     if (!this.props.blocks) return
 
     const content = this.props.value.getCurrentContent()
@@ -772,37 +769,32 @@ export class RichTextInput extends React.Component<RichTextInput.Props, RichText
 
     if (!blockSpec || !blockSpec.dataKey) return
 
-    const data = block.getData().toJS()[blockSpec.dataKey]
+    const data = block.getData().get(blockSpec.dataKey)
+    const newData = await this.props.onOpenBlockEditor(blockSpec.dataKey, data)
 
-    this.props.onOpenBlockEditor(
-      blockSpec.dataKey,
-      data,
-      data => {
-        this.setBlockType(blockSpec.type, {[blockSpec.dataKey!]: data})
-        this.editorRef.focus()
-      },
-      () => {
-        this.editorRef.focus()
-      }
-    )
+    if (newData) {
+      this.setBlockType(blockSpec.type, {[blockSpec.dataKey]: newData})
+      this.editorRef.focus()
+    } else {
+      this.setBlockType('unstyled')
+      this.editorRef.focus()
+    }
   }
 
-  private handleInsertElement = (type?: string | number) => {
+  private handleInsertElement = async (type?: string | number) => {
     if (!this.props.elements) return
     const element = this.props.elements.find(element => element.type === type)!
 
     if (!element.dataKey) return this.insertImmutableBlock(element.type)
-    return this.props.onOpenBlockEditor(
-      element.dataKey,
-      undefined,
-      data => {
-        this.insertImmutableBlock(element.type, {[element.dataKey!]: data})
-        this.editorRef.focus()
-      },
-      () => {
-        this.editorRef.focus()
-      }
-    )
+
+    const data = await this.props.onOpenBlockEditor(element.dataKey)
+
+    if (data) {
+      this.insertImmutableBlock(element.type, {[element.dataKey]: data})
+      this.editorRef.focus()
+    } else {
+      this.editorRef.focus()
+    }
   }
 
   private handleStyleChange = (newStyle: string | undefined, group?: string | number) => {
@@ -954,7 +946,7 @@ export class RichTextInput extends React.Component<RichTextInput.Props, RichText
             />
           </FlexItem>
           <Button
-            type={ButtonType.Icon}
+            type={ButtonType.Light}
             icon={IconName.Edit}
             disabled={data.count() === 0}
             onMouseDown={this.handleBlockEdit}
@@ -970,7 +962,7 @@ export class RichTextInput extends React.Component<RichTextInput.Props, RichText
         <Button
           key="insertLink"
           selected={this.selectionHasLink()}
-          type={ButtonType.Icon}
+          type={ButtonType.Light}
           icon={IconName.InsertLink}
           onMouseDown={this.handleLinkClick}
         />
@@ -979,7 +971,7 @@ export class RichTextInput extends React.Component<RichTextInput.Props, RichText
       buttons.push(
         <Button
           key="removeLink"
-          type={ButtonType.Icon}
+          type={ButtonType.Light}
           icon={IconName.RemoveLink}
           onMouseDown={this.handleRemoveLinkClick}
         />
@@ -987,7 +979,11 @@ export class RichTextInput extends React.Component<RichTextInput.Props, RichText
     }
 
     if (buttons.length > 0) {
-      basicControls = <FlexList>{buttons}</FlexList>
+      basicControls = (
+        <div className="toolbar" data-has-focus={boolAttr(this.state.isFocused)}>
+          <FlexList>{buttons}</FlexList>
+        </div>
+      )
     }
 
     const editorState = EditorState.set(this.props.value, {
@@ -1007,28 +1003,23 @@ export class RichTextInput extends React.Component<RichTextInput.Props, RichText
 
     return (
       <div className={RichTextInputStyle} data-focused={boolAttr(this.state.isFocused)}>
-        <FlexList direction="column" alignItems="start" spacing="medium">
-          {basicControls}
-          <div className={`${RichTextInputStyle}_content`}>
-            <Editor
-              ref={editor => (this.editorRef = editor!)}
-              blockRenderMap={blockRenderMap}
-              blockRendererFn={this.handleBlockStyle}
-              customStyleFn={this.handleInlineStyle}
-              handleKeyCommand={this.handleKeyCommand}
-              handleBeforeInput={this.handleBeforeInput}
-              handlePastedText={this.handlePastedText}
-              editorState={editorState}
-              onFocus={this.handleFocus}
-              onBlur={this.handleBlur}
-              onChange={this.handleChange}
-              stripPastedStyles
-            />
-          </div>
-          {/* <div>
-            <pre>{JSON.stringify(convertToRaw(this.props.value.getCurrentContent()), undefined, 2)}</pre>
-          </div> */}
-        </FlexList>
+        {basicControls}
+        <div className="editor">
+          <Editor
+            ref={editor => (this.editorRef = editor!)}
+            blockRenderMap={blockRenderMap}
+            blockRendererFn={this.handleBlockStyle}
+            customStyleFn={this.handleInlineStyle}
+            handleKeyCommand={this.handleKeyCommand}
+            handleBeforeInput={this.handleBeforeInput}
+            handlePastedText={this.handlePastedText}
+            editorState={editorState}
+            onFocus={this.handleFocus}
+            onBlur={this.handleBlur}
+            onChange={this.handleChange}
+            stripPastedStyles
+          />
+        </div>
       </div>
     )
   }

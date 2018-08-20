@@ -138,10 +138,10 @@ export class RecursiveField implements Field<any> {
       fields: new Map(
         Object.entries(model.models).map(
           ([recursionKey, model]) =>
-            [recursionKey, createField(model, opts && opts.fields[recursionKey])] as [
-              string,
-              AnyField
-            ]
+            [
+              recursionKey,
+              createField(model, opts && opts.fields && opts.fields[recursionKey])
+            ] as [string, AnyField]
         )
       )
     })

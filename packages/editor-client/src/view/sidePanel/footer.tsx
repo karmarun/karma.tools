@@ -2,7 +2,16 @@ import * as React from 'react'
 import {style} from 'typestyle'
 import {stringToColor} from '@karma.run/editor-common'
 
-import {Button, ButtonType, IconName, Color, Spacing, FontSize, FontWeight} from '../../ui'
+import {
+  Button,
+  ButtonType,
+  IconName,
+  Color,
+  Spacing,
+  FontSize,
+  FontWeight,
+  ButtonStyle
+} from '../../ui'
 import {LocaleContext} from '../../context/locale'
 import {boolAttr} from '../../util/react'
 
@@ -106,7 +115,7 @@ export const SidePanelFooterStyle = style({
       }
     },
 
-    [`> .${Button.Style}`]: {
+    [`> .${ButtonStyle}`]: {
       color: Color.neutral.white,
       fontSize: FontSize.large
     },

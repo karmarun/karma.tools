@@ -5,6 +5,7 @@ import {SortConfiguration} from '@karma.run/editor-common'
 import {
   Select,
   SelectStyle,
+  SelectOption,
   Button,
   ButtonType,
   SelectType,
@@ -52,7 +53,7 @@ export class SortField extends React.Component<SortFieldProps> {
   }
 
   public render() {
-    const options: Select.Option[] = this.props.configurations.map(config => ({
+    const options: SelectOption[] = this.props.configurations.map(config => ({
       key: config.key,
       label: config.label
     }))

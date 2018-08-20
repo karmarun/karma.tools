@@ -7,7 +7,9 @@ import {
   SortType,
   SortConfiguration,
   FilterConfiguration,
-  TypedFieldOptions
+  TypedFieldOptions,
+  ConditionType,
+  SimpleConditionConfiguration
 } from '@karma.run/editor-common'
 import {ErrorField} from './error'
 
@@ -81,9 +83,14 @@ export class StringField implements Field<StringFieldValue> {
   public readonly maxLength?: number
   public readonly multiline?: boolean
 
-  public readonly defaultValue: StringFieldValue = {value: '', isValid: true}
+  public readonly defaultValue: StringFieldValue = {
+    value: '',
+    isValid: true,
+    hasChanges: false
+  }
+
   public readonly sortConfigurations: SortConfiguration[]
-  public readonly filterConfigurations: FilterConfiguration[] = []
+  public readonly filterConfigurations: FilterConfiguration[]
 
   public constructor(opts?: StringFieldOptions) {
     this.label = opts && opts.label
@@ -94,6 +101,16 @@ export class StringField implements Field<StringFieldValue> {
 
     this.sortConfigurations = [
       {key: shortid.generate(), type: SortType.String, label: this.label || '', path: []}
+    ]
+
+    this.filterConfigurations = [
+      FilterConfiguration(StringField.type, StringField.type, this.label, [
+        SimpleConditionConfiguration(ConditionType.StringEqual),
+        SimpleConditionConfiguration(ConditionType.StringIncludes),
+        SimpleConditionConfiguration(ConditionType.StringRegExp),
+        SimpleConditionConfiguration(ConditionType.StringStartsWith),
+        SimpleConditionConfiguration(ConditionType.StringEndsWith)
+      ])
     ]
   }
 
@@ -154,7 +171,12 @@ export class StringField implements Field<StringFieldValue> {
     if (this.maxLength && value.length > this.maxLength) errors.push('stringToLongError')
     if (this.minLength && value.length < this.minLength) errors.push('stringToShortError')
 
-    return {value, isValid: errors.length === 0, error: errors}
+    return {
+      value,
+      isValid: errors.length === 0,
+      error: errors,
+      hasChanges: true
+    }
   }
 
   public async onSave(value: StringFieldValue): Promise<StringFieldValue> {

@@ -5,10 +5,10 @@ import {EditorSession} from './session'
 export const enum LocationType {
   Login = 'login',
   Dashboard = 'dashboard',
-  EntryList = 'entryList',
-  EntryNew = 'entryNew',
-  EntryEdit = 'entryEdit',
-  EntryDelete = 'entryDelete',
+  ListRecords = 'listRecords',
+  NewRecord = 'newRecord',
+  EditRecord = 'editRecord',
+  DeleteRecord = 'deleteRecord',
   NotFound = 'notFound',
   NoPermission = 'noPermission',
   External = 'external'
@@ -35,42 +35,42 @@ export function DashboardLocation(): DashboardLocation {
   return {type: LocationType.Dashboard}
 }
 
-export interface EntryListLocation {
-  type: LocationType.EntryList
+export interface ListRecordsLocation {
+  type: LocationType.ListRecords
   slug: string
 }
 
-export function EntryListLocation(slug: string): EntryListLocation {
-  return {type: LocationType.EntryList, slug}
+export function ListRecordsLocation(slug: string): ListRecordsLocation {
+  return {type: LocationType.ListRecords, slug}
 }
 
-export interface EntryNewLocation {
-  type: LocationType.EntryNew
+export interface NewRecordLocation {
+  type: LocationType.NewRecord
   slug: string
 }
 
-export function EntryNewLocation(slug: string): EntryNewLocation {
-  return {type: LocationType.EntryNew, slug}
+export function NewRecordLocation(slug: string): NewRecordLocation {
+  return {type: LocationType.NewRecord, slug}
 }
 
-export interface EntryEditLocation {
-  type: LocationType.EntryEdit
-  slug: string
-  id: string
-}
-
-export function EntryEditLocation(slug: string, id: string): EntryEditLocation {
-  return {type: LocationType.EntryEdit, slug, id}
-}
-
-export interface EntryDeleteLocation {
-  type: LocationType.EntryDelete
+export interface EditRecordLocation {
+  type: LocationType.EditRecord
   slug: string
   id: string
 }
 
-export function EntryDeleteLocation(slug: string, id: string): EntryDeleteLocation {
-  return {type: LocationType.EntryDelete, slug, id}
+export function EditRecordLocation(slug: string, id: string): EditRecordLocation {
+  return {type: LocationType.EditRecord, slug, id}
+}
+
+export interface DeleteRecordLocation {
+  type: LocationType.DeleteRecord
+  slug: string
+  id: string
+}
+
+export function DeleteRecordLocation(slug: string, id: string): DeleteRecordLocation {
+  return {type: LocationType.DeleteRecord, slug, id}
 }
 
 export interface NotFoundLocation {
@@ -101,10 +101,10 @@ export function ExternalLocation(url: string): ExternalLocation {
 export type AppLocation =
   | LoginLocation
   | DashboardLocation
-  | EntryListLocation
-  | EntryNewLocation
-  | EntryEditLocation
-  | EntryDeleteLocation
+  | ListRecordsLocation
+  | NewRecordLocation
+  | EditRecordLocation
+  | DeleteRecordLocation
   | NotFoundLocation
   | NoPermissionLocation
   | ExternalLocation

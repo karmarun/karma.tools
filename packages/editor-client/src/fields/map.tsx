@@ -10,9 +10,9 @@ import {
   SortConfiguration,
   FilterConfiguration,
   ValuePath,
-  ValuePathSegmentType,
   TypedFieldOptions,
-  flatMap
+  flatMap,
+  MapPathSegment
 } from '@karma.run/editor-common'
 
 import {
@@ -54,7 +54,8 @@ export class MapFieldEditComponent extends React.PureComponent<
         value: Object.assign([...this.props.value.value], {
           [index]: {...this.props.value.value[index], value}
         }),
-        isValid: true
+        isValid: true,
+        hasChanges: true
       },
       this.props.changeKey
     )
@@ -68,7 +69,8 @@ export class MapFieldEditComponent extends React.PureComponent<
         value: Object.assign([...this.props.value.value], {
           [index]: {...this.props.value.value[index], key}
         }),
-        isValid: true
+        isValid: true,
+        hasChanges: true
       },
       this.props.changeKey
     )
@@ -87,7 +89,14 @@ export class MapFieldEditComponent extends React.PureComponent<
 
     this.focusTabAtIndex = index
     this.setState({activeTabIndex: index})
-    this.props.onValueChange({value: newValue, isValid: true}, this.props.changeKey)
+    this.props.onValueChange(
+      {
+        value: newValue,
+        isValid: true,
+        hasChanges: true
+      },
+      this.props.changeKey
+    )
   }
 
   public removeValueAt(index: number) {
@@ -95,7 +104,14 @@ export class MapFieldEditComponent extends React.PureComponent<
     const newValue = [...this.props.value.value]
     newValue.splice(index, 1)
 
-    this.props.onValueChange({value: newValue, isValid: true}, this.props.changeKey)
+    this.props.onValueChange(
+      {
+        value: newValue,
+        isValid: true,
+        hasChanges: true
+      },
+      this.props.changeKey
+    )
   }
 
   public componentDidUpdate() {
@@ -194,7 +210,12 @@ export class MapField implements Field<MapFieldValue> {
   public readonly description?: string
   public readonly restrictedToKeys?: string[]
 
-  public readonly defaultValue: MapFieldValue = {value: [], isValid: true}
+  public readonly defaultValue: MapFieldValue = {
+    value: [],
+    isValid: true,
+    hasChanges: true
+  }
+
   public readonly sortConfigurations: SortConfiguration[] = []
   public readonly filterConfigurations: FilterConfiguration[] = []
 
@@ -234,7 +255,8 @@ export class MapField implements Field<MapFieldValue> {
         key,
         value: this.field.transformRawValue(value)
       })),
-      isValid: true
+      isValid: true,
+      hasChanges: true
     }
   }
 
@@ -262,7 +284,7 @@ export class MapField implements Field<MapFieldValue> {
   }
 
   public valuePathForKeyPath(keyPath: KeyPath): ValuePath {
-    return [{type: ValuePathSegmentType.Map}, ...this.field.valuePathForKeyPath(keyPath.slice(1))]
+    return [MapPathSegment(), ...this.field.valuePathForKeyPath(keyPath.slice(1))]
   }
 
   public valuesForKeyPath(value: MapFieldValue, keyPath: KeyPath) {
@@ -277,7 +299,11 @@ export class MapField implements Field<MapFieldValue> {
       newValue.push({id, key, value: await this.field.onSave(mapValue, context)})
     }
 
-    return {value: newValue, isValid: true}
+    return {
+      value: newValue,
+      isValid: true,
+      hasChanges: true
+    }
   }
 
   public async onDelete(value: MapFieldValue, context: DeleteContext): Promise<MapFieldValue> {
@@ -288,7 +314,11 @@ export class MapField implements Field<MapFieldValue> {
       newValue.push({id, key: key, value: await this.field.onDelete(mapValue, context)})
     }
 
-    return {value: newValue, isValid: true}
+    return {
+      value: newValue,
+      isValid: true,
+      hasChanges: true
+    }
   }
 
   public static type = 'map'

@@ -6,7 +6,11 @@ import {
   KeyPath,
   TypedFieldOptions,
   SortConfiguration,
-  FilterConfiguration
+  FilterConfiguration,
+  OptionalPathSegment,
+  ConditionType,
+  SimpleConditionConfiguration,
+  filterConfigurationPrependPath
 } from '@karma.run/editor-common'
 
 import {ErrorField} from './error'
@@ -38,20 +42,22 @@ export class OptionalFieldEditComponent extends React.PureComponent<
           isPresent: value,
           value: this.props.value.value.value || this.props.field.field.defaultValue
         },
-        isValid: true
+        isValid: true,
+        hasChanges: true
       },
       this.props.changeKey
     )
   }
 
-  private handleValueChange = (value: any) => {
+  private handleValueChange = (value: AnyFieldValue) => {
     this.props.onValueChange(
       {
         value: {
           isPresent: this.props.value.value.isPresent,
           value: value
         },
-        isValid: true
+        isValid: true,
+        hasChanges: true
       },
       this.props.changeKey
     )
@@ -124,7 +130,8 @@ export class OptionalField implements Field<OptionalFieldValue> {
       isPresent: false,
       value: undefined
     },
-    isValid: true
+    isValid: true,
+    hasChanges: true
   }
 
   public sortConfigurations: SortConfiguration[] = []
@@ -140,6 +147,16 @@ export class OptionalField implements Field<OptionalFieldValue> {
 
   public initialize(recursions: ReadonlyMap<string, AnyField>) {
     this.field.initialize(recursions)
+
+    this.filterConfigurations = [
+      FilterConfiguration(OptionalField.type, OptionalField.type, this.label, [
+        SimpleConditionConfiguration(ConditionType.OptionalIsPresent)
+      ]),
+      ...this.field.filterConfigurations.map(config =>
+        filterConfigurationPrependPath(config, OptionalField.type, [OptionalPathSegment()])
+      )
+    ]
+
     return this
   }
 
@@ -159,22 +176,15 @@ export class OptionalField implements Field<OptionalFieldValue> {
   }
 
   public transformRawValue(value: any): OptionalFieldValue {
-    if (value == undefined) {
-      return {
-        value: {
-          isPresent: false,
-          value: this.field.defaultValue
-        },
-        isValid: true
-      }
-    } else {
-      return {
-        value: {
-          isPresent: true,
-          value: this.field.transformRawValue(value)
-        },
-        isValid: true
-      }
+    const isPresent = value != undefined
+
+    return {
+      value: {
+        isPresent,
+        value: isPresent ? this.field.transformRawValue(value) : undefined
+      },
+      isValid: true,
+      hasChanges: false
     }
   }
 
@@ -198,7 +208,7 @@ export class OptionalField implements Field<OptionalFieldValue> {
   }
 
   public valuePathForKeyPath(keyPath: KeyPath) {
-    return this.field.valuePathForKeyPath(keyPath)
+    return [OptionalPathSegment(), ...this.field.valuePathForKeyPath(keyPath)]
   }
 
   public valuesForKeyPath(value: OptionalFieldValue, keyPath: KeyPath) {
@@ -215,7 +225,8 @@ export class OptionalField implements Field<OptionalFieldValue> {
           isPresent: value.value.isPresent,
           value: await this.field.onSave(value.value.value!, context)
         },
-        isValid: true
+        isValid: true,
+        hasChanges: true
       }
     }
 
@@ -232,7 +243,8 @@ export class OptionalField implements Field<OptionalFieldValue> {
           isPresent: value.value.isPresent,
           value: await this.field.onDelete(value.value.value!, context)
         },
-        isValid: true
+        isValid: true,
+        hasChanges: true
       }
     }
 

@@ -55,8 +55,14 @@ export class SlateFieldEditComponent extends React.PureComponent<
   public editorRef = React.createRef<SlateEditor>()
 
   private handleChange = (change: Slate.Change) => {
-    // TODO: Will be called on mount, check if this can be disabled so hasUnsavedChanges works.
-    this.props.onValueChange({value: change.value, isValid: true}, this.props.changeKey)
+    this.props.onValueChange(
+      {
+        value: change.value,
+        isValid: true,
+        hasChanges: this.props.value.value.document !== change.value.document
+      },
+      this.props.changeKey
+    )
   }
 
   private handleWrapperPointerDown = () => {
@@ -77,7 +83,7 @@ export class SlateFieldEditComponent extends React.PureComponent<
 
   private handleControlValueChange = (changeFn: (change: Slate.Change) => Slate.Change) => {
     this.props.onValueChange(
-      {value: changeFn(this.props.value.value.change()).value, isValid: true},
+      {value: changeFn(this.props.value.value.change()).value, isValid: true, hasChanges: true},
       this.props.changeKey
     )
   }
@@ -88,7 +94,7 @@ export class SlateFieldEditComponent extends React.PureComponent<
       data ? data.get(dataKey) : undefined
     )
 
-    return newData ? {[dataKey]: newData.value} : undefined
+    return newData ? {[dataKey]: newData} : undefined
   }
 
   private handleRenderMark = (props: RenderMarkProps): React.ReactNode => {
@@ -212,6 +218,7 @@ export const SlateFieldEditComponentStyle = style({
     '> .inputWrapper': {
       fontSize: '1em',
       lineHeight: 1.2,
+      position: 'relative',
 
       border: `1px solid ${Color.neutral.light1}`,
       backgroundColor: Color.neutral.white,
@@ -219,6 +226,9 @@ export const SlateFieldEditComponentStyle = style({
 
       $nest: {
         '> .toolbar': {
+          position: 'sticky',
+          top: '5rem',
+
           padding: Spacing.small,
           backgroundColor: Color.neutral.light2
         },
@@ -301,9 +311,11 @@ export class SlateField implements Field<SlateFieldValue> {
     this.dataFields = opts.dataFields
 
     this.schema = opts.schema
+
     this.defaultValue = {
       value: opts.defaultValue || blankDefaultValue,
-      isValid: true
+      isValid: true,
+      hasChanges: false
     }
   }
 
@@ -315,7 +327,12 @@ export class SlateField implements Field<SlateFieldValue> {
     const plainText = plainTextSerializer.serialize(props.value.value)
 
     if (plainText.length > 140) {
-      return <CardSection>{plainText.slice(0, 140).trim()}...</CardSection>
+      return (
+        <CardSection>
+          {plainText.slice(0, 140).trim()}
+          ...
+        </CardSection>
+      )
     } else {
       return <CardSection>{plainText}</CardSection>
     }
@@ -362,7 +379,8 @@ export class SlateField implements Field<SlateFieldValue> {
       value: Slate.Value.create({
         document: Slate.Document.fromJSON(recurse(value))
       }),
-      isValid: true
+      isValid: true,
+      hasChanges: false
     }
   }
 
@@ -561,26 +579,4 @@ export const SlateFieldConstructor = (
       })
     }
   } as AnyFieldConstructor
-}
-
-export function unserializeValue(_value: any) {}
-
-export function serializeValue(value: Slate.Document) {
-  function recurse(value: any) {
-    return value.nodes.map((node: any) => {
-      switch (node.type) {
-        default:
-        case 'block':
-        case 'inline': {
-          return {
-            type: node.type,
-            isVoid: node.isVoid,
-            data: Object.keys(node.data).length ? {[node.type]: node.data} : null
-          }
-        }
-      }
-    })
-  }
-
-  return recurse(value.toJSON())
 }

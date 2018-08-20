@@ -1,14 +1,12 @@
 import React from 'react'
 import ReactMarkdown from 'react-markdown'
 
-namespace Link {
-  export interface Props {
-    href?: string
-    title?: string
-  }
+interface LinkProps {
+  href?: string
+  title?: string
 }
 
-const Link: React.StatelessComponent<Link.Props> = props => {
+const Link: React.StatelessComponent<LinkProps> = props => {
   return (
     <a title={props.title} href={props.href} target="_blank">
       {props.children}
@@ -16,13 +14,11 @@ const Link: React.StatelessComponent<Link.Props> = props => {
   )
 }
 
-export namespace Markdown {
-  export interface Props {
-    source: string
-  }
+export interface MarkdownProps {
+  source: string
 }
 
-export const Markdown: React.StatelessComponent<Markdown.Props> = props => {
+export const Markdown: React.StatelessComponent<MarkdownProps> = props => {
   return (
     <ReactMarkdown
       source={props.source}

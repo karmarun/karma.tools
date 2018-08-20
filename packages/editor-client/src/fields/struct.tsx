@@ -13,7 +13,8 @@ import {
   SortConfiguration,
   FilterConfiguration,
   FieldOptions,
-  TypedFieldOptions
+  TypedFieldOptions,
+  filterConfigurationPrependPath
 } from '@karma.run/editor-common'
 
 import {
@@ -44,7 +45,11 @@ export class LinearStructFieldEditComponent extends React.PureComponent<
     }
 
     this.props.onValueChange(
-      {value: {...this.props.value.value, [key]: value}, isValid: true},
+      {
+        value: {...this.props.value.value, [key]: value},
+        isValid: true,
+        hasChanges: true
+      },
       this.props.changeKey
     )
   }
@@ -210,7 +215,8 @@ export class StructField implements Field<StructFieldValue> {
     this.fieldMap = new Map(this.fields)
     this.defaultValue = {
       value: reduceToMap(this.fields, ([key, field]) => [key, field.defaultValue]),
-      isValid: true
+      isValid: true,
+      hasChanges: false
     }
 
     this.sortConfigurations = [
@@ -226,9 +232,26 @@ export class StructField implements Field<StructFieldValue> {
       )
     ]
 
-    this.filterConfigurations = []
+    this.filterConfigurations = [
+      FilterConfiguration(StructField.type, StructField.type, this.label, []),
+      ...this.fields.reduce(
+        (acc, [key, field]) => [
+          ...acc,
+          ...field.filterConfigurations.map(config =>
+            filterConfigurationPrependPath(config, `${StructField.type}[${key}]`, [
+              StructPathSegment(key)
+            ])
+          )
+        ],
+        [] as FilterConfiguration[]
+      )
+    ]
 
     return this
+  }
+
+  public get children() {
+    return this.fields.map(([_, field]) => field)
   }
 
   public renderListComponent() {
@@ -263,7 +286,8 @@ export class StructField implements Field<StructFieldValue> {
   public transformRawValue(value: any): StructFieldValue {
     return {
       value: reduceToMap(this.fields, ([key, field]) => [key, field.transformRawValue(value[key])]),
-      isValid: true
+      isValid: true,
+      hasChanges: false
     }
   }
 
@@ -326,7 +350,8 @@ export class StructField implements Field<StructFieldValue> {
 
         return await field.onSave(value, context)
       }),
-      isValid: true
+      isValid: true,
+      hasChanges: true
     }
   }
 
@@ -341,7 +366,8 @@ export class StructField implements Field<StructFieldValue> {
         if (!field.onDelete) return value
         return await field.onDelete(value, context)
       }),
-      isValid: true
+      isValid: true,
+      hasChanges: true
     }
   }
 

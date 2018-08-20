@@ -15,17 +15,60 @@ import {
 
 import {Markdown} from './markdown'
 
-export namespace CardFooter {
-  export interface Props {
-    contentLeft?: React.ReactNode
-    contentRight?: React.ReactNode
-  }
+export interface CardFooterProps {
+  contentLeft?: React.ReactNode
+  contentRight?: React.ReactNode
 }
 
-export class CardFooter extends React.Component<CardFooter.Props> {
+export const CardFooterStyle = style({
+  $debugName: 'CardFooter',
+
+  padding: Spacing.medium,
+
+  borderTop: `1px solid ${Color.neutral.light2}`,
+  backgroundColor: Color.neutral.light4,
+
+  display: 'flex',
+  alignItems: 'center',
+
+  color: Color.primary.light1,
+  fontSize: FontSize.small,
+  fontWeight: FontWeight.light,
+
+  width: '100%',
+
+  $nest: {
+    '> .contentLeft': {
+      display: 'flex',
+      alignItems: 'center',
+      flexGrow: 1,
+
+      width: '100%',
+      opacity: 0.75,
+
+      $nest: {
+        '> *': marginLeftExceptFirst(Spacing.medium)
+      }
+    },
+
+    '> .contentRight': {
+      display: 'flex',
+
+      flexGrow: 0,
+      flexShrink: 0,
+      opacity: 0.25,
+
+      $nest: {
+        '> *': marginLeftExceptFirst(Spacing.large)
+      }
+    }
+  }
+})
+
+export class CardFooter extends React.Component<CardFooterProps> {
   public render() {
     return (
-      <div className={CardFooter.Style}>
+      <div className={CardFooterStyle}>
         <div className="contentLeft">{this.props.contentLeft}</div>
         <div className="contentRight">{this.props.contentRight}</div>
       </div>
@@ -33,64 +76,15 @@ export class CardFooter extends React.Component<CardFooter.Props> {
   }
 }
 
-export namespace CardFooter {
-  export const Style = style({
-    $debugName: 'CardFooter',
-
-    padding: Spacing.medium,
-
-    borderTop: `1px solid ${Color.neutral.light2}`,
-    backgroundColor: Color.neutral.light4,
-
-    display: 'flex',
-    alignItems: 'center',
-
-    color: Color.primary.light1,
-    fontSize: FontSize.small,
-    fontWeight: FontWeight.light,
-
-    width: '100%',
-
-    $nest: {
-      '> .contentLeft': {
-        display: 'flex',
-        alignItems: 'center',
-        flexGrow: 1,
-
-        width: '100%',
-        opacity: 0.75,
-
-        $nest: {
-          '> *': marginLeftExceptFirst(Spacing.medium)
-        }
-      },
-
-      '> .contentRight': {
-        display: 'flex',
-
-        flexGrow: 0,
-        flexShrink: 0,
-        opacity: 0.25,
-
-        $nest: {
-          '> *': marginLeftExceptFirst(Spacing.large)
-        }
-      }
-    }
-  })
+export interface CardProps {
+  depth?: number
+  markerColor?: string
 }
 
-export namespace Card {
-  export interface Props {
-    depth?: number
-    markerColor?: string
-  }
-}
-
-export class Card extends React.Component<Card.Props> {
+export class Card extends React.Component<CardProps> {
   public render() {
     return (
-      <div className={Card.Style}>
+      <div className={CardStyle}>
         {this.props.markerColor && (
           <div className={'marker'} style={{backgroundColor: this.props.markerColor}} />
         )}
@@ -100,26 +94,24 @@ export class Card extends React.Component<Card.Props> {
   }
 }
 
-export namespace Card {
-  export const Style = style({
-    $debugName: 'Card',
+export const CardStyle = style({
+  $debugName: 'Card',
 
-    display: 'flex',
-    flexDirection: 'row',
-    flexShrink: 0,
-    width: '100%',
-    borderRadius: DefaultBorderRadiusPx,
-    overflow: 'hidden',
-    border: '1px solid rgba(0, 0, 0, 0.1)',
-    backgroundColor: Color.neutral.white,
+  display: 'flex',
+  flexDirection: 'row',
+  flexShrink: 0,
+  width: '100%',
+  borderRadius: DefaultBorderRadiusPx,
+  overflow: 'hidden',
+  border: '1px solid rgba(0, 0, 0, 0.1)',
+  backgroundColor: Color.neutral.white,
 
-    $nest: {
-      '> .marker': {width: MarkerWidth, flexShrink: 0},
-      '> .content': {display: 'flex', flexDirection: 'column', width: '100%'},
-      [`&:hover > .content .${CardFooter.Style} > .contentRight`]: {opacity: 1}
-    }
-  })
-}
+  $nest: {
+    '> .marker': {width: MarkerWidth, flexShrink: 0},
+    '> .content': {display: 'flex', flexDirection: 'column', width: '100%'},
+    [`&:hover > .content .${CardFooterStyle} > .contentRight`]: {opacity: 1}
+  }
+})
 
 export const CardSectionStyle = style({
   $debugName: 'CardSection',
@@ -168,13 +160,11 @@ export const CardLabelStyle = style({
   fontWeight: FontWeight.bold
 })
 
-export namespace CardLabel {
-  export interface Props {
-    text?: string
-  }
+export interface CardLabelProps {
+  text?: string
 }
 
-export const CardLabel: React.StatelessComponent<CardLabel.Props> = props => {
+export const CardLabel: React.StatelessComponent<CardLabelProps> = props => {
   if (props.text) return <label className={CardLabelStyle}>{props.text}</label>
   return null
 }
@@ -192,13 +182,11 @@ export const CardDescriptionStyle = style({
   }
 })
 
-export namespace CardDescription {
-  export interface Props {
-    text?: string
-  }
+export interface CardDescriptionProps {
+  text?: string
 }
 
-export const CardDescription: React.StatelessComponent<CardDescription.Props> = props => {
+export const CardDescription: React.StatelessComponent<CardDescriptionProps> = props => {
   if (props.text) {
     return (
       <div className={CardDescriptionStyle}>
@@ -210,14 +198,12 @@ export const CardDescription: React.StatelessComponent<CardDescription.Props> = 
   return null
 }
 
-export namespace CardImage {
-  export interface Props {
-    src: string
-  }
+export interface CardImageProps {
+  src: string
+}
 
-  export interface State {
-    isVisible: boolean
-  }
+export interface CardImageState {
+  isVisible: boolean
 }
 
 export const CardImageStyle = style({
@@ -265,8 +251,8 @@ export const CardImageStyle = style({
   }
 })
 
-export class CardImage extends React.Component<CardImage.Props, CardImage.State> {
-  public state: CardImage.State = {isVisible: false}
+export class CardImage extends React.Component<CardImageProps, CardImageState> {
+  public state: CardImageState = {isVisible: false}
 
   private element?: HTMLDivElement | null
   private ovbserver?: IntersectionObserver
@@ -303,10 +289,8 @@ export class CardImage extends React.Component<CardImage.Props, CardImage.State>
   }
 }
 
-export namespace CardDocument {
-  export type Props = {
-    extension?: string
-  }
+export interface CardDocumentProps {
+  extension?: string
 }
 
 export const CardDocumentStyle = style({
@@ -337,11 +321,11 @@ export const CardDocumentIconStyle = style({
   textAlign: 'center'
 })
 
-export const CardDocumentIcon: React.StatelessComponent<CardDocument.Props> = props => {
+export const CardDocumentIcon: React.StatelessComponent<CardDocumentProps> = props => {
   return <div className={CardDocumentIconStyle}>{props.extension ? `${props.extension}` : '?'}</div>
 }
 
-export const CardDocument: React.StatelessComponent<CardDocument.Props> = props => {
+export const CardDocument: React.StatelessComponent<CardDocumentProps> = props => {
   return (
     <div className={CardDocumentStyle}>
       <CardDocumentIcon {...props} />

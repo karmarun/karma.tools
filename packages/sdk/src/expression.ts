@@ -213,6 +213,10 @@ export const expression = {
     return {data: value}
   },
 
+  with(value: t.Expression, body: t.FuncExpression): t.WithFn {
+    return {with: [value, body]}
+  },
+
   define(name: string, expr: t.Expression): t.DefineFn {
     return {define: [name, expr]}
   },
@@ -395,6 +399,22 @@ export const expression = {
     reducer: t.FuncExpression
   ): t.ReduceListFn {
     return {reduceList: {value, initial, reducer}}
+  },
+
+  leftFoldList(
+    value: t.Expression,
+    initial: t.Expression,
+    folderFn: t.FuncExpression
+  ): t.LeftFoldListFn {
+    return {leftFoldList: [value, initial, folderFn]}
+  },
+
+  rightFoldList(
+    value: t.Expression,
+    initial: t.Expression,
+    folderFn: t.FuncExpression
+  ): t.RightFoldListFn {
+    return {rightFoldList: [value, initial, folderFn]}
   },
 
   // User / Permission

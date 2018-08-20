@@ -1,3 +1,6 @@
+import {Ref} from '@karma.run/sdk'
+import {StorageType} from '../api/field'
+
 export enum ConditionType {
   // List
   ListLengthEqual = 'listLengthEqual',
@@ -5,13 +8,16 @@ export enum ConditionType {
   ListLengthMax = 'listLengthMax',
 
   // Map
-  // MapHasKey = 'mapHasKey',
+  MapHasKey = 'mapHasKey',
+
+  // Boolean
+  BoolEqual = 'boolEqual',
 
   // Optional
   OptionalIsPresent = 'optionalIsPresent',
 
   // Union
-  UnionKeyEqual = 'unionKeyEqual',
+  UnionCaseEqual = 'unionCaseEqual',
 
   // Enum
   EnumEqual = 'enumEqual',
@@ -34,14 +40,12 @@ export enum ConditionType {
   DateMax = 'dateMax',
 
   // Ref
-  RefEqual = 'refEqual'
-}
+  RefEqual = 'refEqual',
 
-export enum TypeCompatibility {
-  String = 'string',
-  Number = 'number',
-  Date = 'date',
-  Boolean = 'boolean'
+  // Other
+  ExtractedStringIncludes = 'extractedStringIncludes',
+  Or = 'or',
+  And = 'and'
 }
 
 export enum ValuePathSegmentType {
@@ -51,36 +55,6 @@ export enum ValuePathSegmentType {
   Struct = 'struct',
   Union = 'union',
   Tuple = 'tuple'
-}
-
-export const TypeCompatibilityMap = {
-  // String
-  [ConditionType.StringEqual]: TypeCompatibility.String,
-  [ConditionType.StringStartsWith]: TypeCompatibility.String,
-  [ConditionType.StringEndsWith]: TypeCompatibility.String,
-  [ConditionType.StringIncludes]: TypeCompatibility.String,
-  [ConditionType.StringRegExp]: TypeCompatibility.String,
-
-  // Number
-  [ConditionType.NumberEqual]: TypeCompatibility.Number,
-  [ConditionType.NumberMin]: TypeCompatibility.Number,
-  [ConditionType.NumberMax]: TypeCompatibility.Number,
-  [ConditionType.ListLengthEqual]: TypeCompatibility.Number,
-  [ConditionType.ListLengthMin]: TypeCompatibility.Number,
-  [ConditionType.ListLengthMax]: TypeCompatibility.Number,
-
-  // Date
-  [ConditionType.DateEqual]: TypeCompatibility.Date,
-  [ConditionType.DateMin]: TypeCompatibility.Date,
-  [ConditionType.DateMax]: TypeCompatibility.Date,
-
-  // Bool
-  [ConditionType.OptionalIsPresent]: TypeCompatibility.Boolean,
-
-  // Incompatible
-  [ConditionType.RefEqual]: undefined,
-  [ConditionType.EnumEqual]: undefined,
-  [ConditionType.UnionKeyEqual]: undefined
 }
 
 export interface ListPathSegment {
@@ -139,53 +113,6 @@ export type ValuePathSegment =
 
 export type ValuePath = ValuePathSegment[]
 
-export function getValuesForValuePath(value: any, path: ValuePath, index: number = 0): any[] {
-  if (value == undefined || path.length === 0 || index >= path.length) return [value]
-
-  const pathSegment = path[index]
-
-  switch (pathSegment.type) {
-    case ValuePathSegmentType.List: {
-      if (!Array.isArray(value)) return []
-      return value.reduce(
-        (values: any[], value) => [
-          ...values,
-          ...(getValuesForValuePath(value, path, index + 1) || [])
-        ],
-        []
-      )
-    }
-
-    case ValuePathSegmentType.Map: {
-      if (typeof value !== 'object') return []
-      return Object.values(value).reduce(
-        (values: any[], value) => [
-          ...values,
-          ...(getValuesForValuePath(value, path, index + 1) || [])
-        ],
-        []
-      )
-    }
-
-    case ValuePathSegmentType.Union:
-    case ValuePathSegmentType.Struct:
-      return getValuesForValuePath(value[pathSegment.key], path, index + 1)
-
-    case ValuePathSegmentType.Tuple:
-      return getValuesForValuePath(value[pathSegment.index], path, index + 1)
-
-    case ValuePathSegmentType.Optional:
-      return [value]
-  }
-
-  return []
-}
-
-export function isTypeValueCompatible(typeA: ConditionType, typeB: ConditionType) {
-  if (!TypeCompatibilityMap[typeA] || !TypeCompatibilityMap[typeB]) return
-  return TypeCompatibilityMap[typeA] === TypeCompatibilityMap[typeB]
-}
-
 export interface BaseCondition {
   type: ConditionType
   path: ValuePathSegment[]
@@ -198,11 +125,12 @@ export interface StringCondition extends BaseCondition {
     | ConditionType.StringEndsWith
     | ConditionType.StringIncludes
     | ConditionType.StringRegExp
+    | ConditionType.ExtractedStringIncludes
   value: string
 }
 
 export interface OptionalStringCondition extends BaseCondition {
-  type: ConditionType.RefEqual | ConditionType.UnionKeyEqual | ConditionType.EnumEqual
+  type: ConditionType.UnionCaseEqual | ConditionType.EnumEqual
   value: string | undefined
 }
 
@@ -214,17 +142,28 @@ export interface NumberCondition extends BaseCondition {
     | ConditionType.NumberEqual
     | ConditionType.NumberMin
     | ConditionType.NumberMax
+  storageType: StorageType
   value: number
 }
 
+export interface RefStringCondition extends BaseCondition {
+  type: ConditionType.RefEqual
+  value: Ref
+}
+
 export interface BooleanCondition extends BaseCondition {
-  type: ConditionType.OptionalIsPresent
+  type: ConditionType.OptionalIsPresent | ConditionType.BoolEqual
   value: boolean
 }
 
 export interface DateCondition extends BaseCondition {
   type: ConditionType.DateEqual | ConditionType.DateMin | ConditionType.DateMax
-  value: Date
+  value: Date | string
+}
+
+export interface CompositeCondition extends BaseCondition {
+  type: ConditionType.Or | ConditionType.And
+  value: Condition[]
 }
 
 export type Condition =
@@ -233,38 +172,8 @@ export type Condition =
   | NumberCondition
   | OptionalStringCondition
   | BooleanCondition
-
-export const enum FilterType {
-  FullText = 'fullText',
-  Composite = 'composite',
-  Condition = 'condition'
-}
-
-export interface FullTextFilter {
-  type: FilterType.FullText
-  value: string
-}
-export function FullTextFilter(value: string): FullTextFilter {
-  return {type: FilterType.FullText, value}
-}
-
-export interface CompositeFilter {
-  type: FilterType.Composite
-  filters: Filter[]
-}
-export function CompositeFilter(filters: Filter[]): CompositeFilter {
-  return {type: FilterType.Composite, filters}
-}
-
-export interface ValueFilter {
-  type: FilterType.Condition
-  condition: Condition
-}
-export function ValueFilter(condition: Condition): ValueFilter {
-  return {type: FilterType.Condition, condition}
-}
-
-export type Filter = CompositeFilter | FullTextFilter | ValueFilter
+  | RefStringCondition
+  | CompositeCondition
 
 export enum SortType {
   Date = 'date',
@@ -283,7 +192,6 @@ export interface Option {
 }
 
 export interface BaseConditionConfiguration {
-  id: string
   type: ConditionType
   path: ValuePath
 }
@@ -301,50 +209,104 @@ export interface SimpleConditionConfiguration extends BaseConditionConfiguration
     | ConditionType.DateEqual
     | ConditionType.DateMin
     | ConditionType.DateMax
-    | ConditionType.NumberEqual
-    | ConditionType.NumberMin
-    | ConditionType.NumberMax
     | ConditionType.OptionalIsPresent
+    | ConditionType.BoolEqual
+    | ConditionType.ExtractedStringIncludes
+}
+
+export function SimpleConditionConfiguration(
+  type: SimpleConditionConfiguration['type'],
+  path: ValuePath = []
+): SimpleConditionConfiguration {
+  return {type, path}
+}
+
+export interface NumberConditionConfiguration extends BaseConditionConfiguration {
+  type: ConditionType.NumberEqual | ConditionType.NumberMin | ConditionType.NumberMax
+  storageType: StorageType
+}
+
+export function NumberConditionConfiguration(
+  type: NumberConditionConfiguration['type'],
+  storageType: StorageType,
+  path: ValuePath = []
+): NumberConditionConfiguration {
+  return {type, storageType, path}
 }
 
 export interface RefConditionConfiguration extends BaseConditionConfiguration {
   type: ConditionType.RefEqual
-  model: string
+  model: Ref
 }
 
-export interface EnumConditionConfiguration extends BaseConditionConfiguration {
-  type: ConditionType.EnumEqual
+export function RefConditionConfiguration(
+  type: RefConditionConfiguration['type'],
+  model: Ref,
+  path: ValuePath = []
+): RefConditionConfiguration {
+  return {type, model, path}
+}
+
+export interface OptionsConditionConfiguration extends BaseConditionConfiguration {
+  type: ConditionType.EnumEqual | ConditionType.UnionCaseEqual
   options: Option[]
 }
 
-export interface UnionConditionConfiguration extends BaseConditionConfiguration {
-  type: ConditionType.UnionKeyEqual
-  options: Option[]
-}
-
-export interface ConditionGroup {
-  id: string
-  label: string
-  conditions: ConditionConfiguration[]
+export function OptionsConditionConfiguration(
+  type: OptionsConditionConfiguration['type'],
+  options: Option[],
+  path: ValuePath = []
+): OptionsConditionConfiguration {
+  return {type, options, path}
 }
 
 export type ConditionConfiguration =
   | SimpleConditionConfiguration
+  | NumberConditionConfiguration
   | RefConditionConfiguration
-  | EnumConditionConfiguration
-  | UnionConditionConfiguration
+  | OptionsConditionConfiguration
 
-export interface FilterFieldGroup {
-  id: string
-  label: string
-  fields: FilterConfiguration[]
+export function conditionConfigurationPrependPath(
+  conditionConfig: ConditionConfiguration,
+  path: ValuePath
+): ConditionConfiguration {
+  return {
+    ...conditionConfig,
+    path: [...path, ...conditionConfig.path]
+  }
 }
 
 export interface FilterConfiguration {
   id: string
+  type: string
   label: string
   depth: number
-  conditionGroups: ConditionGroup[]
+  conditions: ConditionConfiguration[]
+}
+
+export function FilterConfiguration(
+  id: string,
+  type: string,
+  label?: string,
+  conditions: ConditionConfiguration[] = [],
+  depth: number = 0
+) {
+  return {id, type, label: label || 'Unlabeled', conditions, depth}
+}
+
+export function filterConfigurationPrependPath(
+  filterConfiguration: FilterConfiguration,
+  id: string,
+  path: ValuePath
+) {
+  return {
+    ...filterConfiguration,
+    id: `${id}.${filterConfiguration.id}`,
+    depth: filterConfiguration.depth + 1,
+    conditions: filterConfiguration.conditions.map(conditionConfig =>
+      conditionConfigurationPrependPath(conditionConfig, path)
+    )
+  }
 }
 
 export interface SortConfiguration {
@@ -362,7 +324,8 @@ export function labelForCondition(condition: ConditionType): string {
     case ConditionType.ListLengthEqual:
     case ConditionType.EnumEqual:
     case ConditionType.NumberEqual:
-    case ConditionType.UnionKeyEqual:
+    case ConditionType.UnionCaseEqual:
+    case ConditionType.BoolEqual:
       return 'Equal'
 
     case ConditionType.StringStartsWith:
@@ -392,4 +355,44 @@ export function labelForCondition(condition: ConditionType): string {
   }
 
   return condition
+}
+
+export function defaultValueForConditionConfiguration(
+  condition: ConditionConfiguration,
+  oldValue: any
+): any {
+  switch (condition.type) {
+    case ConditionType.EnumEqual:
+    case ConditionType.UnionCaseEqual:
+      return undefined
+
+    case ConditionType.StringEqual:
+    case ConditionType.StringStartsWith:
+    case ConditionType.StringEndsWith:
+    case ConditionType.StringIncludes:
+    case ConditionType.StringRegExp:
+      return typeof oldValue === 'string' ? oldValue : ''
+
+    case ConditionType.DateMin:
+    case ConditionType.DateMax:
+    case ConditionType.DateEqual:
+      return typeof oldValue === 'string' || oldValue instanceof Date ? oldValue : ''
+
+    case ConditionType.NumberMax:
+    case ConditionType.NumberMin:
+    case ConditionType.NumberEqual:
+    case ConditionType.ListLengthMin:
+    case ConditionType.ListLengthMax:
+    case ConditionType.ListLengthEqual:
+      return typeof oldValue === 'number' ? oldValue : 0
+
+    case ConditionType.BoolEqual:
+    case ConditionType.OptionalIsPresent:
+      return typeof oldValue === 'boolean' ? oldValue : false
+
+    case ConditionType.RefEqual:
+      return undefined
+  }
+
+  return undefined
 }

@@ -50,7 +50,7 @@ export interface EditRenderProps<V extends AnyFieldValue> {
   onValueChange(value: V, key: any): void
   onEditRecord(model: Ref, id?: Ref): Promise<ModelRecord | undefined>
   onSelectRecord(model: Ref): Promise<ModelRecord | undefined>
-  onEditField(field: AnyField, value?: AnyFieldValue): Promise<{value: AnyFieldValue} | undefined>
+  onEditField(field: AnyField, value?: AnyFieldValue): Promise<AnyFieldValue | undefined>
 }
 
 export interface ListComponentRenderProps<F extends AnyField, V extends AnyFieldValue>
@@ -67,6 +67,7 @@ export interface FieldValue<V, E> {
   readonly value: V
   readonly error?: E
   readonly isValid: boolean
+  readonly hasChanges: boolean
 }
 
 export type AnyFieldValue = FieldValue<any, any>
