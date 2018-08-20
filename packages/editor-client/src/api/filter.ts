@@ -80,7 +80,7 @@ export function conditionExpression(value: Expression, condition: Condition): Ex
 
     case ConditionType.ExtractedStringIncludes:
       return e.stringContains(
-        e.joinStrings(e.string(''), e.extractStrings(value)),
+        e.joinStrings(e.string(' '), e.extractStrings(value)),
         e.string(condition.value)
       )
 
