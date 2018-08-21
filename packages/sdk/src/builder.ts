@@ -33,6 +33,7 @@ export type MapCallbackFn = (index: t.ScopeFn, value: t.ScopeFn) => t.Expression
 export type ReduceCallbackFn = (index: t.ScopeFn, value: t.ScopeFn) => t.Expression
 
 export type ValueCallbackFn = (value: t.ScopeFn) => t.Expression
+export type ValueCompareCallbackFn = (valueA: t.ScopeFn, valueB: t.ScopeFn) => t.Expression
 export type IndexValueCallbackFn = (index: t.ScopeFn, value: t.ScopeFn) => t.Expression
 export type KeyValueCallbackFn = (key: t.ScopeFn, value: t.ScopeFn) => t.Expression
 export type AggregatorCallbackFn = (aggregator: t.ScopeFn, value: t.ScopeFn) => t.Expression
@@ -75,7 +76,7 @@ export class BuilderExpressionContext extends ExpressionContext {
 
   public memSortFunction(
     value: t.Expression,
-    sorter: t.FunctionFn | ValueCallbackFn
+    sorter: t.FunctionFn | ValueCompareCallbackFn
   ): t.MemSortFunctionFn {
     if (typeof sorter === 'function') {
       return super.memSortFunction(
