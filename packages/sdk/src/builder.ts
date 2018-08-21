@@ -78,7 +78,10 @@ export class BuilderExpressionContext extends ExpressionContext {
     sorter: t.FunctionFn | ValueCallbackFn
   ): t.MemSortFunctionFn {
     if (typeof sorter === 'function') {
-      return super.memSortFunction(value, this.function(sorter, this.getUniqueParamNames('value')))
+      return super.memSortFunction(
+        value,
+        this.function(sorter, this.getUniqueParamNames('valueA', 'valueB'))
+      )
     }
 
     return super.memSortFunction(value, sorter)
