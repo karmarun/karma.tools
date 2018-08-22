@@ -455,6 +455,10 @@ export class ExpressionContext {
     return {relocateRef: {model, ref}}
   }
 
+  public resolveRefs(value: t.Expression, models: t.Expression[]): t.ResolveRefsFn {
+    return {resolveRefs: [value, models]}
+  }
+
   public resolveAllRefs(ref: t.Expression): t.ResolveAllRefsFn {
     return {resolveAllRefs: ref}
   }
