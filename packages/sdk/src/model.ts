@@ -1,5 +1,5 @@
 import * as t from './types'
-import {ObjectMap} from './util'
+import {ObjectMap} from './internal'
 import {data as d} from './expression'
 
 export class ModelExpressionContext {

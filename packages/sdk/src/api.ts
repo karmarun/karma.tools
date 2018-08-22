@@ -1,7 +1,23 @@
 import axios, {AxiosError} from 'axios'
 import {Ref, FunctionFn} from './types'
-import {ObjectMap} from './util'
-import {isRef} from './helpers'
+import {ObjectMap} from './internal'
+
+export enum DefaultTags {
+  Model = '_model',
+  Tag = '_tag',
+  Role = '_role',
+  Migration = '_migration',
+  User = '_user',
+  Expression = '_expression'
+}
+
+export function isRef(ref: any): ref is Ref {
+  return Array.isArray(ref) && typeof ref[0] === 'string' && typeof ref[1] === 'string'
+}
+
+export function createRef(model: string, id: string): Ref {
+  return [model, id]
+}
 
 export const enum KarmaErrorType {
   RequestError = 'requestError',

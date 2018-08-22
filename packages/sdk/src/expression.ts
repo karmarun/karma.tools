@@ -1,5 +1,5 @@
 import * as t from './types'
-import {ObjectMap} from './util'
+import {ObjectMap} from './internal'
 
 const enum NumberType {
   Int8,

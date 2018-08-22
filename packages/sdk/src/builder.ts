@@ -1,17 +1,15 @@
 import * as t from './types'
 
-import {model as m} from './model'
-import {mapObject, ObjectMap} from './util'
+import {model as m, ModelExpressionContext} from './model'
+
+import {mapObject, ObjectMap} from './internal'
 import {func as f, ExpressionContext, DataExpressionContext} from './expression'
+import {DefaultTags} from './api'
 
-export type ModelContext = typeof modelContext
-export type DataScopeFn = (d: BuilderDataContext, m: ModelContext) => t.DataExpression
-
+export type DataScopeFn = (d: BuilderDataContext, m: ModelExpressionContext) => t.DataExpression
 export type ExpressionContextFn = (e: BuilderExpressionContext) => t.Expression
 export type FunctionBodyFn = (...params: t.ScopeFn[]) => t.Expression | t.Expression[]
 export type FunctionBodyContextFn = (e: BuilderExpressionContext) => FunctionBodyFn
-
-export const modelContext = m
 
 export class BuilderDataContext extends DataExpressionContext {
   private expressionContext: BuilderExpressionContext
@@ -42,11 +40,13 @@ export type RefsCallbackFn = (refs: t.ScopeFn) => t.Expression
 
 export class BuilderExpressionContext extends ExpressionContext {
   private paramIndex = 0
-  private dataContext = new BuilderDataContext(this)
+
+  private readonly dataContext = new BuilderDataContext(this)
+  public readonly util = new UtilityContext(this)
 
   public data(scopeFnOrData: t.DataExpression | DataScopeFn): t.DataFn {
     if (typeof scopeFnOrData === 'function') {
-      return super.data(scopeFnOrData(this.dataContext, modelContext))
+      return super.data(scopeFnOrData(this.dataContext, m))
     }
 
     return super.data(scopeFnOrData)
@@ -235,10 +235,88 @@ export class BuilderExpressionContext extends ExpressionContext {
   }
 }
 
+export type ModelCreatorFn = (
+  m: ModelExpressionContext,
+  d: BuilderDataContext,
+  refs: t.ScopeFn
+) => t.DataExpression
+
+export class UtilityContext {
+  private expressionContext?: BuilderExpressionContext
+
+  public constructor(expressionContext?: BuilderExpressionContext) {
+    this.expressionContext = expressionContext
+  }
+
+  public createModel(creator: ModelCreatorFn): t.Expression {
+    return buildExpression(
+      e => e.create(e.tag(DefaultTags.Model), ref => e.data((d, m) => creator(m, d, ref))),
+      this.expressionContext
+    )
+  }
+
+  public createTag(tag: string, model: t.Expression): t.Expression {
+    return buildExpression(
+      e =>
+        e.create(e.tag(DefaultTags.Tag), () =>
+          e.data(d =>
+            d.struct({
+              tag: d.string(tag),
+              model: d.expr(() => model)
+            })
+          )
+        ),
+      this.expressionContext
+    )
+  }
+  public createModels(creators: ObjectMap<ModelCreatorFn>): t.Expression {
+    return buildExpression(
+      e =>
+        e.createMultiple(
+          e.tag(DefaultTags.Model),
+          mapObject(creators, creator => (refs: t.ScopeFn) => e.data((d, m) => creator(m, d, refs)))
+        ),
+      this.expressionContext
+    )
+  }
+
+  public createMigration(...migrations: t.MigrationRecord[]): t.Expression {
+    return buildExpression(
+      e =>
+        e.create(e.tag(DefaultTags.Migration), () =>
+          e.data(d =>
+            d.list(
+              ...migrations.map(migration =>
+                d.struct({
+                  source: d.expr(() => migration.from),
+                  target: d.expr(() => migration.to),
+                  expression: migration.manualExpression
+                    ? d.union('manual', d.expr(migration.manualExpression))
+                    : d.union('auto', d.struct())
+                })
+              )
+            )
+          )
+        ),
+      this.expressionContext
+    )
+  }
+
+  public getTags(): t.Expression {
+    return buildExpression(e => e.all(e.tag(DefaultTags.Tag)), this.expressionContext)
+  }
+
+  public getModels(): t.Expression {
+    return buildExpression(e => e.all(e.tag(DefaultTags.Model)), this.expressionContext)
+  }
+}
+
+export const utility = new UtilityContext()
+
 export function buildExpression(
   contextFn: ExpressionContextFn,
   context: BuilderExpressionContext = new BuilderExpressionContext()
-) {
+): t.Expression {
   return contextFn(context)
 }
 
@@ -246,7 +324,47 @@ export function buildFunction(
   contextFn: FunctionBodyContextFn,
   paramNames: string[] = [],
   context: BuilderExpressionContext = new BuilderExpressionContext()
-) {
+): t.FunctionFn {
   const body = contextFn(context)
   return context.function(body, paramNames)
+}
+
+/** @deprecated */
+export function createTag(
+  tag: string,
+  model: t.Expression,
+  context: BuilderExpressionContext = new BuilderExpressionContext()
+): t.Expression {
+  return context.util.createTag(tag, model)
+}
+
+/** @deprecated */
+export function createModel(
+  creator: ModelCreatorFn,
+  context: BuilderExpressionContext = new BuilderExpressionContext()
+): t.Expression {
+  return context.util.createModel(creator)
+}
+
+/** @deprecated */
+export function createModels(
+  creators: ObjectMap<ModelCreatorFn>,
+  context: BuilderExpressionContext = new BuilderExpressionContext()
+): t.Expression {
+  return context.util.createModels(creators)
+}
+
+/** @deprecated */
+export function createMigration(...migrations: t.MigrationRecord[]): t.Expression {
+  return utility.createMigration(...migrations)
+}
+
+/** @deprecated */
+export function getTags(): t.Expression {
+  return utility.getTags()
+}
+
+/** @deprecated */
+export function getModels(): t.Expression {
+  return utility.getModels()
 }

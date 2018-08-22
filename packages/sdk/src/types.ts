@@ -1,4 +1,21 @@
-import {ObjectMap} from './util'
+import {ObjectMap} from './internal'
+
+// Utility Types
+// ===========
+
+export interface MetarializedRecord<T = any> {
+  id: Ref
+  model: Ref
+  created: string
+  updated: string
+  value: T
+}
+
+export interface MigrationRecord {
+  from: Expression
+  to: Expression
+  manualExpression?: Expression
+}
 
 // Return Types
 // ============
