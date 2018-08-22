@@ -810,6 +810,7 @@ export type Expression =
   | ResolveRefsFn
   | TagFn
   | TagExistsFn
+  | GraphFlowFn
 
   // CRUD
   | AllFn
