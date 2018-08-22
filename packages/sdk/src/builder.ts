@@ -8,6 +8,7 @@ import {DefaultTags} from './api'
 
 export type DataScopeFn = (d: BuilderDataContext, m: ModelExpressionContext) => t.DataExpression
 export type ExpressionContextFn = (e: BuilderExpressionContext) => t.Expression
+export type ExpressionsContextFn = (e: BuilderExpressionContext) => t.Expression[]
 export type FunctionBodyFn = (...params: t.ScopeFn[]) => t.Expression | t.Expression[]
 export type FunctionBodyContextFn = (e: BuilderExpressionContext) => FunctionBodyFn
 
@@ -269,6 +270,7 @@ export class UtilityContext {
       this.expressionContext
     )
   }
+
   public createModels(creators: ObjectMap<ModelCreatorFn>): t.Expression {
     return buildExpression(
       e =>
@@ -317,6 +319,13 @@ export function buildExpression(
   contextFn: ExpressionContextFn,
   context: BuilderExpressionContext = new BuilderExpressionContext()
 ): t.Expression {
+  return contextFn(context)
+}
+
+export function buildExpressions(
+  contextFn: ExpressionsContextFn,
+  context: BuilderExpressionContext = new BuilderExpressionContext()
+): t.Expression[] {
   return contextFn(context)
 }
 

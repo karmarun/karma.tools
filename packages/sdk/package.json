@@ -1,6 +1,6 @@
 {
   "name": "@karma.run/sdk",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "description": "karma.run SDK",
   "engines": {
     "node": ">=4.2.0"
