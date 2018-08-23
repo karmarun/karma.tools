@@ -34,7 +34,8 @@ export const enum KarmaErrorType {
   ModelParsingError = 'modelParsingError',
   InternalError = 'internalError',
   ConnectionError = 'connectionError',
-  UnknownError = 'unknownError'
+  UnknownError = 'unknownError',
+  AutoMigrationError = 'autoMigrationError'
 }
 
 export interface KarmaResponseErrorData {
