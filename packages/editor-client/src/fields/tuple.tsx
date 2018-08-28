@@ -230,8 +230,6 @@ export class TupleField implements Field<TupleFieldValue> {
   public async onSave(value: TupleFieldValue, context: SaveContext) {
     const newValues: any[] = []
 
-    console.log(value.value)
-
     for (const [index, tupleValue] of value.value.entries()) {
       const field = this.fieldMap.get(index)
 
