@@ -40,7 +40,7 @@ export class TupleFieldEditComponent extends React.PureComponent<
 
     this.props.onValueChange(
       {
-        value: {...this.props.value.value, [key]: value},
+        value: Object.assign([], this.props.value.value, {[key]: value}),
         isValid: true,
         hasChanges: true
       },
@@ -230,13 +230,18 @@ export class TupleField implements Field<TupleFieldValue> {
   public async onSave(value: TupleFieldValue, context: SaveContext) {
     const newValues: any[] = []
 
+    console.log(value.value)
+
     for (const [index, tupleValue] of value.value.entries()) {
       const field = this.fieldMap.get(index)
 
       if (!field) throw new Error(`Couln't find field for index: ${index}`)
-      if (!field.onSave) return value
 
-      newValues.push(await field.onSave(tupleValue, context))
+      if (field.onSave) {
+        newValues.push(await field.onSave(tupleValue, context))
+      } else {
+        newValues.push(tupleValue)
+      }
     }
 
     return {
@@ -253,9 +258,12 @@ export class TupleField implements Field<TupleFieldValue> {
       const field = this.fieldMap.get(index)
 
       if (!field) throw new Error(`Couln't find field for index: ${index}`)
-      if (!field.onDelete) return value
 
-      newValues.push(await field.onDelete(tupleValue, context))
+      if (field.onDelete) {
+        newValues.push(await field.onDelete(tupleValue, context))
+      } else {
+        newValues.push(tupleValue)
+      }
     }
 
     return {
