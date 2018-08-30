@@ -52,7 +52,7 @@ client.authenticate('admin', 'password').then(async session => {
 })
 ```
 
-[license_shield]: https://img.shields.io/github/license/karmarun/karma.run-sdk-js.svg
+[license_shield]: https://img.shields.io/github/license/karmarun/karma.tools.svg
 [license_link]: https://github.com/karmarun/karma.run-sdk-js/blob/master/LICENSE
 [npm_shield]: https://img.shields.io/npm/v/@karma.run/sdk.svg
 [npm_link]: https://www.npmjs.com/package/@karma.run/sdk
