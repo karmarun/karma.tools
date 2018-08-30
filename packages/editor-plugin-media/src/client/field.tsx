@@ -334,6 +334,8 @@ export class MediaField implements Field<MediaFieldValue> {
     const media = value.value.media
     if (!media) return d.null()
 
+    const backendExpression = this.backendExpressionForMedia(media)
+
     return d.struct({
       mediaType: this.mediaTypeExpressionForMedia(media),
       id: d.string(media.id),
@@ -346,7 +348,7 @@ export class MediaField implements Field<MediaFieldValue> {
         ? d.struct({x: d.float(media.focusPoint.x), y: d.float(media.focusPoint.y)})
         : d.null(),
       focusScale: media.focusScale ? d.float(media.focusScale) : d.null(),
-      backend: this.backendExpressionForMedia(media)
+      backend: backendExpression ? backendExpression : d.null()
     })
   }
 

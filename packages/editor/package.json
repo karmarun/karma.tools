@@ -1,6 +1,6 @@
 {
   "name": "@karma.run/editor",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "description": "Administrative editor for karma.data.",
@@ -31,7 +31,7 @@
   },
   "optionalDependencies": {
     "@karma.run/editor-client": "^0.14.0",
-    "@karma.run/editor-worker": "^0.13.0",
+    "@karma.run/editor-worker": "^0.14.0",
     "babel-polyfill": "^6.26.0",
     "intersection-observer-polyfill": "^0.1.0",
     "ts-loader": "^4.4.2",

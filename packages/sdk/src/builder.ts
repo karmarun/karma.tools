@@ -4,7 +4,16 @@ import {model as m, ModelExpressionContext} from './model'
 
 import {mapObject, ObjectMap} from './internal'
 import {func as f, ExpressionContext, DataExpressionContext} from './expression'
-import {DefaultTags} from './api'
+import {DefaultTags, isRef} from './api'
+import {createTypedExpression} from './typedExpression'
+
+export type MigrationContextFn = (value: t.ScopeFn) => t.Expression
+
+export interface MigrationRecord {
+  from: t.Expression
+  to: t.Expression
+  manualExpression?: t.Ref | MigrationContextFn
+}
 
 export type DataScopeFn = (d: BuilderDataContext, m: ModelExpressionContext) => t.DataExpression
 export type ExpressionContextFn = (e: BuilderExpressionContext) => t.Expression
@@ -282,7 +291,7 @@ export class UtilityContext {
     )
   }
 
-  public createMigration(...migrations: t.MigrationRecord[]): t.Expression {
+  public createMigration(...migrations: MigrationRecord[]): t.Expression {
     return buildExpression(
       e =>
         e.create(e.tag(DefaultTags.Migration), () =>
@@ -293,7 +302,24 @@ export class UtilityContext {
                   source: d.expr(() => migration.from),
                   target: d.expr(() => migration.to),
                   expression: migration.manualExpression
-                    ? d.union('manual', d.expr(migration.manualExpression))
+                    ? d.union(
+                        'manual',
+                        isRef(migration.manualExpression)
+                          ? d.ref(migration.manualExpression)
+                          : d.expr(
+                              e.create(e.tag(DefaultTags.Expression), () =>
+                                e.data(
+                                  createTypedExpression(
+                                    e.function(
+                                      value =>
+                                        (migration.manualExpression as MigrationContextFn)(value),
+                                      e.getUniqueParamNames('value')
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                      )
                     : d.union('auto', d.struct())
                 })
               )
@@ -364,7 +390,7 @@ export function createModels(
 }
 
 /** @deprecated */
-export function createMigration(...migrations: t.MigrationRecord[]): t.Expression {
+export function createMigration(...migrations: MigrationRecord[]): t.Expression {
   return utility.createMigration(...migrations)
 }
 

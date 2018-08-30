@@ -1,6 +1,6 @@
 {
   "name": "@karma.run/editor-server",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "main": "./lib/cjs/index.js",
   "module": "./lib/es6/index.js",
   "types": "./lib/types/index.d.ts",
@@ -20,6 +20,7 @@
     "prepare": "run-s clean copy:license build"
   },
   "dependencies": {
+    "@karma.run/sdk": "^0.5.13",
     "react": "^16.4.1",
     "react-dom": "^16.4.1"
   },

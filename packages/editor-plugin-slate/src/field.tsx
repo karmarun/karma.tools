@@ -392,7 +392,7 @@ export class SlateField implements Field<SlateFieldValue> {
         case 'document':
           return d.struct({
             object: d.string('document'),
-            nodes: node.nodes ? d.list(...node.nodes.map(node => recurse(node))) : undefined
+            nodes: node.nodes ? d.list(...node.nodes.map(node => recurse(node))) : d.null()
           })
 
         case 'inline':
@@ -402,14 +402,14 @@ export class SlateField implements Field<SlateFieldValue> {
 
           const data = dataField
             ? d.union(dataKey!, dataField.transformValueToExpression(node.data![dataKey!]))
-            : undefined
+            : d.null()
 
           return d.struct({
             object: d.string(node.object),
             type: d.string(node.type),
             isVoid: d.bool(node.isVoid || false),
             data: data,
-            nodes: node.nodes ? d.list(...node.nodes.map(node => recurse(node))) : undefined
+            nodes: node.nodes ? d.list(...node.nodes.map(node => recurse(node))) : d.null()
           })
 
         case 'text':
@@ -417,14 +417,14 @@ export class SlateField implements Field<SlateFieldValue> {
             object: d.string('text'),
             leaves: node.leaves
               ? d.list(...node.leaves.map(leave => recurse(leave as SlateLeaveJSON)))
-              : undefined
+              : d.null()
           })
 
         case 'leaf':
           return d.struct({
             object: d.string('leaf'),
             text: d.string(node.text),
-            marks: node.marks ? d.list(...node.marks.map(mark => recurse(mark))) : undefined
+            marks: node.marks ? d.list(...node.marks.map(mark => recurse(mark))) : d.null()
           })
 
         case 'mark':

@@ -11,12 +11,6 @@ export interface MetarializedRecord<T = any> {
   value: T
 }
 
-export interface MigrationRecord {
-  from: Expression
-  to: Expression
-  manualExpression?: Expression
-}
-
 // Return Types
 // ============
 
@@ -27,6 +21,237 @@ export interface Tag {
   model: Ref
 }
 
+// Expression Type
+// ===============
+
+export const enum ExpressionType {
+  // Numeric
+  // -------
+
+  AddFloat = 'addFloat',
+  AddInt8 = 'addInt8',
+  AddInt16 = 'addInt16',
+  AddInt32 = 'addInt32',
+  AddInt64 = 'addInt64',
+  AddUint8 = 'addUint8',
+  AddUint16 = 'addUint16',
+  AddUint32 = 'addUint32',
+  AddUint64 = 'addUint64',
+
+  SubFloat = 'subFloat',
+  SubInt8 = 'subInt8',
+  SubInt16 = 'subInt16',
+  SubInt32 = 'subInt32',
+  SubInt64 = 'subInt64',
+  SubUint8 = 'subUint8',
+  SubUint16 = 'subUint16',
+  SubUint32 = 'subUint32',
+  SubUint64 = 'subUint64',
+
+  DivFloat = 'divFloat',
+  DivInt8 = 'divInt8',
+  DivInt16 = 'divInt16',
+  DivInt32 = 'divInt32',
+  DivInt64 = 'divInt64',
+  DivUint8 = 'divUint8',
+  DivUint16 = 'divUint16',
+  DivUint32 = 'divUint32',
+  DivUint64 = 'divUint64',
+
+  MulFloat = 'mulFloat',
+  MulInt8 = 'mulInt8',
+  MulInt16 = 'mulInt16',
+  MulInt32 = 'mulInt32',
+  MulInt64 = 'mulInt64',
+  MulUint8 = 'mulUint8',
+  MulUint16 = 'mulUint16',
+  MulUint32 = 'mulUint32',
+  MulUint64 = 'mulUint64',
+
+  LtFloat = 'ltFloat',
+  LtInt8 = 'ltInt8',
+  LtInt16 = 'ltInt16',
+  LtInt32 = 'ltInt32',
+  LtInt64 = 'ltInt64',
+  LtUint8 = 'ltUint8',
+  LtUint16 = 'ltUint16',
+  LtUint32 = 'ltUint32',
+  LtUint64 = 'ltUint64',
+
+  GtFloat = 'gtFloat',
+  GtInt8 = 'gtInt8',
+  GtInt16 = 'gtInt16',
+  GtInt32 = 'gtInt32',
+  GtInt64 = 'gtInt64',
+  GtUint8 = 'gtUint8',
+  GtUint16 = 'gtUint16',
+  GtUint32 = 'gtUint32',
+  GtUint64 = 'gtUint64',
+
+  FloatToInt = 'floatToInt',
+  IntToFloat = 'intToFloat',
+
+  // Logic
+  // -----
+
+  And = 'and',
+  Or = 'or',
+  AssertCase = 'assertCase',
+  AssertModelRef = 'assertModelRef',
+  AssertPresent = 'assertPresent',
+  Equal = 'equal',
+  If = 'if',
+  Not = 'not',
+  SwitchCase = 'switchCase',
+  SwitchModelRef = 'switchModelRef',
+
+  // CRUD
+  // ----
+
+  All = 'all',
+  Create = 'create',
+  CreateMultiple = 'createMultiple',
+  Delete = 'delete',
+  Get = 'get',
+  Update = 'update',
+
+  // Graph / Referential
+  // -------------------
+
+  AllReferrers = 'allReferrers',
+  RefTo = 'refTo',
+  Referred = 'referred',
+  Referrers = 'referrers',
+  RelocateRef = 'relocateRef',
+  ResolveAllRefs = 'resolveAllRefs',
+  ResolveRefs = 'resolveRefs',
+  Tag = 'tag',
+  TagExists = 'tagExists',
+  GraphFlow = 'graphFlow',
+
+  // User / Permission
+  // -----------------
+
+  CurrentUser = 'currentUser',
+
+  // List
+  // ----
+
+  ConcatLists = 'concatLists',
+  FilterList = 'filterList',
+  First = 'first',
+  InList = 'inList',
+  MapList = 'mapList',
+  Length = 'length',
+  MemSort = 'memSort',
+  MemSortFunction = 'memSortFunction',
+  ReverseList = 'reverseList',
+  Slice = 'slice',
+  ReduceList = 'reduceList',
+  RightFoldList = 'rightFoldList',
+  LeftFoldList = 'leftFoldList',
+
+  // Struct
+  // ------
+
+  ExtractStrings = 'extractStrings',
+  Field = 'field',
+  SetField = 'setField',
+
+  // Tuple
+  // -----
+
+  IndexTuple = 'indexTuple',
+
+  // Union
+  // -----
+
+  IsCase = 'isCase',
+
+  // Map
+  // ---
+
+  Key = 'key',
+  MapMap = 'mapMap',
+  SetKey = 'setKey',
+
+  // Set
+  // ---
+
+  MapSet = 'mapSet',
+
+  // Optional
+  // --------
+
+  IsPresent = 'isPresent',
+  PresentOrZero = 'presentOrZero',
+
+  // String
+  // ------
+
+  JoinStrings = 'joinStrings',
+  StringToLower = 'stringToLower',
+  MatchRegex = 'matchRegex',
+  SearchRegex = 'searchRegex',
+  SearchAllRegex = 'searchAllRegex',
+  StringContains = 'stringContains',
+  SubstringIndex = 'substringIndex',
+
+  // Date Time
+  // ---------
+
+  After = 'after',
+  Before = 'before',
+
+  // Scope
+  // -----
+
+  Data = 'data',
+  With = 'with',
+  Define = 'define',
+  Scope = 'scope',
+  Signature = 'signature',
+
+  // Other
+  // -----
+
+  Model = 'model',
+  ModelOf = 'modelOf',
+  Metarialize = 'metarialize',
+  Zero = 'zero',
+
+  // Data
+  // ----
+
+  Expr = 'expr',
+  Bool = 'bool',
+  DateTime = 'dateTime',
+  String = 'string',
+  Float = 'float',
+  Int8 = 'int8',
+  Int16 = 'int16',
+  Int32 = 'int32',
+  Int64 = 'int64',
+  Uint8 = 'uint8',
+  Uint16 = 'uint16',
+  Uint32 = 'uint32',
+  Uint64 = 'uint64',
+  Null = 'null',
+  Symbol = 'symbol',
+  Tuple = 'tuple',
+  Ref = 'ref',
+  Set = 'set',
+  List = 'list',
+  Map = 'map',
+  Struct = 'struct',
+  Union = 'union',
+
+  // Function
+  // --------
+
+  Function = 'function'
+}
+
 // Expression Scope
 // ================
 
@@ -34,269 +259,269 @@ export interface Tag {
 // -------
 
 export interface AddFloatFn {
-  addFloat: [Expression, Expression]
+  [ExpressionType.AddFloat]: [Expression, Expression]
 }
 
 export interface AddInt8Fn {
-  addInt8: [Expression, Expression]
+  [ExpressionType.AddInt8]: [Expression, Expression]
 }
 
 export interface AddInt16Fn {
-  addInt16: [Expression, Expression]
+  [ExpressionType.AddInt16]: [Expression, Expression]
 }
 
 export interface AddInt32Fn {
-  addInt32: [Expression, Expression]
+  [ExpressionType.AddInt32]: [Expression, Expression]
 }
 
 export interface AddInt64Fn {
-  addInt64: [Expression, Expression]
+  [ExpressionType.AddInt64]: [Expression, Expression]
 }
 
 export interface AddUInt8Fn {
-  addUint8: [Expression, Expression]
+  [ExpressionType.AddUint8]: [Expression, Expression]
 }
 
 export interface AddUInt16Fn {
-  addUint16: [Expression, Expression]
+  [ExpressionType.AddUint16]: [Expression, Expression]
 }
 
 export interface AddUInt32Fn {
-  addUint32: [Expression, Expression]
+  [ExpressionType.AddUint32]: [Expression, Expression]
 }
 
 export interface AddUInt64Fn {
-  addUint64: [Expression, Expression]
+  [ExpressionType.AddUint64]: [Expression, Expression]
 }
 
 export interface SubFloatFn {
-  subFloat: [Expression, Expression]
+  [ExpressionType.SubFloat]: [Expression, Expression]
 }
 
 export interface SubInt8Fn {
-  subInt8: [Expression, Expression]
+  [ExpressionType.SubInt8]: [Expression, Expression]
 }
 
 export interface SubInt16Fn {
-  subInt16: [Expression, Expression]
+  [ExpressionType.SubInt16]: [Expression, Expression]
 }
 
 export interface SubInt32Fn {
-  subInt32: [Expression, Expression]
+  [ExpressionType.SubInt32]: [Expression, Expression]
 }
 
 export interface SubInt64Fn {
-  subInt64: [Expression, Expression]
+  [ExpressionType.SubInt64]: [Expression, Expression]
 }
 
 export interface SubUInt8Fn {
-  subUint8: [Expression, Expression]
+  [ExpressionType.SubUint8]: [Expression, Expression]
 }
 
 export interface SubUInt16Fn {
-  subUint16: [Expression, Expression]
+  [ExpressionType.SubUint16]: [Expression, Expression]
 }
 
 export interface SubUInt32Fn {
-  subUint32: [Expression, Expression]
+  [ExpressionType.SubUint32]: [Expression, Expression]
 }
 
 export interface SubUInt64Fn {
-  subUint64: [Expression, Expression]
+  [ExpressionType.SubUint64]: [Expression, Expression]
 }
 
 export interface DivFloatFn {
-  divFloat: [Expression, Expression]
+  [ExpressionType.DivFloat]: [Expression, Expression]
 }
 export interface DivInt8Fn {
-  divInt8: [Expression, Expression]
+  [ExpressionType.DivInt8]: [Expression, Expression]
 }
 
 export interface DivInt16Fn {
-  divInt16: [Expression, Expression]
+  [ExpressionType.DivInt16]: [Expression, Expression]
 }
 
 export interface DivInt32Fn {
-  divInt32: [Expression, Expression]
+  [ExpressionType.DivInt32]: [Expression, Expression]
 }
 
 export interface DivInt64Fn {
-  divInt64: [Expression, Expression]
+  [ExpressionType.DivInt64]: [Expression, Expression]
 }
 
 export interface DivUInt8Fn {
-  divUint8: [Expression, Expression]
+  [ExpressionType.DivUint8]: [Expression, Expression]
 }
 
 export interface DivUInt16Fn {
-  divUint16: [Expression, Expression]
+  [ExpressionType.DivUint16]: [Expression, Expression]
 }
 
 export interface DivUInt32Fn {
-  divUint32: [Expression, Expression]
+  [ExpressionType.DivUint32]: [Expression, Expression]
 }
 
 export interface DivUInt64Fn {
-  divUint64: [Expression, Expression]
+  [ExpressionType.DivUint64]: [Expression, Expression]
 }
 
 export interface MulFloatFn {
-  mulFloat: [Expression, Expression]
+  [ExpressionType.MulFloat]: [Expression, Expression]
 }
 
 export interface MulInt8Fn {
-  mulInt8: [Expression, Expression]
+  [ExpressionType.MulInt8]: [Expression, Expression]
 }
 
 export interface MulInt16Fn {
-  mulInt16: [Expression, Expression]
+  [ExpressionType.MulInt16]: [Expression, Expression]
 }
 
 export interface MulInt32Fn {
-  mulInt32: [Expression, Expression]
+  [ExpressionType.MulInt32]: [Expression, Expression]
 }
 
 export interface MulInt64Fn {
-  mulInt64: [Expression, Expression]
+  [ExpressionType.MulInt64]: [Expression, Expression]
 }
 
 export interface MulUInt8Fn {
-  mulUint8: [Expression, Expression]
+  [ExpressionType.MulUint8]: [Expression, Expression]
 }
 
 export interface MulUInt16Fn {
-  mulUint16: [Expression, Expression]
+  [ExpressionType.MulUint16]: [Expression, Expression]
 }
 
 export interface MulUInt32Fn {
-  mulUint32: [Expression, Expression]
+  [ExpressionType.MulUint32]: [Expression, Expression]
 }
 
 export interface MulUInt64Fn {
-  mulUint64: [Expression, Expression]
+  [ExpressionType.MulUint64]: [Expression, Expression]
 }
 
 export interface LtFloatFn {
-  ltFloat: [Expression, Expression]
+  [ExpressionType.LtFloat]: [Expression, Expression]
 }
 
 export interface LtInt8Fn {
-  ltInt8: [Expression, Expression]
+  [ExpressionType.LtInt8]: [Expression, Expression]
 }
 
 export interface LtInt16Fn {
-  ltInt16: [Expression, Expression]
+  [ExpressionType.LtInt16]: [Expression, Expression]
 }
 
 export interface LtInt32Fn {
-  ltInt32: [Expression, Expression]
+  [ExpressionType.LtInt32]: [Expression, Expression]
 }
 
 export interface LtInt64Fn {
-  ltInt64: [Expression, Expression]
+  [ExpressionType.LtInt64]: [Expression, Expression]
 }
 
 export interface LtUInt8Fn {
-  ltUint8: [Expression, Expression]
+  [ExpressionType.LtUint8]: [Expression, Expression]
 }
 
 export interface LtUInt16Fn {
-  ltUint16: [Expression, Expression]
+  [ExpressionType.LtUint16]: [Expression, Expression]
 }
 
 export interface LtUInt32Fn {
-  ltUint32: [Expression, Expression]
+  [ExpressionType.LtUint32]: [Expression, Expression]
 }
 
 export interface LtUInt64Fn {
-  ltUint64: [Expression, Expression]
+  [ExpressionType.LtUint64]: [Expression, Expression]
 }
 
 export interface GtFloatFn {
-  gtFloat: [Expression, Expression]
+  [ExpressionType.GtFloat]: [Expression, Expression]
 }
 
 export interface GtInt8Fn {
-  gtInt8: [Expression, Expression]
+  [ExpressionType.GtInt8]: [Expression, Expression]
 }
 
 export interface GtInt16Fn {
-  gtInt16: [Expression, Expression]
+  [ExpressionType.GtInt16]: [Expression, Expression]
 }
 
 export interface GtInt32Fn {
-  gtInt32: [Expression, Expression]
+  [ExpressionType.GtInt32]: [Expression, Expression]
 }
 
 export interface GtInt64Fn {
-  gtInt64: [Expression, Expression]
+  [ExpressionType.GtInt64]: [Expression, Expression]
 }
 
 export interface GtUInt8Fn {
-  gtUint8: [Expression, Expression]
+  [ExpressionType.GtUint8]: [Expression, Expression]
 }
 
 export interface GtUInt16Fn {
-  gtUint16: [Expression, Expression]
+  [ExpressionType.GtUint16]: [Expression, Expression]
 }
 
 export interface GtUInt32Fn {
-  gtUint32: [Expression, Expression]
+  [ExpressionType.GtUint32]: [Expression, Expression]
 }
 
 export interface GtUInt64Fn {
-  gtUint64: [Expression, Expression]
+  [ExpressionType.GtUint64]: [Expression, Expression]
 }
 
 export interface FloatToIntFn {
-  floatToInt: Expression
+  [ExpressionType.FloatToInt]: Expression
 }
 
 export interface IntToFloatFn {
-  intToFloat: Expression
+  [ExpressionType.IntToFloat]: Expression
 }
 
 // Logic
 // -----
 
 export interface AndFn {
-  and: Expression[]
+  [ExpressionType.And]: Expression[]
 }
 
 export interface OrFn {
-  or: Expression[]
+  [ExpressionType.Or]: Expression[]
 }
 
 export interface AssertCaseFn {
-  assertCase: {case: string; value: Expression}
+  [ExpressionType.AssertCase]: {case: string; value: Expression}
 }
 
 export interface AssertModelRefFn {
-  assertModelRef: {ref: Expression; value: Expression}
+  [ExpressionType.AssertModelRef]: {ref: Expression; value: Expression}
 }
 
 export interface AssertPresentFn {
-  assertPresent: Expression
+  [ExpressionType.AssertPresent]: Expression
 }
 
 export interface EqualFn {
-  equal: [Expression, Expression]
+  [ExpressionType.Equal]: [Expression, Expression]
 }
 
 export interface IfFn {
-  if: {condition: Expression; then: Expression; else: Expression}
+  [ExpressionType.If]: {condition: Expression; then: Expression; else: Expression}
 }
 
 export interface NotFn {
-  not: Expression
+  [ExpressionType.Not]: Expression
 }
 
 export interface SwitchCaseFn {
-  switchCase: [Expression, ObjectMap<FunctionFn>]
+  [ExpressionType.SwitchCase]: [Expression, ObjectMap<FunctionFn>]
 }
 
 export interface SwitchModelRefFn {
-  switchModelRef: {
+  [ExpressionType.SwitchModelRef]: {
     cases: {match: Expression; return: Expression}[]
     value: Expression
     default: Expression
@@ -307,70 +532,70 @@ export interface SwitchModelRefFn {
 // ----
 
 export interface AllFn {
-  all: Expression
+  [ExpressionType.All]: Expression
 }
 
 export interface CreateFn {
-  create: [Expression, FunctionFn]
+  [ExpressionType.Create]: [Expression, FunctionFn]
 }
 
 export interface CreateMultipleFn {
-  createMultiple: [Expression, ObjectMap<FunctionFn>]
+  [ExpressionType.CreateMultiple]: [Expression, ObjectMap<FunctionFn>]
 }
 
 export interface DeleteFn {
-  delete: Expression
+  [ExpressionType.Delete]: Expression
 }
 
 export interface GetFn {
-  get: Expression
+  [ExpressionType.Get]: Expression
 }
 
 export interface UpdateFn {
-  update: {ref: Expression; value: Expression}
+  [ExpressionType.Update]: {ref: Expression; value: Expression}
 }
 
 // Graph / Referential
 // -------------------
 
 export interface AllReferrersFn {
-  allReferrers: Expression
+  [ExpressionType.AllReferrers]: Expression
 }
 
 export interface RefToFn {
-  refTo: Expression
+  [ExpressionType.RefTo]: Expression
 }
 
 export interface ReferredFn {
-  referred: {from: Expression; in: Expression}
+  [ExpressionType.Referred]: {from: Expression; in: Expression}
 }
 
 export interface ReferrersFn {
-  referrers: {of: Expression; in: Expression}
+  [ExpressionType.Referrers]: {of: Expression; in: Expression}
 }
 
 export interface RelocateRefFn {
-  relocateRef: {model: Expression; ref: Expression}
+  [ExpressionType.RelocateRef]: {model: Expression; ref: Expression}
 }
 
 export interface ResolveAllRefsFn {
-  resolveAllRefs: Expression
+  [ExpressionType.ResolveAllRefs]: Expression
 }
 
 export interface ResolveRefsFn {
-  resolveRefs: [Expression, Expression[]]
+  [ExpressionType.ResolveRefs]: [Expression, Expression[]]
 }
 
 export interface TagFn {
-  tag: Expression
+  [ExpressionType.Tag]: Expression
 }
 
 export interface TagExistsFn {
-  tagExists: Expression
+  [ExpressionType.TagExists]: Expression
 }
 
 export interface GraphFlowFn {
-  graphFlow: {
+  [ExpressionType.GraphFlow]: {
     flow: {backward: Expression[]; forward: Expression[]; from: Expression}[]
     start: Expression
   }
@@ -380,54 +605,54 @@ export interface GraphFlowFn {
 // -----------------
 
 export interface CurrentUserFn {
-  currentUser: {}
+  [ExpressionType.CurrentUser]: {}
 }
 
 // List
 // ----
 
 export interface ConcatListsFn {
-  concatLists: [Expression, Expression]
+  [ExpressionType.ConcatLists]: [Expression, Expression]
 }
 
 export interface FilterListFn {
-  filterList: [Expression, FunctionFn]
+  [ExpressionType.FilterList]: [Expression, FunctionFn]
 }
 
 export interface FirstFn {
-  first: Expression
+  [ExpressionType.First]: Expression
 }
 
 export interface InListFn {
-  inList: {in: Expression; value: Expression}
+  [ExpressionType.InList]: {in: Expression; value: Expression}
 }
 
 export interface MapListFn {
-  mapList: [Expression, FunctionFn]
+  [ExpressionType.MapList]: [Expression, FunctionFn]
 }
 
 export interface LengthFn {
-  length: Expression
+  [ExpressionType.Length]: Expression
 }
 
 export interface MemSortFn {
-  memSort: [Expression, FunctionFn]
+  [ExpressionType.MemSort]: [Expression, FunctionFn]
 }
 
 export interface MemSortFunctionFn {
-  memSortFunction: [Expression, FunctionFn]
+  [ExpressionType.MemSortFunction]: [Expression, FunctionFn]
 }
 
 export interface ReverseListFn {
-  reverseList: Expression
+  [ExpressionType.ReverseList]: Expression
 }
 
 export interface SliceFn {
-  slice: {value: Expression; offset: Expression; length: Expression}
+  [ExpressionType.Slice]: {value: Expression; offset: Expression; length: Expression}
 }
 
 export interface ReduceListFn {
-  reduceList: {
+  [ExpressionType.ReduceList]: {
     initial: Expression
     value: Expression
     reducer: FunctionFn
@@ -435,88 +660,88 @@ export interface ReduceListFn {
 }
 
 export interface RightFoldListFn {
-  rightFoldList: [Expression, Expression, FunctionFn]
+  [ExpressionType.RightFoldList]: [Expression, Expression, FunctionFn]
 }
 
 export interface LeftFoldListFn {
-  leftFoldList: [Expression, Expression, FunctionFn]
+  [ExpressionType.LeftFoldList]: [Expression, Expression, FunctionFn]
 }
 
 // Struct
 // ------
 
 export interface ExtractStringsFn {
-  extractStrings: Expression
+  [ExpressionType.ExtractStrings]: Expression
 }
 
 export interface FieldFn {
-  field: [string, Expression]
+  [ExpressionType.Field]: [string, Expression]
 }
 
 export interface SetFieldFn {
-  setField: {name: string; in: Expression; value: Expression}
+  [ExpressionType.SetField]: {name: string; in: Expression; value: Expression}
 }
 
 // Tuple
 // -----
 
 export interface IndexTupleFn {
-  indexTuple: [Expression, number]
+  [ExpressionType.IndexTuple]: [Expression, number]
 }
 
 // Union
 // -----
 
 export interface IsCaseFn {
-  isCase: {case: Expression; value: Expression}
+  [ExpressionType.IsCase]: {case: Expression; value: Expression}
 }
 
 // Map
 // ---
 
 export interface KeyFn {
-  key: [Expression, Expression]
+  [ExpressionType.Key]: [Expression, Expression]
 }
 
 export interface MapMapFn {
-  mapMap: [Expression, FunctionFn]
+  [ExpressionType.MapMap]: [Expression, FunctionFn]
 }
 
 export interface SetKeyFn {
-  setKey: {name: string; in: Expression; value: Expression}
+  [ExpressionType.SetKey]: {name: string; in: Expression; value: Expression}
 }
 
 // Set
 // ---
 
 export interface MapSetFn {
-  mapSet: [Expression, FunctionFn]
+  [ExpressionType.MapSet]: [Expression, FunctionFn]
 }
 
 // Optional
 // --------
 
 export interface IsPresentFn {
-  isPresent: Expression
+  [ExpressionType.IsPresent]: Expression
 }
 
 export interface PresentOrZeroFn {
-  presentOrZero: Expression
+  [ExpressionType.PresentOrZero]: Expression
 }
 
 // String
 // ------
 
 export interface JoinStringsFn {
-  joinStrings: {separator: Expression; strings: Expression}
+  [ExpressionType.JoinStrings]: {separator: Expression; strings: Expression}
 }
 
 export interface StringToLowerFn {
-  stringToLower: Expression
+  [ExpressionType.StringToLower]: Expression
 }
 
 export interface MatchRegexFn {
-  matchRegex: {
+  [ExpressionType.MatchRegex]: {
     caseInsensitive: boolean
     multiLine: boolean
     regex: string
@@ -525,7 +750,7 @@ export interface MatchRegexFn {
 }
 
 export interface SearchAllRegexFn {
-  searchAllRegex: {
+  [ExpressionType.SearchAllRegex]: {
     caseInsensitive: boolean
     multiLine: boolean
     regex: string
@@ -534,7 +759,7 @@ export interface SearchAllRegexFn {
 }
 
 export interface SearchRegexFn {
-  searchRegex: {
+  [ExpressionType.SearchRegex]: {
     caseInsensitive: boolean
     multiLine: boolean
     regex: string
@@ -543,163 +768,165 @@ export interface SearchRegexFn {
 }
 
 export interface StringContainsFn {
-  stringContains: [Expression, Expression]
+  [ExpressionType.StringContains]: [Expression, Expression]
 }
 
 export interface SubstringIndexFn {
-  substringIndex: [Expression, Expression]
+  [ExpressionType.SubstringIndex]: [Expression, Expression]
 }
 
 // Date Time
 // ---------
 
 export interface AfterFn {
-  after: [Expression, Expression]
+  [ExpressionType.After]: [Expression, Expression]
 }
 
 export interface BeforeFn {
-  before: [Expression, Expression]
+  [ExpressionType.Before]: [Expression, Expression]
 }
 
 // Scope
 // -----
 
 export interface DataFn {
-  data: DataExpression
+  [ExpressionType.Data]: DataExpression
 }
 
 export interface WithFn {
-  with: [Expression, FunctionFn]
+  [ExpressionType.With]: [Expression, FunctionFn]
 }
 
 export interface DefineFn {
-  define: [string, Expression]
+  [ExpressionType.Define]: [string, Expression]
 }
 
 export interface ScopeFn {
-  scope: string
+  [ExpressionType.Scope]: string
 }
 
 export interface SignatureFn {
-  signature: FunctionFn
+  [ExpressionType.Signature]: FunctionFn
 }
 
 // Other
 // -----
 
 export interface ModelFn {
-  model: Expression
+  [ExpressionType.Model]: Expression
 }
 
 export interface ModelOfFn {
-  modelOf: Expression
+  [ExpressionType.ModelOf]: Expression
 }
 
 export interface MetarializeFn {
-  metarialize: Expression
+  [ExpressionType.Metarialize]: Expression
 }
 
 export interface ZeroFn {
-  zero: {}
+  [ExpressionType.Zero]: {}
 }
 
 // Data Scope
 // ==========
 
 export interface BoolFn {
-  bool: boolean
+  [ExpressionType.Bool]: boolean
 }
 
 export interface DateTimeFn {
-  dateTime: string
+  [ExpressionType.DateTime]: string
 }
 
 export interface StringFn {
-  string: string
+  [ExpressionType.String]: string
 }
 
 export interface FloatFn {
-  float: number
+  [ExpressionType.Float]: number
 }
 
 export interface Int8Fn {
-  int8: number
+  [ExpressionType.Int8]: number
 }
 
 export interface Int16Fn {
-  int16: number
+  [ExpressionType.Int16]: number
 }
 
 export interface Int32Fn {
-  int32: number
+  [ExpressionType.Int32]: number
 }
 
 export interface Int64Fn {
-  int64: number
+  [ExpressionType.Int64]: number
 }
 
 export interface UInt8Fn {
-  uint8: number
+  [ExpressionType.Uint8]: number
 }
 
 export interface UInt16Fn {
-  uint16: number
+  [ExpressionType.Uint16]: number
 }
 
 export interface UInt32Fn {
-  uint32: number
+  [ExpressionType.Uint32]: number
 }
 
 export interface UInt64Fn {
-  uint64: number
+  [ExpressionType.Uint64]: number
 }
 
 export interface NullFn {
-  null: null
+  [ExpressionType.Null]: null
 }
 
 export interface SymbolFn {
-  symbol: string
+  [ExpressionType.Symbol]: string
 }
 
 export interface TupleFn {
-  tuple: DataExpression[]
+  [ExpressionType.Tuple]: DataExpression[]
 }
 
 export interface RefFn {
-  ref: [string, string]
+  [ExpressionType.Ref]: [string, string]
 }
 
 export interface SetFn {
-  set: DataExpression[]
+  [ExpressionType.Set]: DataExpression[]
 }
 
 export interface ExprFn {
-  expr: Expression
+  [ExpressionType.Expr]: Expression
 }
 
 export interface ListFn {
-  list: DataExpression[]
+  [ExpressionType.List]: DataExpression[]
 }
 
 export interface MapFn {
-  map: ObjectMap<DataExpression>
+  [ExpressionType.Map]: ObjectMap<DataExpression>
 }
 
 export interface StructFn {
-  struct: ObjectMap<DataExpression | undefined>
+  [ExpressionType.Struct]: ObjectMap<DataExpression>
 }
 
 export interface UnionFn {
-  union: [string, DataExpression]
+  [ExpressionType.Union]: [string, DataExpression]
 }
 
 // Function Scope
 // ==============
 
 export interface FunctionFn {
-  function: [string[], Expression[]]
+  [ExpressionType.Function]: [string[], Expression[]]
 }
+
+export type FunctionExpression = FunctionFn
 
 export type PrimitiveDataExpression =
   | BoolFn
@@ -728,7 +955,6 @@ export type DataExpression =
   | RefFn
   | ExprFn
 
-//
 export type Expression =
   // Convinience constructors
   | PrimitiveDataExpression
@@ -890,8 +1116,9 @@ export type Expression =
   | FloatToIntFn
   | IntToFloatFn
 
+export type AnyExpression = Expression | DataExpression | FunctionExpression
+
 export type StringExpression = string | Expression
 export type NumberExpression = number | Expression
 export type DateExpression = string | number | Date | Expression
-
 export type StringDataExpression = string | DataExpression
