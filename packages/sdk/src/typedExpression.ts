@@ -76,7 +76,7 @@ export function createTypedExpression(expression: AnyExpression): DataExpression
       return d.union(type, d.null())
 
     case ExpressionType.Symbol:
-      return d.union(type, d.symbol(value))
+      return d.union(type, d.string(value))
 
     case ExpressionType.Ref:
       const refValue = value as RefFn[ExpressionType.Ref]
