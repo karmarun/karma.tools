@@ -147,7 +147,10 @@ export async function build(
       mode: 'production',
       devtool: 'source-map',
       output: {path: bundlePath, publicPath: '/static/'},
-      resolve: {extensions: ['.ts', '.tsx', '.js']},
+      resolve: {
+        extensions: ['.ts', '.tsx', '.js'],
+        modules: ['node_modules', path.resolve(__dirname, '../../node_modules')]
+      },
       module: {rules: [{test: /\.tsx?$/, loader: 'ts-loader'}]}
     } as import('webpack').Configuration)
 
@@ -194,7 +197,10 @@ export async function watchBuild(
     mode: 'development',
     devtool: 'cheap-module-eval-source-map',
     output: {path: bundlePath, publicPath: '/static/'},
-    resolve: {extensions: ['.ts', '.tsx', '.js']},
+    resolve: {
+      extensions: ['.ts', '.tsx', '.js'],
+      modules: ['node_modules', path.resolve(__dirname, '../../node_modules')]
+    },
     module: {rules: [{test: /\.tsx?$/, loader: 'ts-loader'}]}
   } as import('webpack').Configuration)
 
