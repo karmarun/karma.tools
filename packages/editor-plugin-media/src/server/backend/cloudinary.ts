@@ -191,4 +191,8 @@ export class CloudinaryBackend implements MediaBackend {
         }
     }
   }
+
+  public async get(): Promise<never> {
+    throw new Error('Not implemented!')
+  }
 }

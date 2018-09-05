@@ -2,7 +2,7 @@ import fs from 'fs'
 import util from 'util'
 import path from 'path'
 import sharp from 'sharp'
-import {Magic, MAGIC_MIME} from 'mmmagic'
+import mimeTypes from 'mime-types'
 import {MediaType} from '../common'
 
 export interface UploadFile {
@@ -15,12 +15,12 @@ export interface CommonFileMetadata {
   filename: string
   fileSize: number
   extension?: string
-  mediaType: MediaType
   mimeType: string
 }
 
 export interface ImageFileMetadata extends CommonFileMetadata {
   mediaType: MediaType.Image
+  format: string
   width: number
   height: number
 }
@@ -30,7 +30,7 @@ export interface VideoFileMetadata extends CommonFileMetadata {
 }
 
 export interface AudioFileMetadata extends CommonFileMetadata {
-  mediaType: MediaType.Document
+  mediaType: MediaType.Audio
 }
 
 export interface DocumentFileMetadata extends CommonFileMetadata {
@@ -48,21 +48,21 @@ export type FileMetadata =
   | DocumentFileMetadata
   | OtherFileMetadata
 
-export type IntermediateFile = CommonFileMetadata & {
+export type IntermediateFile = FileMetadata & {
   id: string
   path: string
 }
 
-const magic = new Magic(MAGIC_MIME)
+// const magic = new Magic(MAGIC_MIME)
 
-export function getMimeType(path: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    magic.detectFile(path, (err, mimeType) => {
-      if (err) return reject(err)
-      return resolve(mimeType)
-    })
-  })
-}
+// export function getMimeType(path: string): Promise<string> {
+//   return new Promise((resolve, reject) => {
+//     magic.detectFile(path, (err, mimeType) => {
+//       if (err) return reject(err)
+//       return resolve(mimeType)
+//     })
+//   })
+// }
 
 export function getMediaType(mimeType: string) {
   if (mimeType.startsWith('image/')) return MediaType.Image
@@ -77,18 +77,11 @@ export function getFilePathForID(id: string, tempDirPath: string) {
   return path.join(tempDirPath, id)
 }
 
-export async function getImageSize(
-  path: string
-): Promise<{width: number | undefined; height: number | undefined}> {
-  const metadata = await sharp(path).metadata()
-  return {width: metadata.width, height: metadata.height}
-}
-
 export function getMetadataPathForID(id: string, tempDirPath: string) {
   return path.join(tempDirPath, `${id}.meta`)
 }
 
-export async function getMetadataForID(id: string, tempDirPath: string) {
+export async function getMetadataForID(id: string, tempDirPath: string): Promise<FileMetadata> {
   const metadataPath = getMetadataPathForID(id, tempDirPath)
   const metadataJSON = await readFile(metadataPath)
 
@@ -96,34 +89,59 @@ export async function getMetadataForID(id: string, tempDirPath: string) {
 }
 
 export async function getFileMetadata(file: UploadFile): Promise<FileMetadata> {
-  const mimeType = await getMimeType(file.path)
   const stats = await statFile(file.path)
+  const parsedPath = path.parse(file.filename)
+
+  const mimeType =
+    mimeTypes.contentType(file.filename) || 'application/octet-stream; charset=binary'
 
   const mediaType = getMediaType(mimeType)
-  const extension = path.extname(file.filename)
 
   const commonMetadata: CommonFileMetadata = {
-    filename: file.filename,
+    filename: parsedPath.name,
     fileSize: stats.size,
-    extension: extension || undefined,
-    mediaType,
+    extension: parsedPath.ext || undefined,
     mimeType
   }
 
   switch (mediaType) {
     case MediaType.Image: {
-      const size = await getImageSize(file.path)
-      return {...commonMetadata, width: size.width, height: size.height} as ImageFileMetadata
+      const metadata = await sharp(file.path).metadata()
+
+      if (
+        metadata.width == undefined ||
+        metadata.height == undefined ||
+        metadata.format == undefined
+      ) {
+        throw new Error("Couldn't get image metadata, image format is probably unsupported.")
+      }
+
+      if (mimeType !== mimeTypes.contentType(metadata.format!)) {
+        throw new Error(
+          "Image MIME type differs from extension MIME type, usually means that the extension didn't match the actual content"
+        )
+      }
+
+      return {
+        ...commonMetadata,
+        mediaType,
+        width: metadata.width || 0,
+        height: metadata.height || 0,
+        format: metadata.format || 'unknown'
+      }
     }
 
-    case MediaType.Video:
-      return commonMetadata as VideoFileMetadata
     case MediaType.Audio:
-      return commonMetadata as AudioFileMetadata
+      return {...commonMetadata, mediaType}
+
+    case MediaType.Video:
+      return {...commonMetadata, mediaType}
+
     case MediaType.Document:
-      return commonMetadata as DocumentFileMetadata
+      return {...commonMetadata, mediaType}
+
     case MediaType.Other:
-      return commonMetadata as OtherFileMetadata
+      return {...commonMetadata, mediaType}
   }
 }
 

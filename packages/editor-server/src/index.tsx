@@ -10,11 +10,30 @@ import ReactDOMServer from 'react-dom/server'
 import path from 'path'
 import express from 'express'
 
-import {SignatureHeader, Tag, query, buildFunction, getTags, Ref} from '@karma.run/sdk'
-import {EditorContext, ViewContextOptionsWithModel} from '@karma.run/editor-common'
+import {
+  name as sdkModuleName,
+  version as sdkModuleVersion,
+  SignatureHeader,
+  Tag,
+  query,
+  buildFunction,
+  getTags,
+  Ref
+} from '@karma.run/sdk'
+
+import {
+  name as commonModuleName,
+  version as commonModuleVersion,
+  EditorContext,
+  ViewContextOptionsWithModel
+} from '@karma.run/editor-common'
+
+import {version as serverModuleVersion} from './version'
 
 import {ServerPlugin, PluginContext} from './plugin'
+
 export * from './plugin'
+export * from './version'
 
 const cacheOptions = {maxAge: '1d'}
 
@@ -128,8 +147,12 @@ export function editorMiddleware(opts: MiddlewareOptions): express.Router {
 
   router.get(`${basePath}/api/status`, (_, res) => {
     return res.status(200).send({
-      status: 'ok',
+      version: serverModuleVersion,
       karmaDataURL: opts.karmaDataURL,
+      modules: [
+        `${commonModuleName}@${commonModuleVersion}`,
+        `${sdkModuleName}@${sdkModuleVersion}`
+      ],
       plugins: pluginIdentifiers
     })
   })
