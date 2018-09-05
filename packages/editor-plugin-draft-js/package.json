@@ -17,7 +17,8 @@
     "symlink": "shx ln -s ./cjs ./lib/es6",
     "copy:license": "shx cp ../../LICENSE ./",
     "clean": "shx rm -rf ./LICENSE ./lib",
-    "prepare": "run-s clean copy:license build"
+    "prepare": "run-s clean copy:license build sync-package-info",
+    "sync-package-info": "./../../scripts/syncPackageInfo.js ./src/common/version.ts"
   },
   "dependencies": {
     "draft-js": "^0.10.5",

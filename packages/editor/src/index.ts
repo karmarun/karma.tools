@@ -6,9 +6,12 @@ import build from './commands/build'
 import clean from './commands/clean'
 import viewContext from './commands/viewContext'
 
-export * from './interface'
+import {version} from './version'
 
-const program = commander.name('karma-editor').version('0.14.3')
+export * from './interface'
+export * from './version'
+
+const program = commander.name('karma-editor').version(version)
 
 program
   .command('server')
