@@ -261,7 +261,7 @@ export function createTypedExpression(expression: AnyExpression): DataExpression
       return d.union(
         type,
         d.struct({
-          cases: d.list(
+          cases: d.set(
             ...switchModelRefValue.cases.map(value =>
               d.struct({
                 match: createTypedExpression(value.match),
