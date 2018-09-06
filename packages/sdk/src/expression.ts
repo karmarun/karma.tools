@@ -555,7 +555,7 @@ export class ExpressionContext {
   public switchModelRef(
     value: t.Expression,
     defaultValue: t.Expression,
-    cases: {match: t.Expression; return: t.Expression}[]
+    cases: {match: t.Expression; return: t.FunctionExpression}[]
   ): t.SwitchModelRefFn {
     return {[E.SwitchModelRef]: {value, default: defaultValue, cases}}
   }

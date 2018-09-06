@@ -517,12 +517,12 @@ export interface NotFn {
 }
 
 export interface SwitchCaseFn {
-  [ExpressionType.SwitchCase]: [Expression, ObjectMap<FunctionFn>]
+  [ExpressionType.SwitchCase]: [Expression, ObjectMap<FunctionExpression>]
 }
 
 export interface SwitchModelRefFn {
   [ExpressionType.SwitchModelRef]: {
-    cases: {match: Expression; return: Expression}[]
+    cases: {match: Expression; return: FunctionExpression}[]
     value: Expression
     default: Expression
   }
@@ -536,11 +536,11 @@ export interface AllFn {
 }
 
 export interface CreateFn {
-  [ExpressionType.Create]: [Expression, FunctionFn]
+  [ExpressionType.Create]: [Expression, FunctionExpression]
 }
 
 export interface CreateMultipleFn {
-  [ExpressionType.CreateMultiple]: [Expression, ObjectMap<FunctionFn>]
+  [ExpressionType.CreateMultiple]: [Expression, ObjectMap<FunctionExpression>]
 }
 
 export interface DeleteFn {
@@ -616,7 +616,7 @@ export interface ConcatListsFn {
 }
 
 export interface FilterListFn {
-  [ExpressionType.FilterList]: [Expression, FunctionFn]
+  [ExpressionType.FilterList]: [Expression, FunctionExpression]
 }
 
 export interface FirstFn {
@@ -628,7 +628,7 @@ export interface InListFn {
 }
 
 export interface MapListFn {
-  [ExpressionType.MapList]: [Expression, FunctionFn]
+  [ExpressionType.MapList]: [Expression, FunctionExpression]
 }
 
 export interface LengthFn {
@@ -636,11 +636,11 @@ export interface LengthFn {
 }
 
 export interface MemSortFn {
-  [ExpressionType.MemSort]: [Expression, FunctionFn]
+  [ExpressionType.MemSort]: [Expression, FunctionExpression]
 }
 
 export interface MemSortFunctionFn {
-  [ExpressionType.MemSortFunction]: [Expression, FunctionFn]
+  [ExpressionType.MemSortFunction]: [Expression, FunctionExpression]
 }
 
 export interface ReverseListFn {
@@ -655,16 +655,16 @@ export interface ReduceListFn {
   [ExpressionType.ReduceList]: {
     initial: Expression
     value: Expression
-    reducer: FunctionFn
+    reducer: FunctionExpression
   }
 }
 
 export interface RightFoldListFn {
-  [ExpressionType.RightFoldList]: [Expression, Expression, FunctionFn]
+  [ExpressionType.RightFoldList]: [Expression, Expression, FunctionExpression]
 }
 
 export interface LeftFoldListFn {
-  [ExpressionType.LeftFoldList]: [Expression, Expression, FunctionFn]
+  [ExpressionType.LeftFoldList]: [Expression, Expression, FunctionExpression]
 }
 
 // Struct
@@ -704,7 +704,7 @@ export interface KeyFn {
 }
 
 export interface MapMapFn {
-  [ExpressionType.MapMap]: [Expression, FunctionFn]
+  [ExpressionType.MapMap]: [Expression, FunctionExpression]
 }
 
 export interface SetKeyFn {
@@ -715,7 +715,7 @@ export interface SetKeyFn {
 // ---
 
 export interface MapSetFn {
-  [ExpressionType.MapSet]: [Expression, FunctionFn]
+  [ExpressionType.MapSet]: [Expression, FunctionExpression]
 }
 
 // Optional
@@ -794,7 +794,7 @@ export interface DataFn {
 }
 
 export interface WithFn {
-  [ExpressionType.With]: [Expression, FunctionFn]
+  [ExpressionType.With]: [Expression, FunctionExpression]
 }
 
 export interface DefineFn {
@@ -806,7 +806,7 @@ export interface ScopeFn {
 }
 
 export interface SignatureFn {
-  [ExpressionType.Signature]: FunctionFn
+  [ExpressionType.Signature]: FunctionExpression
 }
 
 // Other
