@@ -231,7 +231,7 @@ export class BuilderExpressionContext extends ExpressionContext {
     return prefixes.map(prefix => `_${prefix}_${currentParamIndex}`) as P
   }
 
-  public function(body: FunctionBodyFn, paramNames: string[]): t.FunctionFn {
+  public function(body: FunctionBodyFn, paramNames: string[] = []): t.FunctionFn {
     if (body.length > 0) {
       for (let i = paramNames.length; i < body.length - paramNames.length; i++) {
         paramNames[i] = this.getUniqueParamNames(`param${i}`)[0]
@@ -307,16 +307,9 @@ export class UtilityContext {
                         isRef(migration.manualExpression)
                           ? d.ref(migration.manualExpression)
                           : d.expr(
-                              e.create(e.tag(DefaultTags.Expression), () =>
-                                e.data(
-                                  createTypedExpression(
-                                    e.function(
-                                      value =>
-                                        (migration.manualExpression as MigrationContextFn)(value),
-                                      e.getUniqueParamNames('value')
-                                    )
-                                  )
-                                )
+                              this.createStoredExpression(
+                                migration.manualExpression,
+                                e.getUniqueParamNames('value')
                               )
                             )
                       )
@@ -325,6 +318,16 @@ export class UtilityContext {
               )
             )
           )
+        ),
+      this.expressionContext
+    )
+  }
+
+  public createStoredExpression(body: FunctionBodyFn, paramNames: string[] = []): t.Expression {
+    return buildExpression(
+      e =>
+        e.create(e.tag(DefaultTags.Expression), () =>
+          e.data(createTypedExpression(e.function(body, paramNames)))
         ),
       this.expressionContext
     )
