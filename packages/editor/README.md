@@ -22,14 +22,15 @@ $ karma-editor --help
 
   Options:
 
-    -V, --version     output the version number
-    -h, --help        output usage information
+    -V, --version          output the version number
+    -h, --help             output usage information
 
   Commands:
 
-    server [options]  Run editor server.
-    build [options]   Pre-build editor client.
-    clean [options]   Clean client cache.
+    server [options]       Run editor server.
+    build [options]        Pre-build editor client.
+    viewcontext [options]  Output inferred view context for all models.
+    clean [options]        Clean client cache.
 ```
 
 ## Configuration Files

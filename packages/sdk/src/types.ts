@@ -88,8 +88,15 @@ export const enum ExpressionType {
   GtUint32 = 'gtUint32',
   GtUint64 = 'gtUint64',
 
-  FloatToInt = 'floatToInt',
-  IntToFloat = 'intToFloat',
+  ToFloat = 'toFloat',
+  ToInt8 = 'toInt8',
+  ToInt16 = 'toInt16',
+  ToInt32 = 'toInt32',
+  ToInt64 = 'toInt64',
+  ToUint8 = 'toUint8',
+  ToUint16 = 'toUint16',
+  ToUint32 = 'toUint32',
+  ToUint64 = 'toUint64',
 
   // Logic
   // -----
@@ -473,12 +480,40 @@ export interface GtUInt64Fn {
   [ExpressionType.GtUint64]: [Expression, Expression]
 }
 
-export interface FloatToIntFn {
-  [ExpressionType.FloatToInt]: Expression
+export interface ToFloatFn {
+  [ExpressionType.ToFloat]: Expression
 }
 
-export interface IntToFloatFn {
-  [ExpressionType.IntToFloat]: Expression
+export interface ToInt8Fn {
+  [ExpressionType.ToInt8]: Expression
+}
+
+export interface ToInt16Fn {
+  [ExpressionType.ToInt16]: Expression
+}
+
+export interface ToInt32Fn {
+  [ExpressionType.ToInt32]: Expression
+}
+
+export interface ToInt64Fn {
+  [ExpressionType.ToInt64]: Expression
+}
+
+export interface ToUint8Fn {
+  [ExpressionType.ToUint8]: Expression
+}
+
+export interface ToUint16Fn {
+  [ExpressionType.ToUint16]: Expression
+}
+
+export interface ToUint32Fn {
+  [ExpressionType.ToUint32]: Expression
+}
+
+export interface ToUint64Fn {
+  [ExpressionType.ToUint64]: Expression
 }
 
 // Logic
@@ -1113,8 +1148,15 @@ export type Expression =
   | GtUInt16Fn
   | GtUInt32Fn
   | GtUInt64Fn
-  | FloatToIntFn
-  | IntToFloatFn
+  | ToFloatFn
+  | ToInt8Fn
+  | ToInt16Fn
+  | ToInt32Fn
+  | ToInt64Fn
+  | ToUint8Fn
+  | ToUint16Fn
+  | ToUint32Fn
+  | ToUint64Fn
 
 export type AnyExpression = Expression | DataExpression | FunctionExpression
 

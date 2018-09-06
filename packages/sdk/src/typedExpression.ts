@@ -99,8 +99,15 @@ export function createTypedExpression(expression: AnyExpression): DataExpression
       const unionValue = value as UnionFn[ExpressionType.Union]
       return d.union(type, d.tuple(d.string(unionValue[0]), createTypedExpression(unionValue[1])))
 
-    case ExpressionType.FloatToInt:
-    case ExpressionType.IntToFloat:
+    case ExpressionType.ToFloat:
+    case ExpressionType.ToInt8:
+    case ExpressionType.ToInt16:
+    case ExpressionType.ToInt32:
+    case ExpressionType.ToInt64:
+    case ExpressionType.ToUint8:
+    case ExpressionType.ToUint16:
+    case ExpressionType.ToUint32:
+    case ExpressionType.ToUint64:
     case ExpressionType.AssertPresent:
     case ExpressionType.Not:
     case ExpressionType.All:
