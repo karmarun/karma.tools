@@ -2,17 +2,17 @@ import fs from 'fs'
 import path from 'path'
 import shortid from 'shortid'
 
-import {MediaBackend} from './interface'
-import {CommitResponse, DeleteResponse} from '../../common'
+import {MediaAdapter} from './interface'
 import {IntermediateFile} from '../helper'
+import {CommitResponse, DeleteResponse} from '../../common'
 
-export interface StorageBackend {
+export interface StorageAdapter {
   write(id: string, stream: NodeJS.ReadableStream): Promise<void>
   read(id: string): Promise<NodeJS.WritableStream>
   delete(id: string): Promise<void>
 }
 
-export class LocaleStorageBackend implements StorageBackend {
+export class LocaleStorageAdapter implements StorageAdapter {
   private storagePath: string
 
   public constructor(storagePath: string) {
@@ -55,16 +55,15 @@ export function sanitizeFilename(filename: string) {
     .substr(0, 20)
 }
 
-export class LocalBackend implements MediaBackend {
-  private storageBackend: StorageBackend
+export class LocalMediaAdapter implements MediaAdapter {
+  private storageBackend: StorageAdapter
 
   public constructor() {
-    this.storageBackend = new LocaleStorageBackend(path.resolve(process.cwd(), '.cache'))
+    this.storageBackend = new LocaleStorageAdapter(path.resolve(process.cwd(), '.cache'))
   }
 
   public async commit(file: IntermediateFile, overrideID?: string): Promise<CommitResponse> {
     const stream = fs.createReadStream(file.path)
-
     const sanitizedFilename = sanitizeFilename(file.filename)
     const id = `${shortid.generate()}-${file.mediaType}-${sanitizedFilename}`
 

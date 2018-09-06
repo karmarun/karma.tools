@@ -2,17 +2,18 @@ import {Router} from 'express'
 import {ServerPlugin, PluginContext} from '@karma.run/editor-server'
 
 import {name, version} from '../common/version'
-import {mediaMiddleware} from './middleware'
 import {MediaType} from '../common/interface'
-import {MediaBackend} from '../server/backend'
+
+import {mediaMiddleware} from './middleware'
+import {MediaAdapter} from './adapter'
 
 export * from './middleware'
-export * from './backend'
+export * from './adapter'
 export * from './action'
 
 export interface MediaPluginOptions {
-  hostname: string
-  backend: MediaBackend
+  hostname?: string
+  adapter: MediaAdapter
   allowedRoles: string[]
   allowedMediaTypes?: MediaType[]
   tempDirPath?: string
@@ -33,7 +34,7 @@ export class MediaServerPlugin implements ServerPlugin {
       mediaMiddleware({
         ...this.options,
         karmaDataURL: context.karmaDataURL,
-        hostname: `${this.options.hostname}/api/plugin/${name}`
+        hostname: `${this.options.hostname || ''}/api/plugin/${name}`
       })
     )
   }

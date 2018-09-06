@@ -9,7 +9,7 @@ import {
   DeleteResponse
 } from '../common'
 
-import {MediaBackend} from './backend'
+import {MediaAdapter} from './adapter'
 import {UploadFile} from './helper'
 
 import {
@@ -40,13 +40,13 @@ export async function uploadMedia(
   return {
     ...metadata,
     id: uploadFile.id,
-    url: `${opts.hostname}/preview/${uploadFile.id}`
+    url: `${opts.hostname || ''}/preview/${uploadFile.id}`
   }
 }
 
 export interface CommitOptions {
   tempDirPath: string
-  backend: MediaBackend
+  adapter: MediaAdapter
 }
 
 export async function commitMedia(
@@ -67,7 +67,7 @@ export async function commitMedia(
   }
 
   try {
-    const response = await opts.backend.commit(intermidateFile, overrideID)
+    const response = await opts.adapter.commit(intermidateFile, overrideID)
 
     fs.unlink(filePath, err => {
       if (err) console.error('Error while deleting intermidate file: ', err)
@@ -85,25 +85,25 @@ export async function commitMedia(
 }
 
 export interface CopyOptions {
-  backend: MediaBackend
+  adapter: MediaAdapter
 }
 
 export async function copyMedia(id: string, opts: CopyOptions): Promise<CopyResponse> {
-  return opts.backend.copy(id)
+  return opts.adapter.copy(id)
 }
 
 export interface DeleteOptions {
-  backend: MediaBackend
+  adapter: MediaAdapter
 }
 
 export async function deleteMedia(id: string, opts: DeleteOptions): Promise<DeleteResponse> {
-  return opts.backend.delete(id)
+  return opts.adapter.delete(id)
 }
 
 export interface ThumbnailOptions {
-  backend: MediaBackend
+  adapter: MediaAdapter
 }
 
 export async function thumbnailRedirectURL(id: string, opts: ThumbnailOptions): Promise<string> {
-  return opts.backend.thumbnailURL(id)
+  return opts.adapter.thumbnailURL(id)
 }

@@ -3,12 +3,12 @@ import util from 'util'
 import path from 'path'
 import sharp from 'sharp'
 import mimeTypes from 'mime-types'
-import {MediaType} from '../common'
+import {MediaType, ErrorType} from '../common'
 
 export interface UploadFile {
   id: string
-  path: string
   filename: string
+  path: string
 }
 
 export interface CommonFileMetadata {
@@ -53,17 +53,6 @@ export type IntermediateFile = FileMetadata & {
   path: string
 }
 
-// const magic = new Magic(MAGIC_MIME)
-
-// export function getMimeType(path: string): Promise<string> {
-//   return new Promise((resolve, reject) => {
-//     magic.detectFile(path, (err, mimeType) => {
-//       if (err) return reject(err)
-//       return resolve(mimeType)
-//     })
-//   })
-// }
-
 export function getMediaType(mimeType: string) {
   if (mimeType.startsWith('image/')) return MediaType.Image
   if (mimeType.startsWith('video/')) return MediaType.Video
@@ -89,13 +78,10 @@ export async function getMetadataForID(id: string, tempDirPath: string): Promise
 }
 
 export async function getFileMetadata(file: UploadFile): Promise<FileMetadata> {
-  const stats = await statFile(file.path)
-  const parsedPath = path.parse(file.filename)
-
-  const mimeType =
-    mimeTypes.contentType(file.filename) || 'application/octet-stream; charset=binary'
-
+  const mimeType = mimeTypes.contentType(file.filename) || 'application/octet-stream'
   const mediaType = getMediaType(mimeType)
+  const parsedPath = path.parse(file.filename)
+  const stats = await statFile(file.path)
 
   const commonMetadata: CommonFileMetadata = {
     filename: parsedPath.name,
@@ -106,20 +92,26 @@ export async function getFileMetadata(file: UploadFile): Promise<FileMetadata> {
 
   switch (mediaType) {
     case MediaType.Image: {
-      const metadata = await sharp(file.path).metadata()
+      const readStream = fs.createReadStream(file.path)
+      const sharpInstance = sharp()
+
+      readStream.pipe(sharpInstance)
+
+      const metadata = await sharpInstance.metadata()
 
       if (
         metadata.width == undefined ||
         metadata.height == undefined ||
         metadata.format == undefined
       ) {
-        throw new Error("Couldn't get image metadata, image format is probably unsupported.")
+        return {
+          ...commonMetadata,
+          mediaType: MediaType.Other
+        }
       }
 
       if (mimeType !== mimeTypes.contentType(metadata.format!)) {
-        throw new Error(
-          "Image MIME type differs from extension MIME type, usually means that the extension didn't match the actual content"
-        )
+        throw ErrorType.InvalidExtension
       }
 
       return {

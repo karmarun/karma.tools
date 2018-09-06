@@ -7,7 +7,7 @@ export interface MediaTransformation {
   height?: string
 }
 
-export interface MediaBackend {
+export interface MediaAdapter {
   commit(file: IntermediateFile, overrideID?: string): Promise<CommitResponse>
   copy(id: string): Promise<CopyResponse>
   delete(id: string): Promise<DeleteResponse>

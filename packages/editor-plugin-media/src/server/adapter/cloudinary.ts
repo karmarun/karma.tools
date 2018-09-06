@@ -11,7 +11,7 @@ import {
   DeleteResponse
 } from '../../common'
 
-import {MediaBackend} from './interface'
+import {MediaAdapter} from './interface'
 import {IntermediateFile} from '../helper'
 
 export interface CloudinaryConfig {
@@ -50,7 +50,7 @@ export interface CloudinaryOptions {
   apiSecret: string
 }
 
-export class CloudinaryBackend implements MediaBackend {
+export class CloudinaryAdapter implements MediaAdapter {
   private baseConfig: CloudinaryConfig
 
   public constructor(options: CloudinaryOptions) {

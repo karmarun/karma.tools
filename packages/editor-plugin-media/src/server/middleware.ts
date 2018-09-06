@@ -5,6 +5,7 @@ import shortid from 'shortid'
 import mkdirp from 'mkdirp'
 
 import Busboy from 'busboy'
+
 import {Router, RequestHandler, json, Response} from 'express'
 import {ErrorRequestHandler, Request, NextFunction} from 'express-serve-static-core'
 
@@ -12,7 +13,7 @@ import {deleteNullValues} from '@karma.run/editor-common'
 import {SignatureHeader, query, buildFunction} from '@karma.run/sdk'
 
 import {MediaType, ErrorType} from '../common'
-import {LocalBackend, MediaBackend} from './backend'
+import {LocalMediaAdapter, MediaAdapter} from './adapter'
 import {getFilePathForID, UploadFile, getMetadataForID} from './helper'
 
 import {
@@ -46,7 +47,7 @@ export interface PreviewMiddlewareOptions {
 export interface MiddlewareOptions {
   karmaDataURL: string
   hostname: string
-  backend: MediaBackend
+  adapter: MediaAdapter
   allowedRoles: string[]
   allowedMediaTypes?: MediaType[]
   tempDirPath?: string
@@ -54,7 +55,7 @@ export interface MiddlewareOptions {
 
 export const defaultOptions: Partial<MiddlewareOptions> = {
   tempDirPath: path.join(os.tmpdir(), 'karma.run-media'),
-  backend: new LocalBackend(),
+  adapter: new LocalMediaAdapter(),
   allowedMediaTypes: [
     MediaType.Image,
     MediaType.Video,
@@ -76,14 +77,9 @@ export function uploadMediaMiddleware(opts: UploadMiddlewareOptions): RequestHan
       })
 
       busboy.on('file', async (_fieldName, fileStream, filename) => {
-        const extension = path.extname(filename)
-        const id = shortid() + extension
-
-        const uploadFile: UploadFile | undefined = {
-          id,
-          filename,
-          path: getFilePathForID(id, opts.tempDirPath)
-        }
+        const id = shortid()
+        const filePath = getFilePathForID(id, opts.tempDirPath)
+        const uploadFile: UploadFile = {id, filename, path: filePath}
 
         try {
           await new Promise((resolve, reject) => {
@@ -96,7 +92,7 @@ export function uploadMediaMiddleware(opts: UploadMiddlewareOptions): RequestHan
           })
 
           return res.status(200).send(
-            await uploadMedia(uploadFile!, {
+            await uploadMedia(uploadFile, {
               hostname: opts.hostname,
               tempDirPath: opts.tempDirPath,
               allowedMediaTypes: opts.allowedMediaTypes
@@ -221,6 +217,7 @@ export function getMiddleware() {}
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   if (typeof err === 'string') {
     let statusCode = 400
+    let message: string | undefined = undefined
 
     switch (err) {
       case ErrorType.PermissionDenied:
@@ -234,9 +231,15 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
       case ErrorType.Internal:
         statusCode = 500
         break
+
+      case ErrorType.InvalidExtension:
+        statusCode = 400
+        message =
+          'Image MIME type differs from extension MIME type, ' +
+          "usually means that the extension didn't match the actual content"
     }
 
-    return res.status(statusCode).send({type: err})
+    return res.status(statusCode).send({type: err, message})
   } else {
     console.error('Error:', err)
     return res.status(500).send({type: ErrorType.Internal})

@@ -10,8 +10,9 @@ export const enum ErrorType {
   Internal = 'internal',
   InvalidRequest = 'invalidRequest',
   InvalidMediaType = 'invalidMediaType',
-  NotFound = 'notFound',
-  PermissionDenied = 'permissionDenied'
+  InvalidExtension = 'invalidExtension',
+  PermissionDenied = 'permissionDenied',
+  NotFound = 'notFound'
 }
 
 export interface Image {
@@ -32,6 +33,7 @@ export interface CommonUploadResponse {
 
 export interface ImageUploadResponse extends CommonUploadResponse {
   mediaType: MediaType.Image
+  format: string
   width: number
   height: number
 }
@@ -72,6 +74,7 @@ export interface CommonCommitResponse<T = any> {
 
 export interface ImageCommitResponse<T = any> extends CommonCommitResponse<T> {
   mediaType: MediaType.Image
+  format: string
   width: number
   height: number
 }
