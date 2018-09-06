@@ -88,8 +88,15 @@ export const enum ExpressionType {
   GtUint32 = 'gtUint32',
   GtUint64 = 'gtUint64',
 
-  FloatToInt = 'floatToInt',
-  IntToFloat = 'intToFloat',
+  ToFloat = 'toFloat',
+  ToInt8 = 'toInt8',
+  ToInt16 = 'toInt16',
+  ToInt32 = 'toInt32',
+  ToInt64 = 'toInt64',
+  ToUint8 = 'toUint8',
+  ToUint16 = 'toUint16',
+  ToUint32 = 'toUint32',
+  ToUint64 = 'toUint64',
 
   // Logic
   // -----
@@ -473,12 +480,40 @@ export interface GtUInt64Fn {
   [ExpressionType.GtUint64]: [Expression, Expression]
 }
 
-export interface FloatToIntFn {
-  [ExpressionType.FloatToInt]: Expression
+export interface ToFloatFn {
+  [ExpressionType.ToFloat]: Expression
 }
 
-export interface IntToFloatFn {
-  [ExpressionType.IntToFloat]: Expression
+export interface ToInt8Fn {
+  [ExpressionType.ToInt8]: Expression
+}
+
+export interface ToInt16Fn {
+  [ExpressionType.ToInt16]: Expression
+}
+
+export interface ToInt32Fn {
+  [ExpressionType.ToInt32]: Expression
+}
+
+export interface ToInt64Fn {
+  [ExpressionType.ToInt64]: Expression
+}
+
+export interface ToUint8Fn {
+  [ExpressionType.ToUint8]: Expression
+}
+
+export interface ToUint16Fn {
+  [ExpressionType.ToUint16]: Expression
+}
+
+export interface ToUint32Fn {
+  [ExpressionType.ToUint32]: Expression
+}
+
+export interface ToUint64Fn {
+  [ExpressionType.ToUint64]: Expression
 }
 
 // Logic
@@ -517,12 +552,12 @@ export interface NotFn {
 }
 
 export interface SwitchCaseFn {
-  [ExpressionType.SwitchCase]: [Expression, ObjectMap<FunctionFn>]
+  [ExpressionType.SwitchCase]: [Expression, ObjectMap<FunctionExpression>]
 }
 
 export interface SwitchModelRefFn {
   [ExpressionType.SwitchModelRef]: {
-    cases: {match: Expression; return: Expression}[]
+    cases: {match: Expression; return: FunctionExpression}[]
     value: Expression
     default: Expression
   }
@@ -536,11 +571,11 @@ export interface AllFn {
 }
 
 export interface CreateFn {
-  [ExpressionType.Create]: [Expression, FunctionFn]
+  [ExpressionType.Create]: [Expression, FunctionExpression]
 }
 
 export interface CreateMultipleFn {
-  [ExpressionType.CreateMultiple]: [Expression, ObjectMap<FunctionFn>]
+  [ExpressionType.CreateMultiple]: [Expression, ObjectMap<FunctionExpression>]
 }
 
 export interface DeleteFn {
@@ -616,7 +651,7 @@ export interface ConcatListsFn {
 }
 
 export interface FilterListFn {
-  [ExpressionType.FilterList]: [Expression, FunctionFn]
+  [ExpressionType.FilterList]: [Expression, FunctionExpression]
 }
 
 export interface FirstFn {
@@ -628,7 +663,7 @@ export interface InListFn {
 }
 
 export interface MapListFn {
-  [ExpressionType.MapList]: [Expression, FunctionFn]
+  [ExpressionType.MapList]: [Expression, FunctionExpression]
 }
 
 export interface LengthFn {
@@ -636,11 +671,11 @@ export interface LengthFn {
 }
 
 export interface MemSortFn {
-  [ExpressionType.MemSort]: [Expression, FunctionFn]
+  [ExpressionType.MemSort]: [Expression, FunctionExpression]
 }
 
 export interface MemSortFunctionFn {
-  [ExpressionType.MemSortFunction]: [Expression, FunctionFn]
+  [ExpressionType.MemSortFunction]: [Expression, FunctionExpression]
 }
 
 export interface ReverseListFn {
@@ -655,16 +690,16 @@ export interface ReduceListFn {
   [ExpressionType.ReduceList]: {
     initial: Expression
     value: Expression
-    reducer: FunctionFn
+    reducer: FunctionExpression
   }
 }
 
 export interface RightFoldListFn {
-  [ExpressionType.RightFoldList]: [Expression, Expression, FunctionFn]
+  [ExpressionType.RightFoldList]: [Expression, Expression, FunctionExpression]
 }
 
 export interface LeftFoldListFn {
-  [ExpressionType.LeftFoldList]: [Expression, Expression, FunctionFn]
+  [ExpressionType.LeftFoldList]: [Expression, Expression, FunctionExpression]
 }
 
 // Struct
@@ -704,7 +739,7 @@ export interface KeyFn {
 }
 
 export interface MapMapFn {
-  [ExpressionType.MapMap]: [Expression, FunctionFn]
+  [ExpressionType.MapMap]: [Expression, FunctionExpression]
 }
 
 export interface SetKeyFn {
@@ -715,7 +750,7 @@ export interface SetKeyFn {
 // ---
 
 export interface MapSetFn {
-  [ExpressionType.MapSet]: [Expression, FunctionFn]
+  [ExpressionType.MapSet]: [Expression, FunctionExpression]
 }
 
 // Optional
@@ -794,7 +829,7 @@ export interface DataFn {
 }
 
 export interface WithFn {
-  [ExpressionType.With]: [Expression, FunctionFn]
+  [ExpressionType.With]: [Expression, FunctionExpression]
 }
 
 export interface DefineFn {
@@ -806,7 +841,7 @@ export interface ScopeFn {
 }
 
 export interface SignatureFn {
-  [ExpressionType.Signature]: FunctionFn
+  [ExpressionType.Signature]: FunctionExpression
 }
 
 // Other
@@ -1113,8 +1148,15 @@ export type Expression =
   | GtUInt16Fn
   | GtUInt32Fn
   | GtUInt64Fn
-  | FloatToIntFn
-  | IntToFloatFn
+  | ToFloatFn
+  | ToInt8Fn
+  | ToInt16Fn
+  | ToInt32Fn
+  | ToInt64Fn
+  | ToUint8Fn
+  | ToUint16Fn
+  | ToUint32Fn
+  | ToUint64Fn
 
 export type AnyExpression = Expression | DataExpression | FunctionExpression
 

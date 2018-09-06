@@ -555,7 +555,7 @@ export class ExpressionContext {
   public switchModelRef(
     value: t.Expression,
     defaultValue: t.Expression,
-    cases: {match: t.Expression; return: t.Expression}[]
+    cases: {match: t.Expression; return: t.FunctionExpression}[]
   ): t.SwitchModelRefFn {
     return {[E.SwitchModelRef]: {value, default: defaultValue, cases}}
   }
@@ -563,12 +563,40 @@ export class ExpressionContext {
   // Numeric
   // -------
 
-  public floatToInt(value: t.NumberExpression): t.FloatToIntFn {
-    return {[E.FloatToInt]: dataForNumberExpression(value, NumberType.Float)}
+  public toFloat(value: t.Expression): t.ToFloatFn {
+    return {[E.ToFloat]: value}
   }
 
-  public intToFloat(value: t.NumberExpression): t.IntToFloatFn {
-    return {[E.IntToFloat]: dataForNumberExpression(value, NumberType.Int64)}
+  public toInt8(value: t.Expression): t.ToInt8Fn {
+    return {[E.ToInt8]: value}
+  }
+
+  public toInt16(value: t.Expression): t.ToInt16Fn {
+    return {[E.ToInt16]: value}
+  }
+
+  public toInt32(value: t.Expression): t.ToInt32Fn {
+    return {[E.ToInt32]: value}
+  }
+
+  public toInt64(value: t.Expression): t.ToInt64Fn {
+    return {[E.ToInt64]: value}
+  }
+
+  public toUint8(value: t.Expression): t.ToUint8Fn {
+    return {[E.ToUint8]: value}
+  }
+
+  public toUint16(value: t.Expression): t.ToUint16Fn {
+    return {[E.ToUint16]: value}
+  }
+
+  public toUint32(value: t.Expression): t.ToUint32Fn {
+    return {[E.ToUint32]: value}
+  }
+
+  public toUint64(value: t.Expression): t.ToUint64Fn {
+    return {[E.ToUint64]: value}
   }
 
   public addFloat = generateNumericTupleFunc<t.AddFloatFn>(E.AddFloat, NumberType.Float)
