@@ -1,5 +1,3 @@
-import {Omit} from '@karma.run/editor-common'
-
 import {
   convertFromCloudinaryID,
   convertToCloudinaryID,
@@ -153,7 +151,7 @@ export class CloudinaryAdapter implements MediaAdapter {
       rotation: response.rotation
     }
 
-    const commonResponse: Omit<CommonCommitResponse, 'mediaType'> = {
+    const commonResponse: CommonCommitResponse = {
       id: convertFromCloudinaryID(response.public_id, response.resource_type),
       url: response.secure_url,
       filename: file.filename,

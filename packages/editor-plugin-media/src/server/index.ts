@@ -5,7 +5,7 @@ import {name, version} from '../common/version'
 import {MediaType} from '../common/interface'
 
 import {mediaMiddleware} from './middleware'
-import {MediaAdapter} from './adapter'
+import {StorageAdapter} from './action'
 
 export * from './middleware'
 export * from './adapter'
@@ -13,7 +13,7 @@ export * from './action'
 
 export interface MediaPluginOptions {
   hostname?: string
-  adapter: MediaAdapter
+  storageAdapter: StorageAdapter
   allowedRoles: string[]
   allowedMediaTypes?: MediaType[]
   tempDirPath?: string

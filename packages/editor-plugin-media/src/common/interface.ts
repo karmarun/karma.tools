@@ -6,6 +6,27 @@ export const enum MediaType {
   Other = 'other'
 }
 
+export function isValidMediaType(rawMediaType: string): rawMediaType is MediaType {
+  switch (rawMediaType) {
+    case MediaType.Image:
+      return true
+
+    case MediaType.Video:
+      return true
+
+    case MediaType.Audio:
+      return true
+
+    case MediaType.Document:
+      return true
+
+    case MediaType.Other:
+      return true
+  }
+
+  return false
+}
+
 export const enum ErrorType {
   Internal = 'internal',
   InvalidRequest = 'invalidRequest',
@@ -33,7 +54,6 @@ export interface CommonUploadResponse {
 
 export interface ImageUploadResponse extends CommonUploadResponse {
   mediaType: MediaType.Image
-  format: string
   width: number
   height: number
 }
@@ -65,7 +85,6 @@ export interface CommonCommitResponse<T = any> {
   id: string
   url: string
   mimeType: string
-  mediaType: MediaType
   filename: string
   fileSize: number
   extension?: string
@@ -74,7 +93,6 @@ export interface CommonCommitResponse<T = any> {
 
 export interface ImageCommitResponse<T = any> extends CommonCommitResponse<T> {
   mediaType: MediaType.Image
-  format: string
   width: number
   height: number
 }

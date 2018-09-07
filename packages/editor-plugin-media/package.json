@@ -29,18 +29,18 @@
     "mime-types": "^2.1.20",
     "mkdirp": "^0.5.1",
     "mmmagic": "^0.5.0",
-    "sharp": "^0.20.3",
-    "shortid": "^2.2.8"
+    "nanoid": "^1.2.3",
+    "sharp": "^0.20.3"
   },
   "devDependencies": {
     "@types/busboy": "^0.2.3",
     "@types/express": "^4.11.1",
     "@types/hammerjs": "^2.0.35",
-    "@types/mkdirp": "^0.5.2",
     "@types/mime-types": "^2.1.0",
+    "@types/mkdirp": "^0.5.2",
     "@types/mmmagic": "^0.4.29",
+    "@types/nanoid": "^1.2.0",
     "@types/sharp": "^0.17.8",
-    "@types/shortid": "^0.0.29",
     "npm-run-all": "^4.1.3",
     "shx": "^0.3.0",
     "typescript": "^3.0.1"

@@ -14,13 +14,12 @@ export interface UploadFile {
 export interface CommonFileMetadata {
   filename: string
   fileSize: number
-  extension?: string
+  extension: string
   mimeType: string
 }
 
 export interface ImageFileMetadata extends CommonFileMetadata {
   mediaType: MediaType.Image
-  format: string
   width: number
   height: number
 }
@@ -86,7 +85,7 @@ export async function getFileMetadata(file: UploadFile): Promise<FileMetadata> {
   const commonMetadata: CommonFileMetadata = {
     filename: parsedPath.name,
     fileSize: stats.size,
-    extension: parsedPath.ext || undefined,
+    extension: parsedPath.ext,
     mimeType
   }
 
@@ -118,8 +117,7 @@ export async function getFileMetadata(file: UploadFile): Promise<FileMetadata> {
         ...commonMetadata,
         mediaType,
         width: metadata.width || 0,
-        height: metadata.height || 0,
-        format: metadata.format || 'unknown'
+        height: metadata.height || 0
       }
     }
 
