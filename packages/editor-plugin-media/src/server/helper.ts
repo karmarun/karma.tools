@@ -15,6 +15,7 @@ export interface CommonFileMetadata {
   filename: string
   fileSize: number
   extension: string
+  format: string
   mimeType: string
 }
 
@@ -81,11 +82,13 @@ export async function getFileMetadata(file: UploadFile): Promise<FileMetadata> {
   const mediaType = getMediaType(mimeType)
   const parsedPath = path.parse(file.filename)
   const stats = await statFile(file.path)
+  const format = mimeTypes.extension(mimeType) || 'unknown'
 
   const commonMetadata: CommonFileMetadata = {
     filename: parsedPath.name,
     fileSize: stats.size,
     extension: parsedPath.ext,
+    format: format,
     mimeType
   }
 

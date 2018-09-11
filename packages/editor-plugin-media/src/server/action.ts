@@ -15,7 +15,7 @@ import {
 } from '../common'
 
 import {MediaAdapter} from './adapter'
-import {UploadFile} from './helper'
+import {UploadFile, FileMetadata} from './helper'
 
 import {
   getFilePathForID,
@@ -30,6 +30,7 @@ export interface StorageAdapter {
   write(fileID: FileID, stream: NodeJS.ReadableStream): Promise<void>
   read(fileID: FileID): Promise<NodeJS.ReadableStream>
   delete(fileID: FileID): Promise<void>
+  exists(fileID: FileID): Promise<boolean>
 }
 
 export class LocaleStorageAdapter implements StorageAdapter {
@@ -73,6 +74,17 @@ export class LocaleStorageAdapter implements StorageAdapter {
     const filePath = this.fullFilePath(fileID.toFilePath())
     await fs.promises.unlink(filePath)
   }
+
+  public async exists(fileID: FileID): Promise<boolean> {
+    const filePath = this.fullFilePath(fileID.toFilePath())
+
+    try {
+      await fs.promises.stat(filePath)
+      return true
+    } catch (err) {
+      return false
+    }
+  }
 }
 
 export function sanitizeFilename(filename: string) {
@@ -84,11 +96,62 @@ export function sanitizeFilename(filename: string) {
     .substr(0, 20)
 }
 
+export enum TransformationTokenType {
+  Width = 'w',
+  Height = 'h'
+}
+
+export interface Transformation {
+  width?: number
+  height?: number
+}
+
+export function transformationFromString(str: string): Transformation {
+  const tokens = str.split(',')
+  const transformation: Transformation = {}
+
+  for (const token of tokens) {
+    const [type, ...args] = token.split('_')
+
+    switch (type) {
+      case TransformationTokenType.Width: {
+        const width = parseInt(args[0])
+        if (isNaN(width)) throw ErrorType.InvalidTransformation
+        transformation.width = width
+        break
+      }
+
+      case TransformationTokenType.Height: {
+        const height = parseInt(args[0])
+        if (isNaN(height)) throw ErrorType.InvalidTransformation
+        transformation.height = height
+        break
+      }
+    }
+  }
+
+  return transformation
+}
+
+export function transformationToString(transformation: Transformation): string {
+  let tokens = []
+
+  if (transformation.width) {
+    tokens.push(`${TransformationTokenType.Width}_${transformation.width}`)
+  }
+
+  if (transformation.height) {
+    tokens.push(`${TransformationTokenType.Height}_${transformation.height}`)
+  }
+
+  return tokens.join(',')
+}
+
 export class FileID {
   public readonly id: string
   public readonly mediaType: MediaType
   public readonly format: string
-  public readonly transformations: any[]
+  public readonly transformations: Readonly<Transformation>[]
 
   public constructor(
     mediaType: MediaType,
@@ -102,8 +165,34 @@ export class FileID {
     this.transformations = transformations
   }
 
-  public toID() {
+  public get isOriginal(): boolean {
+    return this.transformations.length === 0
+  }
+
+  public get outputFormat(): string {
+    return 'png'
+  }
+
+  public original(): FileID {
+    if (!this.isOriginal) return new FileID(this.mediaType, this.format, [], this.id)
+    return this
+  }
+
+  public toIDString() {
     const segments = [this.mediaType, this.format, this.id]
+    return segments.join('/')
+  }
+
+  public toURLPath() {
+    const segments = [
+      this.mediaType,
+      this.format,
+      this.id,
+      ...(this.transformations.length
+        ? this.transformations.map(transformation => transformationToString(transformation))
+        : ['original'])
+    ]
+
     return segments.join('/')
   }
 
@@ -112,20 +201,12 @@ export class FileID {
       this.mediaType,
       this.format,
       this.id,
-      this.transformations.length ? 'TODO' : 'original'
+      ...(this.transformations.length
+        ? this.transformations.map(transformation => transformationToString(transformation))
+        : ['original'])
     ]
 
     return path.join(...segments)
-  }
-
-  public toURLPath() {
-    const segments = [this.mediaType, this.format, this.id]
-
-    if (this.transformations.length) {
-      segments.push('TODO')
-    }
-
-    return segments.join('/')
   }
 
   public static fromURLPath(urlPath: string) {
@@ -133,22 +214,22 @@ export class FileID {
     if (urlPath.startsWith('/')) urlPath = urlPath.substr(1)
 
     const [rawMediaType, format, id, ...segments] = urlPath.split('/')
-    const transformations: any[] = []
 
-    if (!isValidMediaType(rawMediaType)) throw new Error('Not found!') // TODO: Better error
-    if (segments.length === 0) throw new Error('Not found!')
+    if (!isValidMediaType(rawMediaType)) throw ErrorType.NotFound
+    if (segments.length === 0) throw ErrorType.NotFound
 
-    let filename: string
+    const lastSegment = segments.splice(-1)[0]
+    const transformations: Transformation[] = segments.map(segment =>
+      transformationFromString(segment)
+    )
 
-    segments.forEach((segment, index) => {
-      if (index === segments.length - 1) filename = segment
-    })
-
-    const transformationFormat = path.extname(filename!).substr(1)
+    const transformationFormat = path.extname(lastSegment).substr(1)
 
     if (transformationFormat && transformationFormat !== format) {
       // TODO: Generate format transformation
     }
+
+    console.log(transformations)
 
     return new FileID(rawMediaType as MediaType, format, transformations, id)
   }
@@ -197,12 +278,12 @@ export async function commitMedia(
   const metadataPath = getMetadataPathForID(tempID, opts.tempDirPath)
 
   const metadataJSON = await readFile(metadataPath)
-  const metadata = JSON.parse(metadataJSON.toString())
-  const file: IntermediateFile = {tempID, path: filePath, ...metadata}
+  const metadata: FileMetadata = JSON.parse(metadataJSON.toString())
+  const file: IntermediateFile = {id: tempID, path: filePath, ...metadata}
 
   const stream = fs.createReadStream(file.path)
 
-  const fileID = new FileID(file.mediaType, file.extension.substr(1))
+  const fileID = new FileID(file.mediaType, metadata.format)
   const sanitizedFilename = sanitizeFilename(file.filename)
 
   await opts.storageAdapter.write(fileID, stream)
@@ -217,11 +298,12 @@ export async function commitMedia(
   })
 
   const commonResponse: CommonCommitResponse = {
-    id: fileID.toID(),
+    id: fileID.toIDString(),
     filename: file.filename,
     extension: file.extension,
     fileSize: file.fileSize,
     mimeType: file.mimeType,
+    format: file.format,
     url: `/${fileID.toURLPath()}/${sanitizedFilename}${file.extension}`,
     backend: undefined
   }

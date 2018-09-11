@@ -3,8 +3,9 @@ import fs from 'fs'
 import path from 'path'
 import mkdirp from 'mkdirp'
 import mimeTypes from 'mime-types'
-
 import Busboy from 'busboy'
+
+import sharp from 'sharp'
 
 import {Router, RequestHandler, json, Response} from 'express'
 import {ErrorRequestHandler, Request, NextFunction} from 'express-serve-static-core'
@@ -219,7 +220,37 @@ export function getMiddleware(opts: CommitMiddlewareOptions) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const fileID = FileID.fromURLPath(req.path)
+      const exists = await opts.storageAdapter.exists(fileID)
+
+      if (!exists && fileID.isOriginal) {
+        return next(ErrorType.NotFound)
+      }
+
+      if (!exists) {
+        const originalFileID = fileID.original()
+        const originalExists = await opts.storageAdapter.exists(originalFileID)
+
+        if (!originalExists) {
+          return next(ErrorType.NotFound)
+        }
+
+        const originalStream = await opts.storageAdapter.read(originalFileID)
+        const sharpInstance = sharp()
+
+        originalStream.pipe(sharpInstance)
+
+        const width = fileID.transformations[0].width
+        const height = fileID.transformations[0].height
+
+        if (width && height) {
+          sharpInstance.resize(width, height)
+        }
+
+        await opts.storageAdapter.write(fileID, sharpInstance.toFormat('png'))
+      }
+
       const stream = await opts.storageAdapter.read(fileID)
+      const mimeType = mimeTypes.contentType(fileID.outputFormat) || 'application/octet-stream'
 
       stream
         .on('error', err => {
@@ -227,11 +258,7 @@ export function getMiddleware(opts: CommitMiddlewareOptions) {
           return next(ErrorType.NotFound)
         })
         .once('data', function() {
-          res.set(
-            'Content-Type',
-            mimeTypes.contentType(fileID.format) || 'application/octet-stream'
-          )
-
+          res.set('Content-Type', mimeType)
           res.status(200)
         })
         .on('data', function(chunk) {
