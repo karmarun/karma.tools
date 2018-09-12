@@ -222,6 +222,10 @@ export function getMiddleware(opts: CommitMiddlewareOptions) {
       const fileID = FileID.fromURLPath(req.path)
       const exists = await opts.storageAdapter.exists(fileID)
 
+      if (!exists && fileID.mediaType !== MediaType.Image) {
+        return next(ErrorType.NotFound)
+      }
+
       if (!exists && fileID.isOriginal) {
         return next(ErrorType.NotFound)
       }
@@ -235,18 +239,24 @@ export function getMiddleware(opts: CommitMiddlewareOptions) {
         }
 
         const originalStream = await opts.storageAdapter.read(originalFileID)
-        const sharpInstance = sharp()
 
-        originalStream.pipe(sharpInstance)
+        let lastStream = originalStream
+        let formatSharpInstance = sharp()
 
-        const width = fileID.transformations[0].width
-        const height = fileID.transformations[0].height
+        for (const transformation of fileID.transformations) {
+          const sharpInstance = sharp()
+          lastStream.pipe(sharpInstance)
 
-        if (width && height) {
-          sharpInstance.resize(width, height)
+          if (transformation.width || transformation.height) {
+            sharpInstance.resize(transformation.width, transformation.height)
+          }
+
+          lastStream = sharpInstance
         }
 
-        await opts.storageAdapter.write(fileID, sharpInstance.toFormat('png'))
+        lastStream.pipe(formatSharpInstance)
+
+        await opts.storageAdapter.write(fileID, formatSharpInstance.toFormat(fileID.outputFormat))
       }
 
       const stream = await opts.storageAdapter.read(fileID)

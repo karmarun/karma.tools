@@ -8,7 +8,6 @@ import {
   CommitResponse,
   CopyResponse,
   DeleteResponse,
-  createDirectories,
   generateID,
   CommonCommitResponse,
   isValidMediaType
@@ -25,6 +24,8 @@ import {
   getFileMetadata,
   writeFile
 } from './helper'
+
+import {createDirectories, createMD5Hash} from './util'
 
 export interface StorageAdapter {
   write(fileID: FileID, stream: NodeJS.ReadableStream): Promise<void>
@@ -152,29 +153,28 @@ export class FileID {
   public readonly mediaType: MediaType
   public readonly format: string
   public readonly transformations: Readonly<Transformation>[]
+  public readonly outputFormat: string
 
   public constructor(
     mediaType: MediaType,
     format: string,
     transformations: any[] = [],
+    outputFormat?: string,
     id: string = generateID()
   ) {
     this.id = id
     this.mediaType = mediaType
     this.format = format || 'unknown'
+    this.outputFormat = outputFormat || format
     this.transformations = transformations
   }
 
   public get isOriginal(): boolean {
-    return this.transformations.length === 0
-  }
-
-  public get outputFormat(): string {
-    return 'png'
+    return this.transformations.length === 0 && this.format === this.outputFormat
   }
 
   public original(): FileID {
-    if (!this.isOriginal) return new FileID(this.mediaType, this.format, [], this.id)
+    if (!this.isOriginal) return new FileID(this.mediaType, this.format, [], undefined, this.id)
     return this
   }
 
@@ -183,29 +183,30 @@ export class FileID {
     return segments.join('/')
   }
 
-  public toURLPath() {
+  public toURLPath(filename: string) {
     const segments = [
       this.mediaType,
       this.format,
       this.id,
       ...(this.transformations.length
         ? this.transformations.map(transformation => transformationToString(transformation))
-        : ['original'])
+        : []),
+      `${encodeURIComponent(filename)}.${this.outputFormat}`
     ]
 
     return segments.join('/')
   }
 
   public toFilePath() {
-    const segments = [
-      this.mediaType,
-      this.format,
-      this.id,
-      ...(this.transformations.length
-        ? this.transformations.map(transformation => transformationToString(transformation))
-        : ['original'])
-    ]
+    const filename = this.transformations.length
+      ? createMD5Hash(
+          this.transformations
+            .map(transformation => transformationToString(transformation))
+            .join('+')
+        )
+      : 'original'
 
+    const segments = [this.mediaType, this.format, this.id, `${filename}.${this.outputFormat}`]
     return path.join(...segments)
   }
 
@@ -223,21 +224,15 @@ export class FileID {
       transformationFromString(segment)
     )
 
-    const transformationFormat = path.extname(lastSegment).substr(1)
+    const transformationFormat = path.extname(lastSegment).substr(1) || undefined
 
-    if (transformationFormat && transformationFormat !== format) {
-      // TODO: Generate format transformation
-    }
-
-    console.log(transformations)
-
-    return new FileID(rawMediaType as MediaType, format, transformations, id)
+    return new FileID(rawMediaType as MediaType, format, transformations, transformationFormat, id)
   }
 
   public static fromIDString(idString: string) {
     const [rawMediaType, format, id] = idString.split('/')
     if (!isValidMediaType(rawMediaType)) throw new Error('Not found!') // TODO: Better error
-    return new FileID(rawMediaType as MediaType, format, undefined, id)
+    return new FileID(rawMediaType as MediaType, format, [], undefined, id)
   }
 }
 
@@ -284,7 +279,6 @@ export async function commitMedia(
   const stream = fs.createReadStream(file.path)
 
   const fileID = new FileID(file.mediaType, metadata.format)
-  const sanitizedFilename = sanitizeFilename(file.filename)
 
   await opts.storageAdapter.write(fileID, stream)
   if (overrideID) await opts.storageAdapter.delete(overrideID)
@@ -304,7 +298,7 @@ export async function commitMedia(
     fileSize: file.fileSize,
     mimeType: file.mimeType,
     format: file.format,
-    url: `/${fileID.toURLPath()}/${sanitizedFilename}${file.extension}`,
+    url: `/${fileID.toURLPath(file.filename)}`,
     backend: undefined
   }
 
