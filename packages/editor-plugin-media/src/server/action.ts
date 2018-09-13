@@ -99,12 +99,30 @@ export function sanitizeFilename(filename: string) {
 
 export enum TransformationTokenType {
   Width = 'w',
-  Height = 'h'
+  Height = 'h',
+  Quality = 'q',
+  Rotate = 'r',
+  Focus = 'f'
 }
 
 export interface Transformation {
   width?: number
   height?: number
+  quality?: number
+  rotation?: 'auto' | '0' | '90' | '180' | '270'
+  focus?:
+    | {x: number; y: number}
+    | 'top_left'
+    | 'top'
+    | 'top_right'
+    | 'right'
+    | 'bottom_right'
+    | 'bottom'
+    | 'bottom_left'
+    | 'left'
+    | 'center'
+    | 'auto_entropy'
+    | 'auto_attention'
 }
 
 export function transformationFromString(str: string): Transformation {
@@ -126,6 +144,22 @@ export function transformationFromString(str: string): Transformation {
         const height = parseInt(args[0])
         if (isNaN(height)) throw ErrorType.InvalidTransformation
         transformation.height = height
+        break
+      }
+
+      case TransformationTokenType.Rotate: {
+        if (!['auto', '0', '90', '180', '270'].includes(args[0])) {
+          throw ErrorType.InvalidTransformation
+        }
+
+        transformation.rotation = args[0] as typeof transformation.rotation
+        break
+      }
+
+      case TransformationTokenType.Quality: {
+        const height = parseFloat(args[0])
+        if (isNaN(height)) throw ErrorType.InvalidTransformation
+        transformation.height = Math.max(0, Math.min(1, height))
         break
       }
     }
@@ -198,13 +232,16 @@ export class FileID {
   }
 
   public toFilePath() {
-    const filename = this.transformations.length
-      ? createMD5Hash(
-          this.transformations
-            .map(transformation => transformationToString(transformation))
-            .join('+')
-        )
-      : 'original'
+    let filename = 'original'
+
+    if (this.format !== this.outputFormat || this.transformations.length !== 0) {
+      filename = createMD5Hash(
+        [
+          ...this.transformations.map(transformation => transformationToString(transformation)),
+          this.outputFormat
+        ].join('/')
+      )
+    }
 
     const segments = [this.mediaType, this.format, this.id, `${filename}.${this.outputFormat}`]
     return path.join(...segments)
@@ -277,7 +314,6 @@ export async function commitMedia(
   const file: IntermediateFile = {id: tempID, path: filePath, ...metadata}
 
   const stream = fs.createReadStream(file.path)
-
   const fileID = new FileID(file.mediaType, metadata.format)
 
   await opts.storageAdapter.write(fileID, stream)

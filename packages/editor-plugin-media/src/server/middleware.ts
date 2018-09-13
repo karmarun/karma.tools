@@ -89,7 +89,7 @@ export function uploadMediaMiddleware(opts: UploadMiddlewareOptions): RequestHan
             const writeStream = fs.createWriteStream(uploadFile.path)
 
             writeStream.on('finish', () => resolve())
-            writeStream.on('error', () => reject())
+            writeStream.on('error', err => reject(err))
 
             fileStream.pipe(writeStream)
           })
@@ -247,9 +247,68 @@ export function getMiddleware(opts: CommitMiddlewareOptions) {
           const sharpInstance = sharp()
           lastStream.pipe(sharpInstance)
 
-          if (transformation.width || transformation.height) {
+          // if (transformation.width || transformation.height) {
+          if (typeof transformation.focus === 'object') {
+          } else {
+            console.log(typeof transformation.focus)
+            switch (transformation.focus) {
+              case 'auto_attention':
+                sharpInstance.crop(sharp.strategy.attention)
+                break
+              case 'auto_entropy':
+                sharpInstance.crop(sharp.strategy.entropy)
+                break
+              case 'top_left':
+                sharpInstance.crop(sharp.gravity.northwest)
+                break
+              case 'top':
+                sharpInstance.crop(sharp.gravity.north)
+                break
+              case 'top_right':
+                sharpInstance.crop(sharp.gravity.northeast)
+                break
+              case 'right':
+                sharpInstance.crop(sharp.gravity.east)
+                break
+              case 'bottom_right':
+                sharpInstance.crop(sharp.gravity.southeast)
+                break
+              case 'bottom':
+                sharpInstance.crop(sharp.gravity.south)
+                break
+              case 'bottom_left':
+                sharpInstance.crop(sharp.gravity.southwest)
+                break
+              case 'left':
+                sharpInstance.crop(sharp.gravity.west)
+                break
+            }
+
+            switch (transformation.rotation) {
+              case 'auto':
+                sharpInstance.rotate()
+                break
+
+              case '0':
+                sharpInstance.rotate(0)
+                break
+
+              case '90':
+                sharpInstance.rotate(90)
+                break
+
+              case '180':
+                sharpInstance.rotate(180)
+                break
+
+              case '270':
+                sharpInstance.rotate(270)
+                break
+            }
+
             sharpInstance.resize(transformation.width, transformation.height)
           }
+          // }
 
           lastStream = sharpInstance
         }

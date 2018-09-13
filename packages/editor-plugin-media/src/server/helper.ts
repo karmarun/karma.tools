@@ -81,6 +81,7 @@ export async function getFileMetadata(file: UploadFile): Promise<FileMetadata> {
   const mimeType = mimeTypes.contentType(file.filename) || 'application/octet-stream'
   const mediaType = getMediaType(mimeType)
   const parsedPath = path.parse(file.filename)
+
   const stats = await statFile(file.path)
   const format = mimeTypes.extension(mimeType) || 'unknown'
 
@@ -95,8 +96,8 @@ export async function getFileMetadata(file: UploadFile): Promise<FileMetadata> {
   switch (mediaType) {
     case MediaType.Image: {
       const readStream = fs.createReadStream(file.path)
-      const sharpInstance = sharp()
 
+      const sharpInstance = sharp()
       readStream.pipe(sharpInstance)
 
       const metadata = await sharpInstance.metadata()
