@@ -101,7 +101,7 @@ export enum TransformationTokenType {
   Width = 'w',
   Height = 'h',
   Quality = 'q',
-  Rotate = 'r',
+  Rotation = 'r',
   Focus = 'f'
 }
 
@@ -147,7 +147,7 @@ export function transformationFromString(str: string): Transformation {
         break
       }
 
-      case TransformationTokenType.Rotate: {
+      case TransformationTokenType.Rotation: {
         if (!['auto', '0', '90', '180', '270'].includes(args[0])) {
           throw ErrorType.InvalidTransformation
         }
@@ -157,10 +157,13 @@ export function transformationFromString(str: string): Transformation {
       }
 
       case TransformationTokenType.Quality: {
-        const height = parseFloat(args[0])
-        if (isNaN(height)) throw ErrorType.InvalidTransformation
-        transformation.height = Math.max(0, Math.min(1, height))
+        const quality = parseFloat(args[0])
+        if (isNaN(quality)) throw ErrorType.InvalidTransformation
+        transformation.quality = Math.max(0, Math.min(1, quality))
         break
+      }
+
+      case TransformationTokenType.Focus: {
       }
     }
   }
@@ -177,6 +180,23 @@ export function transformationToString(transformation: Transformation): string {
 
   if (transformation.height) {
     tokens.push(`${TransformationTokenType.Height}_${transformation.height}`)
+  }
+
+  if (transformation.rotation) {
+    tokens.push(`${TransformationTokenType.Rotation}_${transformation.rotation}`)
+  }
+
+  if (transformation.quality) {
+    tokens.push(`${TransformationTokenType.Quality}_${transformation.quality}`)
+  }
+
+  if (transformation.focus) {
+    if (typeof transformation.focus === 'object') {
+      const {x, y} = transformation.focus
+      tokens.push(`${TransformationTokenType.Focus}_${x}:${y}`)
+    } else {
+      tokens.push(`${TransformationTokenType.Focus}_${transformation.focus}`)
+    }
   }
 
   return tokens.join(',')

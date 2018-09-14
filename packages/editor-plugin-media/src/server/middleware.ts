@@ -222,21 +222,14 @@ export function getMiddleware(opts: CommitMiddlewareOptions) {
       const fileID = FileID.fromURLPath(req.path)
       const exists = await opts.storageAdapter.exists(fileID)
 
-      if (!exists && fileID.mediaType !== MediaType.Image) {
-        return next(ErrorType.NotFound)
-      }
-
-      if (!exists && fileID.isOriginal) {
-        return next(ErrorType.NotFound)
-      }
+      if (!exists && fileID.mediaType !== MediaType.Image) return next(ErrorType.NotFound)
+      if (!exists && fileID.isOriginal) return next(ErrorType.NotFound)
 
       if (!exists) {
         const originalFileID = fileID.original()
         const originalExists = await opts.storageAdapter.exists(originalFileID)
 
-        if (!originalExists) {
-          return next(ErrorType.NotFound)
-        }
+        if (!originalExists) return next(ErrorType.NotFound)
 
         const originalStream = await opts.storageAdapter.read(originalFileID)
 
@@ -250,45 +243,53 @@ export function getMiddleware(opts: CommitMiddlewareOptions) {
           // if (transformation.width || transformation.height) {
           if (typeof transformation.focus === 'object') {
           } else {
-            console.log(typeof transformation.focus)
             switch (transformation.focus) {
               case 'auto_attention':
                 sharpInstance.crop(sharp.strategy.attention)
                 break
+
               case 'auto_entropy':
                 sharpInstance.crop(sharp.strategy.entropy)
                 break
+
               case 'top_left':
                 sharpInstance.crop(sharp.gravity.northwest)
                 break
+
               case 'top':
                 sharpInstance.crop(sharp.gravity.north)
                 break
+
               case 'top_right':
                 sharpInstance.crop(sharp.gravity.northeast)
                 break
+
               case 'right':
                 sharpInstance.crop(sharp.gravity.east)
                 break
+
               case 'bottom_right':
                 sharpInstance.crop(sharp.gravity.southeast)
                 break
+
               case 'bottom':
                 sharpInstance.crop(sharp.gravity.south)
                 break
+
               case 'bottom_left':
                 sharpInstance.crop(sharp.gravity.southwest)
                 break
+
               case 'left':
                 sharpInstance.crop(sharp.gravity.west)
+                break
+
+              case 'center':
+                sharpInstance.crop(sharp.gravity.center)
                 break
             }
 
             switch (transformation.rotation) {
-              case 'auto':
-                sharpInstance.rotate()
-                break
-
               case '0':
                 sharpInstance.rotate(0)
                 break
@@ -303,6 +304,10 @@ export function getMiddleware(opts: CommitMiddlewareOptions) {
 
               case '270':
                 sharpInstance.rotate(270)
+                break
+
+              case 'auto':
+                sharpInstance.rotate()
                 break
             }
 
