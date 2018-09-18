@@ -22,19 +22,19 @@
   },
   "dependencies": {
     "@karma.run/sdk": "^0.5.13",
-    "memoize-one": "^3.1.1",
+    "memoize-one": "^4.0.2",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
-    "slate": "^0.34.6",
-    "slate-plain-serializer": "^0.5.21",
-    "slate-react": "^0.13.3"
+    "slate": "^0.40.2",
+    "slate-plain-serializer": "^0.6.2",
+    "slate-react": "^0.18.5"
   },
   "devDependencies": {
     "@types/react": "^16.4.6",
     "@types/react-dom": "^16.0.6",
-    "@types/slate": "^0.33.1",
-    "@types/slate-plain-serializer": "^0.5.1",
-    "@types/slate-react": "^0.12.1",
+    "@types/slate": "^0.40.0",
+    "@types/slate-plain-serializer": "^0.6.0",
+    "@types/slate-react": "^0.18.0",
     "npm-run-all": "^4.1.3",
     "shx": "^0.3.0",
     "typescript": "^3.0.1"

@@ -358,8 +358,7 @@ export class SlateField implements Field<SlateFieldValue> {
             nodes: node.nodes ? node.nodes.map(node => recurse(node)) : undefined
           }
 
-        case 'inline':
-        case 'block':
+        case 'inline': {
           const dataKey = node.data ? firstKeyOptional(node.data) : undefined
           const dataField = dataKey ? this.dataFields[dataKey] : undefined
           const data = dataField ? dataField.transformRawValue(node.data![dataKey!]) : undefined
@@ -369,6 +368,19 @@ export class SlateField implements Field<SlateFieldValue> {
             data: data ? {[dataKey!]: data} : node.data,
             nodes: node.nodes ? node.nodes.map(node => recurse(node)) : undefined
           }
+        }
+
+        case 'block': {
+          const dataKey = node.data ? firstKeyOptional(node.data) : undefined
+          const dataField = dataKey ? this.dataFields[dataKey] : undefined
+          const data = dataField ? dataField.transformRawValue(node.data![dataKey!]) : undefined
+
+          return {
+            ...node,
+            data: data ? {[dataKey!]: data} : node.data,
+            nodes: node.nodes ? node.nodes.map(node => recurse(node)) : undefined
+          }
+        }
 
         default:
           return node
@@ -395,8 +407,7 @@ export class SlateField implements Field<SlateFieldValue> {
             nodes: node.nodes ? d.list(...node.nodes.map(node => recurse(node))) : d.null()
           })
 
-        case 'inline':
-        case 'block':
+        case 'inline': {
           const dataKey = node.data ? firstKeyOptional(node.data) : undefined
           const dataField = dataKey ? this.dataFields[dataKey] : undefined
 
@@ -407,10 +418,28 @@ export class SlateField implements Field<SlateFieldValue> {
           return d.struct({
             object: d.string(node.object),
             type: d.string(node.type),
-            isVoid: d.bool(node.isVoid || false),
+            // isVoid: d.bool(node.isVoid || false),
             data: data,
             nodes: node.nodes ? d.list(...node.nodes.map(node => recurse(node))) : d.null()
           })
+        }
+
+        case 'block': {
+          const dataKey = node.data ? firstKeyOptional(node.data) : undefined
+          const dataField = dataKey ? this.dataFields[dataKey] : undefined
+
+          const data = dataField
+            ? d.union(dataKey!, dataField.transformValueToExpression(node.data![dataKey!]))
+            : d.null()
+
+          return d.struct({
+            object: d.string(node.object),
+            type: d.string(node.type),
+            // isVoid: d.bool(node.isVoid || false),
+            data: data,
+            nodes: node.nodes ? d.list(...node.nodes.map(node => recurse(node))) : d.null()
+          })
+        }
 
         case 'text':
           return d.struct({
@@ -498,7 +527,7 @@ export const SlateFieldConstructor = (
         model.model.fields['type'] &&
         model.model.fields['object'] &&
         model.model.fields['nodes'] &&
-        model.model.fields['isVoid'] &&
+        // model.model.fields['isVoid'] &&
         model.model.fields['text'] &&
         model.model.fields['nodes'] &&
         model.model.fields['data']

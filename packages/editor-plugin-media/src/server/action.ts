@@ -105,24 +105,34 @@ export enum TransformationTokenType {
   Focus = 'f'
 }
 
+export enum TransformationFocusType {
+  TopLeft = 'top_left',
+  Top = 'top',
+  TopRight = 'top_right',
+  Right = 'right',
+  BottomRight = 'bottom_right',
+  Bottom = 'bottom',
+  BottomLeft = 'bottom_left',
+  Left = 'left',
+  Center = 'center',
+  AutoEntropy = 'auto_entropy',
+  AutoAttention = 'auto_attention'
+}
+
+export enum TransformationRotation {
+  Auto = 'auto',
+  Rotate0 = '0',
+  Rotate90 = '90',
+  Rotate180 = '180',
+  Rotate270 = '270'
+}
+
 export interface Transformation {
   width?: number
   height?: number
   quality?: number
-  rotation?: 'auto' | '0' | '90' | '180' | '270'
-  focus?:
-    | {x: number; y: number}
-    | 'top_left'
-    | 'top'
-    | 'top_right'
-    | 'right'
-    | 'bottom_right'
-    | 'bottom'
-    | 'bottom_left'
-    | 'left'
-    | 'center'
-    | 'auto_entropy'
-    | 'auto_attention'
+  rotation?: TransformationRotation
+  focus?: {x: number; y: number} | TransformationFocusType
 }
 
 export function transformationFromString(str: string): Transformation {
@@ -130,7 +140,12 @@ export function transformationFromString(str: string): Transformation {
   const transformation: Transformation = {}
 
   for (const token of tokens) {
-    const [type, ...args] = token.split('_')
+    const argsIndex = token.indexOf('_')
+
+    const type = token.substring(0, argsIndex)
+    const argString = token.substring(argsIndex + 1)
+
+    const args = argString.split(':')
 
     switch (type) {
       case TransformationTokenType.Width: {
@@ -148,11 +163,11 @@ export function transformationFromString(str: string): Transformation {
       }
 
       case TransformationTokenType.Rotation: {
-        if (!['auto', '0', '90', '180', '270'].includes(args[0])) {
+        if (!Object.values(TransformationRotation).includes(args[0])) {
           throw ErrorType.InvalidTransformation
         }
 
-        transformation.rotation = args[0] as typeof transformation.rotation
+        transformation.rotation = args[0] as TransformationRotation
         break
       }
 
@@ -164,6 +179,21 @@ export function transformationFromString(str: string): Transformation {
       }
 
       case TransformationTokenType.Focus: {
+        if (args.length >= 2) {
+          const x = parseFloat(args[0])
+          const y = parseFloat(args[1])
+
+          if (isNaN(x) || isNaN(y)) throw ErrorType.InvalidTransformation
+          transformation.focus = {x, y}
+          break
+        } else {
+          if (!Object.values(TransformationFocusType).includes(args[0])) {
+            throw ErrorType.InvalidTransformation
+          }
+
+          transformation.focus = args[0] as TransformationFocusType
+          break
+        }
       }
     }
   }

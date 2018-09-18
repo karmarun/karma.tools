@@ -29,7 +29,9 @@ import {
   CopyOptions,
   LocaleStorageAdapter,
   FileID,
-  StorageAdapter
+  StorageAdapter,
+  TransformationRotation,
+  TransformationFocusType
 } from './action'
 
 export type UploadMiddlewareOptions = UploadOptions
@@ -240,80 +242,83 @@ export function getMiddleware(opts: CommitMiddlewareOptions) {
           const sharpInstance = sharp()
           lastStream.pipe(sharpInstance)
 
-          // if (transformation.width || transformation.height) {
-          if (typeof transformation.focus === 'object') {
+          if (
+            typeof transformation.focus === 'object' &&
+            (transformation.width || transformation.height)
+          ) {
           } else {
             switch (transformation.focus) {
-              case 'auto_attention':
+              case TransformationFocusType.AutoAttention:
                 sharpInstance.crop(sharp.strategy.attention)
                 break
 
-              case 'auto_entropy':
+              case TransformationFocusType.AutoEntropy:
                 sharpInstance.crop(sharp.strategy.entropy)
                 break
 
-              case 'top_left':
+              case TransformationFocusType.TopLeft:
                 sharpInstance.crop(sharp.gravity.northwest)
                 break
 
-              case 'top':
+              case TransformationFocusType.Top:
                 sharpInstance.crop(sharp.gravity.north)
                 break
 
-              case 'top_right':
+              case TransformationFocusType.TopRight:
                 sharpInstance.crop(sharp.gravity.northeast)
                 break
 
-              case 'right':
+              case TransformationFocusType.Right:
                 sharpInstance.crop(sharp.gravity.east)
                 break
 
-              case 'bottom_right':
+              case TransformationFocusType.BottomRight:
                 sharpInstance.crop(sharp.gravity.southeast)
                 break
 
-              case 'bottom':
+              case TransformationFocusType.Bottom:
                 sharpInstance.crop(sharp.gravity.south)
                 break
 
-              case 'bottom_left':
+              case TransformationFocusType.BottomLeft:
                 sharpInstance.crop(sharp.gravity.southwest)
                 break
 
-              case 'left':
+              case TransformationFocusType.Left:
                 sharpInstance.crop(sharp.gravity.west)
                 break
 
-              case 'center':
+              case TransformationFocusType.Center:
                 sharpInstance.crop(sharp.gravity.center)
                 break
             }
 
             switch (transformation.rotation) {
-              case '0':
+              case TransformationRotation.Rotate0:
                 sharpInstance.rotate(0)
                 break
 
-              case '90':
+              case TransformationRotation.Rotate90:
                 sharpInstance.rotate(90)
                 break
 
-              case '180':
+              case TransformationRotation.Rotate180:
                 sharpInstance.rotate(180)
                 break
 
-              case '270':
+              case TransformationRotation.Rotate270:
                 sharpInstance.rotate(270)
                 break
 
-              case 'auto':
+              case TransformationRotation.Auto:
                 sharpInstance.rotate()
                 break
             }
 
-            sharpInstance.resize(transformation.width, transformation.height)
+            if (transformation.width || transformation.height) {
+              sharpInstance.resize(transformation.width, transformation.height)
+            }
           }
-          // }
 
           lastStream = sharpInstance
         }
