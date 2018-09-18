@@ -233,7 +233,8 @@ export function getMiddleware(opts: CommitMiddlewareOptions) {
 
         if (!originalExists) return next(ErrorType.NotFound)
 
-        const originalStream = await opts.storageAdapter.read(originalFileID)
+        const originalStream = (await opts.storageAdapter.read(originalFileID)).pipe(sharp())
+        const metadata = await originalStream.rotate().metadata()
 
         let lastStream = originalStream
         let formatSharpInstance = sharp()
@@ -311,12 +312,20 @@ export function getMiddleware(opts: CommitMiddlewareOptions) {
                 break
 
               case TransformationRotation.Auto:
-                sharpInstance.rotate()
+                // We already normalize the rotation on any transformation.
                 break
             }
 
             if (transformation.width || transformation.height) {
-              sharpInstance.resize(transformation.width, transformation.height)
+              const constrainedWidth = transformation.width
+                ? Math.min(1000, Math.min(metadata.width!, transformation.width)) // TODO: Add max size to options
+                : undefined
+
+              const constrainedHeight = transformation.height
+                ? Math.min(1000, Math.min(metadata.height!, transformation.height)) // TODO: Add max size to options
+                : undefined
+
+              sharpInstance.resize(constrainedWidth, constrainedHeight)
             }
           }
 
