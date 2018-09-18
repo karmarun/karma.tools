@@ -158,6 +158,7 @@ export class CloudinaryAdapter implements MediaAdapter {
       fileSize: file.fileSize,
       extension: file.extension,
       mimeType: file.mimeType,
+      format: file.format,
       backend: {cloudinary: knownCloudinaryProps}
     }
 

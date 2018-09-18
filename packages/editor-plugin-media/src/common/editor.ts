@@ -2,8 +2,8 @@ import {PointLike} from '@karma.run/editor-common'
 import {CommitResponse, MediaType} from './interface'
 
 export type Media<T = any> = CommitResponse<T> & {
-  focusPoint?: {x: number; y: number}
-  focusScale?: number
+  focusPoint: {x: number; y: number}
+  focusScale: number
 }
 
 export type SerializedMedia<T = any> = {
@@ -16,12 +16,13 @@ export type SerializedMedia<T = any> = {
   }
   id: string
   url: string
+  format: string
   mimeType: string
   filename: string
   fileSize: number
-  extension?: string
-  focusPoint?: PointLike
-  focusScale?: number
+  extension: string
+  focusPoint: PointLike
+  focusScale: number
   backend: T
 }
 
@@ -33,6 +34,7 @@ export function serializeMedia<T = any>(media: Media<T>): SerializedMedia<T> {
   const commonProps = {
     id: media.id,
     url: media.url,
+    format: media.format,
     mimeType: media.mimeType,
     filename: media.filename,
     fileSize: media.fileSize,
@@ -93,6 +95,7 @@ export function unserializeMedia<T = any>(media: SerializedMedia<T>): Media<T> {
   const commonProps = {
     id: media.id,
     url: media.url,
+    format: media.format,
     mimeType: media.mimeType,
     filename: media.filename,
     fileSize: media.fileSize,
