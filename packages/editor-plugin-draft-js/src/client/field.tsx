@@ -25,11 +25,11 @@ import {
   CreateFieldFunction,
   AnyField,
   UnionField,
-  UnionFieldChildTuple
+  UnionFieldChildTuple,
+  AnyFieldValue
 } from '@karma.run/editor-client'
 
 import {RichTextInput, Control, LinkType, BlockType, StyleGroup, CustomElement} from './input'
-import {AnyFieldValue} from '@karma.run/editor-client/src/api/field'
 
 export class DraftJSFieldEditComponent extends React.PureComponent<
   EditComponentRenderProps<DraftJSField, DraftJSFieldValue>

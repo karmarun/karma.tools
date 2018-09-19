@@ -30,6 +30,14 @@ import {ViewContext} from '../../api/viewContext'
 import {ToolbarFilter} from './filterToolbar'
 import {FilterList, FilterListValue, defaultFilterListValue, FilterRowValue} from '../filter/list'
 import {RecordItem} from './recordItem'
+import {ErrorPanel, ErrorPanelType} from '../errorPanel'
+import {AppLocation, EditRecordLocation, DeleteRecordLocation} from '../../context/location'
+
+export class NoRecordsView extends React.Component {
+  public render() {
+    return <div>No Results</div>
+  }
+}
 
 export interface ToolbarAction {
   key: string
@@ -42,6 +50,7 @@ export interface RecordAction {
   key: string
   icon: IconName
   label: string
+  locationForRecord?: (record: ModelRecord) => AppLocation
   onTrigger: (record: ModelRecord) => void
 }
 
@@ -55,9 +64,7 @@ export interface MixedRecordListProps {
 export class MixedRecordList extends React.Component<MixedRecordListProps> {
   public render() {
     if (!this.props.records) return <CenteredLoadingIndicator />
-
-    // TODO: Empty view
-    if (this.props.records.length === 0) return <>No results</>
+    if (this.props.records.length === 0) return <NoRecordsView />
 
     return (
       <FlexList direction="column" spacing="medium">
@@ -74,6 +81,7 @@ export class MixedRecordList extends React.Component<MixedRecordListProps> {
                 type={ButtonType.Icon}
                 data={record}
                 onTrigger={action.onTrigger}
+                location={action.locationForRecord && action.locationForRecord(record)}
                 icon={action.icon}
                 label={action.label}
               />
@@ -96,9 +104,7 @@ export interface RecordListProps {
 export class RecordList extends React.Component<RecordListProps> {
   public render() {
     if (!this.props.records) return <CenteredLoadingIndicator />
-
-    // TODO: Empty view
-    if (this.props.records.length === 0) return <>No results</>
+    if (this.props.records.length === 0) return <NoRecordsView />
 
     return (
       <FlexList direction="column" spacing="medium">
@@ -115,6 +121,7 @@ export class RecordList extends React.Component<RecordListProps> {
                 type={ButtonType.Icon}
                 data={record}
                 onTrigger={action.onTrigger}
+                location={action.locationForRecord && action.locationForRecord(record)}
                 icon={action.icon}
                 label={action.label}
               />
@@ -139,9 +146,9 @@ export interface RecordListPanelProps {
 
 export interface RecordListPanelState {
   records?: ModelRecord[]
+  total: number
   limit: number
   offset: number
-  hasMore: boolean
   sort?: Sort
   sortValue?: SortConfiguration
   sortDescending: boolean
@@ -155,9 +162,9 @@ export class RecordListPanel extends React.PureComponent<
   RecordListPanelState
 > {
   public state: RecordListPanelState = {
+    total: 0,
     limit: 50,
     offset: 0,
-    hasMore: true,
     sortDescending: false,
     quickSearchValue: '',
     isFilterActive: false,
@@ -242,6 +249,20 @@ export class RecordListPanel extends React.PureComponent<
     })
   }
 
+  private get totalPages(): number {
+    if (this.state.total === 0) return 0
+    return Math.ceil(this.state.total / this.state.limit)
+  }
+
+  private get currentPage(): number {
+    if (this.state.total === 0) return 0
+    return Math.ceil(this.state.offset / this.state.limit) + 1
+  }
+
+  private get hasMoreRecords(): boolean {
+    return this.totalPages > this.currentPage
+  }
+
   private get viewContext(): ViewContext | undefined {
     return this.props.sessionContext.viewContextMap.get(this.props.model)
   }
@@ -308,22 +329,18 @@ export class RecordListPanel extends React.PureComponent<
     }
 
     // Request one more than the limit to check if there's another page
-    const records = await this.props.sessionContext.getRecordList(
+    const recordList = await this.props.sessionContext.getRecordList(
       this.viewContext.model,
-      this.state.limit + 1,
+      this.state.limit,
       offset,
       this.sort,
       filters
     )
 
-    const hasMore = records.length > this.state.limit
-
-    if (hasMore) {
-      // Remove extranous record
-      records.splice(-1, 1)
-    }
-
-    this.setState({records, hasMore})
+    this.setState({
+      records: recordList.records,
+      total: recordList.total
+    })
   }
 
   public componentDidMount() {
@@ -333,9 +350,9 @@ export class RecordListPanel extends React.PureComponent<
   public render() {
     const sessionContext = this.props.sessionContext
     const viewContext = this.viewContext
+    const hasRecords = this.state.total !== 0
 
-    // TODO: Error panel
-    if (!viewContext) return <div>Not Found</div>
+    if (!viewContext) return <ErrorPanel type={ErrorPanelType.NotFound} />
 
     return (
       <Panel>
@@ -356,18 +373,25 @@ export class RecordListPanel extends React.PureComponent<
           }
           right={
             <FlexList spacing="medium">
-              <Button
-                type={ButtonType.Icon}
-                icon={IconName.ListArrowLeft}
-                onTrigger={this.handlePreviousPage}
-                disabled={this.state.records == undefined || this.state.offset <= 0}
-              />
-              <Button
-                type={ButtonType.Icon}
-                icon={IconName.ListArrowRight}
-                onTrigger={this.handleNextPage}
-                disabled={this.state.records == undefined || !this.state.hasMore}
-              />
+              {hasRecords && (
+                <FlexList spacing="small">
+                  <Button
+                    type={ButtonType.Icon}
+                    icon={IconName.ListArrowLeft}
+                    onTrigger={this.handlePreviousPage}
+                    disabled={this.state.offset <= 0}
+                  />
+                  <div>
+                    {this.currentPage} / {this.totalPages}
+                  </div>
+                  <Button
+                    type={ButtonType.Icon}
+                    icon={IconName.ListArrowRight}
+                    onTrigger={this.handleNextPage}
+                    disabled={!this.hasMoreRecords}
+                  />
+                </FlexList>
+              )}
               <ToolbarFilter
                 viewContext={viewContext}
                 sortConfigurations={viewContext.sortConfigurations}
@@ -437,6 +461,16 @@ export class RootRecordListPanel extends React.PureComponent<RootRecordListPanel
     this.listRef.current!.reload()
   }
 
+  private editLocationForRecord = (record: ModelRecord) => {
+    const viewContext = this.props.sessionContext.viewContextMap.get(this.props.model)!
+    return EditRecordLocation(viewContext.slug, record.id[1])
+  }
+
+  private deleteLocationForRecord = (record: ModelRecord) => {
+    const viewContext = this.props.sessionContext.viewContextMap.get(this.props.model)!
+    return DeleteRecordLocation(viewContext.slug, record.id[1])
+  }
+
   public render() {
     const _ = this.props.localeContext.get
     const toolbarActions: ToolbarAction[] = [
@@ -458,6 +492,10 @@ export class RootRecordListPanel extends React.PureComponent<RootRecordListPanel
       // })
     }
 
+    const viewContext = this.props.sessionContext.viewContextMap.get(this.props.model)
+
+    if (!viewContext) return <ErrorPanel type={ErrorPanelType.NotFound} />
+
     return (
       <RecordListPanel
         {...this.props}
@@ -469,12 +507,14 @@ export class RootRecordListPanel extends React.PureComponent<RootRecordListPanel
             key: 'edit',
             icon: IconName.EditDocument,
             label: _('editRecord'),
+            locationForRecord: this.editLocationForRecord,
             onTrigger: this.handleEditRecord
           },
           {
             key: 'delete',
             icon: IconName.DeleteDocument,
             label: _('deleteRecord'),
+            locationForRecord: this.deleteLocationForRecord,
             onTrigger: this.handleDeleteRecord
           }
         ]}
