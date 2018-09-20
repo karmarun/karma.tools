@@ -13,7 +13,7 @@ import {
 import {Icon, IconName, IconStyle} from './icon'
 import {LoadingIndicator} from './loader'
 
-import {AppLocation, LocationActionContext, withLocationAction} from '../context/location'
+import {AppLocation, LocationActionContext} from '../context/location'
 import {boolAttr} from '../util/react'
 import {SpaceKeyCode} from '../util/keyCodes'
 
@@ -25,6 +25,7 @@ export interface ButtonBaseProps<D = any> {
   selected?: boolean
   disabled?: boolean
   loading?: boolean
+  location?: AppLocation
 }
 
 export const enum ButtonType {
@@ -35,70 +36,25 @@ export const enum ButtonType {
 }
 
 export interface ButtonProps<D = any> extends ButtonBaseProps<D> {
-  onTrigger?: (data: D) => void
-  onMouseDown?: (data: D) => void
+  onTrigger?: (data: D, location?: AppLocation) => void
+  onMouseDown?: (data: D, location?: AppLocation) => void
 }
 
-export class Button<D = any> extends React.Component<ButtonProps<D>> {
-  private handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault()
-    if (this.props.onTrigger) this.props.onTrigger(this.props.data!)
-  }
-
-  private handleMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault()
-    if (this.props.onMouseDown) this.props.onMouseDown(this.props.data!)
-  }
-
-  public render() {
-    return (
-      <button
-        className={`${ButtonStyle} ${buttonStyleForType(this.props.type)}`}
-        disabled={this.props.disabled}
-        data-active={boolAttr(this.props.selected)}
-        onClick={this.handleClick}
-        onMouseDown={this.handleMouseDown}>
-        <span className="content">
-          {this.props.loading ? (
-            <LoadingIndicator />
-          ) : (
-            <>
-              {this.props.icon && <Icon name={this.props.icon} />}
-              {this.props.label && <span className="label">{this.props.label}</span>}
-            </>
-          )}
-        </span>
-      </button>
-    )
-  }
-}
-
-export interface LocationButtonProps extends ButtonBaseProps {
-  location: AppLocation
-  locationActionContext: LocationActionContext
-  onTrigger?: (location: AppLocation) => void
-}
-
-export interface LocationButtonState {
+export interface ButtonState {
   isActive: boolean
 }
 
-export class LocationButton extends React.PureComponent<LocationButtonProps, LocationButtonState> {
-  state: LocationButtonState = {
-    isActive: false
-  }
-
-  private handleTrigger = () => {
-    if (this.props.onTrigger) {
-      this.props.onTrigger(this.props.location)
-    } else {
-      this.props.locationActionContext.pushLocation(this.props.location)
-    }
-  }
+export class Button<D = any> extends React.Component<ButtonProps<D>, ButtonState> {
+  public state: ButtonState = {isActive: false}
 
   private handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
-    this.handleTrigger()
+    if (this.props.onTrigger) this.props.onTrigger(this.props.data!, this.props.location)
+  }
+
+  private handleMouseDown = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    if (this.props.onMouseDown) this.props.onMouseDown(this.props.data!, this.props.location)
   }
 
   private handleKeyDown = (e: React.KeyboardEvent<HTMLAnchorElement>) => {
@@ -111,37 +67,41 @@ export class LocationButton extends React.PureComponent<LocationButtonProps, Loc
     if (e.keyCode === SpaceKeyCode) {
       e.preventDefault()
       this.setState({isActive: false})
-      this.handleTrigger()
+      if (this.props.onTrigger) this.props.onTrigger(this.props.data!, this.props.location)
     }
   }
 
   public render() {
     return (
-      <a
-        className={`${ButtonStyle} ${buttonStyleForType(this.props.type)}`}
-        data-disabled={boolAttr(this.props.disabled)}
-        data-active={boolAttr(this.state.isActive)}
-        href={this.props.locationActionContext.urlPathForLocation(this.props.location)}
-        role="button"
-        onKeyDown={this.handleKeyDown}
-        onKeyUp={this.handleKeyUp}
-        onClick={this.handleClick}>
-        <span className="content">
-          {this.props.loading ? (
-            <LoadingIndicator />
-          ) : (
-            <>
-              {this.props.icon && <Icon name={this.props.icon} />}
-              {this.props.label && <span className="label">{this.props.label}</span>}
-            </>
-          )}
-        </span>
-      </a>
+      <LocationActionContext.Consumer>
+        {context => (
+          <a
+            className={`${ButtonStyle} ${buttonStyleForType(this.props.type)}`}
+            data-disabled={boolAttr(this.props.disabled)}
+            data-active={boolAttr(this.props.selected || this.state.isActive)}
+            href={this.props.location && context.urlPathForLocation(this.props.location)}
+            role="button"
+            tabIndex={this.props.disabled ? undefined : 0}
+            onKeyDown={this.handleKeyDown}
+            onKeyUp={this.handleKeyUp}
+            onClick={this.handleClick}
+            onMouseDown={this.handleMouseDown}>
+            <span className="content">
+              {this.props.loading ? (
+                <LoadingIndicator />
+              ) : (
+                <>
+                  {this.props.icon && <Icon name={this.props.icon} />}
+                  {this.props.label && <span className="label">{this.props.label}</span>}
+                </>
+              )}
+            </span>
+          </a>
+        )}
+      </LocationActionContext.Consumer>
     )
   }
 }
-
-export const LocationButtonContainer = withLocationAction(LocationButton)
 
 export const ButtonStyle = style({
   $debugName: 'Button',
@@ -155,6 +115,8 @@ export const ButtonStyle = style({
   flexShrink: 0,
   flexGrow: 0,
   padding: 0,
+
+  display: 'block',
 
   $nest: {
     '> .content': {
@@ -180,7 +142,8 @@ export const ButtonStyle = style({
     },
 
     '&:focus': {
-      outline: 'none'
+      outline: 'none',
+      boxShadow: `0 0 0 2px ${Color.focus}`
     },
 
     '&, &:link, &:visited': {
@@ -286,10 +249,6 @@ export const ButtonIconStyle = style({
   alignItems: 'center',
 
   $nest: {
-    '&:focus': {
-      boxShadow: 'none'
-    },
-
     '&:hover > .content > .label, &:active > .content > .label, &[data-active] > .content > .label': {
       color: Color.primary.light3
     },

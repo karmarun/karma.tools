@@ -291,6 +291,13 @@ export class ExpressionContext {
     return {[E.SubstringIndex]: [value, search]}
   }
 
+  // Enum
+  // ----
+
+  public mapEnum(value: t.Expression, mapping: ObjectMap<string>, fallback?: string): t.MapEnumFn {
+    return {[E.MapEnum]: {symbol: value, mapping, default: fallback}}
+  }
+
   // Optional
   // --------
 

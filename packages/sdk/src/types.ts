@@ -204,6 +204,11 @@ export const enum ExpressionType {
   StringContains = 'stringContains',
   SubstringIndex = 'substringIndex',
 
+  // Enum
+  // ----
+
+  MapEnum = 'mapEnum',
+
   // Date Time
   // ---------
 
@@ -808,6 +813,17 @@ export interface StringContainsFn {
 
 export interface SubstringIndexFn {
   [ExpressionType.SubstringIndex]: [Expression, Expression]
+}
+
+// Enum
+// ----
+
+export interface MapEnumFn {
+  [ExpressionType.MapEnum]: {
+    symbol: Expression
+    default?: string
+    mapping: ObjectMap<string>
+  }
 }
 
 // Date Time

@@ -25,7 +25,8 @@ import {
   RefFn,
   MapFn,
   StructFn,
-  UnionFn
+  UnionFn,
+  MapEnumFn
 } from './types'
 
 import {data as d} from './expression'
@@ -469,6 +470,15 @@ export function createTypedExpression(expression: AnyExpression): DataExpression
           value: createTypedExpression(regexValue.value)
         })
       )
+
+    case ExpressionType.MapEnum:
+      const mapEnumValue = value as MapEnumFn[ExpressionType.MapEnum]
+
+      return d.struct({
+        symbol: createTypedExpression(mapEnumValue.symbol),
+        mapping: d.map(mapObject(mapEnumValue.mapping, value => d.string(value))),
+        default: mapEnumValue.default ? d.string(mapEnumValue.default) : d.null()
+      })
 
     case ExpressionType.Scope:
       return d.union(type, d.string(value))

@@ -8,6 +8,11 @@ import {createContextHOC} from './helper'
 import {ViewContext} from '../api/viewContext'
 import {AnyFieldValue} from '../api/field'
 
+export interface PaginatedRecordList<T = ModelRecord> {
+  total: number
+  records: T[]
+}
+
 export interface ModelRecord<T extends AnyFieldValue = AnyFieldValue> {
   id: Ref
   model: Ref
@@ -87,7 +92,7 @@ export interface SessionContext extends EditorData {
     offset: number,
     sort: Sort,
     conditions: Condition[]
-  ): Promise<ModelRecord[]>
+  ): Promise<PaginatedRecordList>
 
   getReferrers(id: Ref, limit: number, offset: number): Promise<ModelRecord[]>
   saveRecord(model: Ref, id: Ref | undefined, value: AnyFieldValue): Promise<SaveRecordResult>

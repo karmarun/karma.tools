@@ -42,7 +42,8 @@ import {
   ModelRecord,
   EditorSession,
   SaveRecordResult,
-  SaveRecordResultType
+  SaveRecordResultType,
+  PaginatedRecordList
 } from '../context/session'
 
 import {ViewContext} from '../api/viewContext'
@@ -289,7 +290,7 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
     offset: number,
     sort: Sort,
     filters: Condition[]
-  ): Promise<ModelRecord[]> => {
+  ): Promise<PaginatedRecordList> => {
     if (!this.state.session) throw new Error('No session!')
 
     const viewContext = this.state.viewContextMap.get(model)
@@ -336,13 +337,28 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
       listExpression = e.reverseList(listExpression)
     }
 
-    const records: MetarializedRecord[] = await query(
+    const recordList: PaginatedRecordList<MetarializedRecord> = await query(
       this.props.config.karmaDataURL,
       this.state.session.signature,
-      buildFunction(e => () => e.slice(listExpression, offset, limit))
+      buildFunction(e => () => [
+        e.define('records', listExpression),
+        e.data(d =>
+          d.struct({
+            total: d.expr(e.length(e.scope('records'))),
+            limit: d.int64(limit),
+            offset: d.int64(offset),
+            records: d.expr(e.slice(e.scope('records'), offset, limit))
+          })
+        )
+      ])
     )
 
-    return records.map(record => this.transformMetarializedRecord(record, viewContext))
+    return {
+      ...recordList,
+      records: recordList.records.map(record =>
+        this.transformMetarializedRecord(record, viewContext)
+      )
+    }
   }
 
   public getReferrers = async (id: Ref, limit: number, offset: number): Promise<ModelRecord[]> => {

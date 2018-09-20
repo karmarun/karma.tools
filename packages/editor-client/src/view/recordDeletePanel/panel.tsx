@@ -106,6 +106,7 @@ export class RecordDeletePanel extends React.PureComponent<
     const record = await this.props.sessionContext.getRecord(this.props.model, this.props.recordID)
 
     // Request one more than the limit to check if there's another page
+    // TODO: Implement better pagination, see RecordListPanel
     const referrers = await this.props.sessionContext.getReferrers(
       this.props.recordID,
       this.state.limit + 1,
