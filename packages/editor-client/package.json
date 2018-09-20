@@ -1,6 +1,6 @@
 {
   "name": "@karma.run/editor-client",
-  "version": "0.14.2",
+  "version": "0.14.3",
   "main": "./lib/cjs/index.js",
   "module": "./lib/es6/index.js",
   "types": "./lib/types/index.d.ts",

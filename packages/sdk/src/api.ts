@@ -154,6 +154,62 @@ async function binaryGetRequest(url: string, signature?: string, codec = Codec.J
   }
 }
 
+async function getRequest(url: string, signature?: string, codec = Codec.JSON): Promise<any> {
+  try {
+    const headers: ObjectMap = headersForSignature(signature, headersForCodec(codec))
+    const result = await axios.get(url, {headers})
+
+    return result.data
+  } catch (e) {
+    const err: AxiosError = e
+
+    if (err.response && err.response.data) {
+      throw new KarmaError(err.response.data)
+    }
+
+    throw new KarmaError()
+  }
+}
+
+async function putRequest(
+  url: string,
+  data: any,
+  signature?: string,
+  codec = Codec.JSON
+): Promise<any> {
+  try {
+    const headers: ObjectMap = headersForSignature(signature, headersForCodec(codec))
+    const result = await axios.put(url, data, {headers})
+
+    return result.data
+  } catch (e) {
+    const err: AxiosError = e
+
+    if (err.response && err.response.data) {
+      throw new KarmaError(err.response.data)
+    }
+
+    throw new KarmaError()
+  }
+}
+
+async function deleteRequest(url: string, signature?: string, codec = Codec.JSON): Promise<any> {
+  try {
+    const headers: ObjectMap = headersForSignature(signature, headersForCodec(codec))
+    const result = await axios.delete(url, {headers})
+
+    return result.data
+  } catch (e) {
+    const err: AxiosError = e
+
+    if (err.response && err.response.data) {
+      throw new KarmaError(err.response.data)
+    }
+
+    throw new KarmaError()
+  }
+}
+
 export async function query(
   url: string,
   signature: string,
@@ -205,14 +261,187 @@ export async function importDB(
   return await postUploadRequest(url + '/admin/import', data, signature, codec)
 }
 
-export async function createRecords(
+export async function createRecords<T = any>(
+  url: string,
+  signature: string,
+  modelRef: Ref,
+  data: T[]
+): Promise<Ref[]>
+export async function createRecords<T = any>(
+  url: string,
+  signature: string,
+  modelOrTag: string,
+  data: T[]
+): Promise<Ref[]>
+export async function createRecords<T = any>(
   url: string,
   signature: string,
   model: Ref | string,
-  data: any[]
+  data: T[]
+): Promise<Ref[]> {
+  return createRecordsInternal<T>(url, signature, model, data)
+}
+
+async function createRecordsInternal<T = any>(
+  url: string,
+  signature: string,
+  model: Ref | string,
+  data: T[]
+): Promise<Ref[]> {
+  const modelID = isRef(model) ? model[1] : model
+  return postRequest(`${url}/rest/${modelID}`, data, signature)
+}
+
+export async function createRecord<T = any>(
+  url: string,
+  signature: string,
+  modelRef: Ref,
+  data: T
+): Promise<Ref>
+export async function createRecord<T = any>(
+  url: string,
+  signature: string,
+  modelOrTag: string,
+  data: T
+): Promise<Ref>
+export async function createRecord<T = any>(
+  url: string,
+  signature: string,
+  model: Ref | string,
+  data: T
 ): Promise<Ref> {
-  if (isRef(model)) return await postRequest(`${url}/rest/${model[1]}`, data, signature)
-  return await postRequest(`${url}/rest/${model}`, data, signature)
+  return createRecordInternal<T>(url, signature, model, data)
+}
+
+async function createRecordInternal<T = any>(
+  url: string,
+  signature: string,
+  model: Ref | string,
+  data: T
+): Promise<Ref> {
+  const modelID = isRef(model) ? model[1] : model
+  return (await postRequest(`${url}/rest/${modelID}`, [data], signature))[0]
+}
+
+// TODO: Add support for length, offset and metadata query parameters
+export async function getRecords<T = any>(
+  url: string,
+  signature: string,
+  modelRef: Ref
+): Promise<T[]>
+export async function getRecords<T = any>(
+  url: string,
+  signature: string,
+  modelOrTag: string
+): Promise<T[]>
+export async function getRecords<T = any>(
+  url: string,
+  signature: string,
+  model: Ref | string
+): Promise<T[]> {
+  return getRecordsInternal<T>(url, signature, model)
+}
+
+async function getRecordsInternal<T = any>(
+  url: string,
+  signature: string,
+  model: Ref | string
+): Promise<T[]> {
+  const modelID = isRef(model) ? model[1] : model
+  return await getRequest(`${url}/rest/${modelID}`, signature)
+}
+
+export async function getRecord<T = any>(
+  url: string,
+  signature: string,
+  modelOrTag: string,
+  recordID: string
+): Promise<T>
+export async function getRecord<T = any>(url: string, signature: string, recordRef: Ref): Promise<T>
+export async function getRecord<T = any>(
+  url: string,
+  signature: string,
+  ...params: any[]
+): Promise<T> {
+  return getRecordInternal<T>(url, signature, params as any)
+}
+
+async function getRecordInternal<T = any>(
+  url: string,
+  signature: string,
+  params: [string, string] | [Ref]
+): Promise<T> {
+  if (params.length === 2) {
+    return getRequest(`${url}/rest/${params[0]}/${params[1]}`, signature)
+  } else if (params.length === 1) {
+    return getRequest(`${url}/rest/${params[0][0]}/${params[0][1]}`, signature)
+  } else {
+    throw new Error('Invalid parameters!')
+  }
+}
+
+export async function updateRecord<T = any>(
+  url: string,
+  signature: string,
+  modelOrTag: string,
+  recordID: string,
+  data: T
+): Promise<Ref>
+export async function updateRecord<T = any>(
+  url: string,
+  signature: string,
+  recordRef: Ref,
+  data: T
+): Promise<Ref>
+export async function updateRecord(url: string, signature: string, ...params: any[]): Promise<Ref> {
+  return updateRecordInternal(url, signature, params as any)
+}
+
+async function updateRecordInternal<T = any>(
+  url: string,
+  signature: string,
+  params: [string, string, T] | [Ref, T]
+): Promise<Ref> {
+  if (params.length === 3) {
+    return putRequest(`${url}/rest/${params[0]}/${params[1]}`, params[2], signature)
+  } else if (params.length === 2) {
+    return putRequest(`${url}/rest/${params[0][0]}/${params[0][1]}`, params[1], signature)
+  } else {
+    throw new Error('Invalid parameters!')
+  }
+}
+
+export async function deleteRecord<T = any>(
+  url: string,
+  signature: string,
+  modelOrTag: string,
+  recordID: string
+): Promise<T>
+export async function deleteRecord<T = any>(
+  url: string,
+  signature: string,
+  recordRef: Ref
+): Promise<T>
+export async function deleteRecord<T = any>(
+  url: string,
+  signature: string,
+  ...params: any[]
+): Promise<T> {
+  return deleteRecordInternal<T>(url, signature, params as any)
+}
+
+async function deleteRecordInternal<T = any>(
+  url: string,
+  signature: string,
+  params: [string, string] | [Ref]
+): Promise<T> {
+  if (params.length === 2) {
+    return deleteRequest(`${url}/rest/${params[0]}/${params[1]}`, signature)
+  } else if (params.length === 1) {
+    return deleteRequest(`${url}/rest/${params[0][0]}/${params[0][1]}`, signature)
+  } else {
+    throw new Error('Invalid parameters!')
+  }
 }
 
 export class Client {
@@ -225,33 +454,70 @@ export class Client {
     this.codec = codec
   }
 
-  public query(expression: FunctionFn) {
+  public query(expression: FunctionFn): Promise<any> {
     if (!this.signature) throw new Error("Can't query without session!")
     return query(this.url, this.signature, expression, this.codec)
   }
 
-  public async authenticate(username: string, password: string) {
+  public async authenticate(username: string, password: string): Promise<string> {
     this.signature = await authenticate(this.url, username, password, this.codec)
     return this.signature
   }
 
-  public reset() {
+  public get isAuthenticated(): boolean {
+    return this.signature != undefined
+  }
+
+  public reset(): Promise<void> {
     if (!this.signature) throw new Error("Can't reset without session!")
     return reset(this.url, this.signature, this.codec)
   }
 
-  public exportDB() {
-    if (!this.signature) throw new Error("Can't exportDBB without session!")
+  public exportDB(): Promise<ArrayBuffer> {
+    if (!this.signature) throw new Error("Can't exportDB without session!")
     return exportDB(this.url, this.signature, this.codec)
   }
 
-  public importDB(data: ArrayBuffer) {
+  public importDB(data: ArrayBuffer): Promise<any> {
     if (!this.signature) throw new Error("Can't importDB without session!")
     return importDB(this.url, this.signature, data, this.codec)
   }
 
-  public createRecords(model: Ref | string, data: any[]) {
+  public createRecords<T = any>(model: Ref | string, data: T[]): Promise<Ref[]> {
     if (!this.signature) throw new Error("Can't createRecords without session!")
-    return createRecords(this.url, this.signature, model, data)
+    return createRecordsInternal(this.url, this.signature, model, data)
+  }
+
+  public createRecord<T = any>(model: Ref | string, data: T): Promise<Ref> {
+    if (!this.signature) throw new Error("Can't createRecord without session!")
+    return createRecordInternal(this.url, this.signature, model, data)
+  }
+
+  public getRecords<T = any>(modelRef: Ref): Promise<T[]>
+  public getRecords<T = any>(modelOrTag: string): Promise<T[]>
+  public getRecords<T = any>(model: Ref | string): Promise<T[]> {
+    if (!this.signature) throw new Error("Can't getRecords without session!")
+    return getRecordsInternal(this.url, this.signature, model)
+  }
+
+  public getRecord<T = any>(model: string, recordID: string): Promise<T>
+  public getRecord<T = any>(recordRef: Ref): Promise<T>
+  public getRecord<T = any>(...params: any[]): Promise<T> {
+    if (!this.signature) throw new Error("Can't getRecord without session!")
+    return getRecordInternal(this.url, this.signature, params as any)
+  }
+
+  public updateRecord<T = any>(model: string, recordID: string, data: T): Promise<Ref>
+  public updateRecord<T = any>(recordRef: Ref, data: T): Promise<Ref>
+  public updateRecord(...params: any[]): Promise<Ref> {
+    if (!this.signature) throw new Error("Can't updateRecord without session!")
+    return updateRecordInternal(this.url, this.signature, params as any)
+  }
+
+  public deleteRecord<T = any>(model: string, recordID: string): Promise<T>
+  public deleteRecord<T = any>(recordRef: Ref): Promise<T>
+  public deleteRecord<T = any>(...params: any[]): Promise<T> {
+    if (!this.signature) throw new Error("Can't deleteRecord without session!")
+    return deleteRecordInternal(this.url, this.signature, params as any)
   }
 }

@@ -4,6 +4,7 @@
   "main": "./lib/cjs/index.js",
   "module": "./lib/es6/index.js",
   "types": "./lib/types/index.d.ts",
+  "sideEffects": false,
   "license": "MIT",
   "repository": "github:karmarun/karma.tools",
   "scripts": {
