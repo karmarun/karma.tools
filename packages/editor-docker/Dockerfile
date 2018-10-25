@@ -2,9 +2,9 @@ FROM node:10-alpine as builder
 
 ARG HOME_DIR=/home/node/karma.run-editor/
 
-ARG LIBVIPS_VERSION=8.6.4
+ARG LIBVIPS_VERSION=8.7.0
 ARG LIBVIPS_SOURCE_TAR="vips-${LIBVIPS_VERSION}.tar.gz"
-ARG LIBVIPS_SOURCE_URL="https://github.com/jcupitt/libvips/releases/download/v${LIBVIPS_VERSION}/${LIBVIPS_SOURCE_TAR}"
+ARG LIBVIPS_SOURCE_URL="https://github.com/libvips/libvips/releases/download/v${LIBVIPS_VERSION}/${LIBVIPS_SOURCE_TAR}"
 
 # Install build tools
 RUN apk add gcc g++ make --update-cache
