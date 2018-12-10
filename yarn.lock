@@ -2,6 +2,12 @@
 # yarn lockfile v1
 
 
+"@karma.run/sdk@^0.5.13":
+  version "0.5.19"
+  resolved "https://registry.yarnpkg.com/@karma.run/sdk/-/sdk-0.5.19.tgz#626246e45c2a60468d110e4a80a1ef5d60515867"
+  dependencies:
+    axios "^0.18.0"
+
 "@types/bcryptjs@^2.4.1":
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/@types/bcryptjs/-/bcryptjs-2.4.1.tgz#7fb63922b5b106edacdcfe084cd38850f78aacfc"

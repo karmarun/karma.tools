@@ -39,7 +39,7 @@ remote
     const modelResult = await session.do(utl.createModels({model}))
     console.log('Model result:', modelResult)
 
-    // Encode value
+    // Decode value
     const value = {foo: '123', bar: 123}
     const valueResult = await session.do(
       xpr.create(xpr.data(d => d.ref(modelResult.model)), () =>

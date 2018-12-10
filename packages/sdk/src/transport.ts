@@ -130,4 +130,13 @@ export class DatabaseAdminSession extends UserSession {
       throw decodeError(json)
     }
   }
+
+  async import(data: any) {
+    await fetch(this.remote.endpoint + '/admin/import', {
+      method: 'post',
+      mode: 'cors',
+      body: data,
+      headers: this.headers
+    })
+  }
 }
