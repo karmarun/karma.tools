@@ -270,7 +270,6 @@ export class RecurseField implements Field<any> {
   public readonly label?: string
   public readonly description?: string
 
-  public defaultValue!: AnyFieldValue
   public readonly sortConfigurations: SortConfiguration[] = []
   public readonly filterConfigurations: FilterConfiguration[] = []
 
@@ -294,9 +293,11 @@ export class RecurseField implements Field<any> {
     }
 
     this.field = field
-    this.defaultValue = field.defaultValue
-
     return this
+  }
+
+  public get defaultValue() {
+    return this.field!.defaultValue
   }
 
   public renderListComponent(props: ListRenderProps<any>) {
