@@ -18,7 +18,7 @@
     "copy:license": "shx cp ../../LICENSE ./",
     "clean": "shx rm -rf ./LICENSE ./lib",
     "prepare": "run-s clean copy:license build sync-package-info",
-    "sync-package-info": "./../../scripts/syncPackageInfo.js ./src/version.ts"
+    "sync-package-info": "node ./../../scripts/syncPackageInfo.js ./src/version.ts"
   },
   "dependencies": {
     "@karma.run/sdk": "^0.5.13",

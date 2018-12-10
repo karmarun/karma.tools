@@ -1,6 +1,6 @@
 {
   "name": "@karma.run/editor-client",
-  "version": "0.14.3",
+  "version": "0.14.4",
   "main": "./lib/cjs/index.js",
   "module": "./lib/es6/index.js",
   "types": "./lib/types/index.d.ts",
@@ -19,7 +19,7 @@
     "copy:license": "shx cp ../../LICENSE ./",
     "clean": "shx rm -rf ./LICENSE ./lib",
     "prepare": "run-s clean copy:license build sync-package-info",
-    "sync-package-info": "./../../scripts/syncPackageInfo.js ./src/version.ts"
+    "sync-package-info": "node ./../../scripts/syncPackageInfo.js ./src/version.ts"
   },
   "dependencies": {
     "@karma.run/editor-common": "^0.14.0",
