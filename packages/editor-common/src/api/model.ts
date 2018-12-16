@@ -1,5 +1,18 @@
-import {Ref as ModelRef} from '@karma.run/sdk'
+import {RefValue as ModelRef} from '../util/ref'
 import {firstKey, mapObject, ObjectMap} from '../util/object'
+
+export interface MetarializedRecord<T = any> {
+  id: ModelRef
+  model: ModelRef
+  value: T
+  created: string
+  updated: string
+}
+
+export interface TagRecord {
+  model: ModelRef
+  tag: string
+}
 
 // Helpers
 export type ModelMap = ObjectMap<Model>

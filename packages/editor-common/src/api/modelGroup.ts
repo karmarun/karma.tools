@@ -1,6 +1,6 @@
-import {Ref} from '@karma.run/sdk'
+import {RefValue} from '../util/ref'
 
 export interface ModelGroup {
   name: string
-  models: (string | Ref)[]
+  models: (string | RefValue)[]
 }

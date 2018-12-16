@@ -13,7 +13,7 @@ export class EventDispatcher<T extends object = {}> {
   public once<E extends keyof T>(event: E, handler: EventHandler<T[E]>) {
     const onceHandler: EventHandler<T[E]> = data => {
       this.off(event, onceHandler)
-      handler.call(data)
+      handler(data)
     }
 
     this.on(event, onceHandler)

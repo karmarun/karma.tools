@@ -1,5 +1,5 @@
 import React from 'react'
-import {expression as e} from '@karma.run/sdk'
+import {DataContext as dat} from '@karma.run/sdk/expression'
 
 import {
   Model,
@@ -110,7 +110,7 @@ export class BoolField implements Field<BoolFieldValue> {
   }
 
   public transformValueToExpression(fieldValue: BoolFieldValue) {
-    return e.bool(fieldValue.value)
+    return dat.bool(fieldValue.value)
   }
 
   public fieldOptions(): BoolFieldOptions & TypedFieldOptions {

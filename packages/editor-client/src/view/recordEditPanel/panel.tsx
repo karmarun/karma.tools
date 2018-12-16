@@ -1,6 +1,6 @@
 import React from 'react'
 import memoizeOne from 'memoize-one'
-import {Ref} from '@karma.run/sdk'
+import {RefValue} from '@karma.run/editor-common'
 
 import {
   Panel,
@@ -20,17 +20,17 @@ import {LocaleContext, withLocale} from '../../context/locale'
 import {NotificationContext, withNotification, NotificationType} from '../../context/notification'
 
 export interface RecordEditPanelProps {
-  recordID?: Ref
-  model: Ref
+  recordID?: RefValue
+  model: RefValue
   sessionContext: SessionContext
   localeContext: LocaleContext
   notificationContext: NotificationContext
   disabled: boolean
-  onBack: (model: Ref, record?: ModelRecord) => void
-  onEditRecord: (model: Ref, id?: Ref) => Promise<ModelRecord | undefined>
-  onSelectRecord: (model: Ref) => Promise<ModelRecord | undefined>
+  onBack: (model: RefValue, record?: ModelRecord) => void
+  onEditRecord: (model: RefValue, id?: RefValue) => Promise<ModelRecord | undefined>
+  onSelectRecord: (model: RefValue) => Promise<ModelRecord | undefined>
   onEditField: (field: AnyField, value?: any) => Promise<AnyFieldValue | undefined>
-  onPostSave: (model: Ref, id: Ref) => void
+  onPostSave: (model: RefValue, id: RefValue) => void
 }
 
 export interface RecordEditPanelState {
@@ -61,7 +61,7 @@ export class RecordEditPanel extends React.PureComponent<
     )
   }
 
-  private async loadRecord(id: Ref) {
+  private async loadRecord(id: RefValue) {
     this.setState({
       isLoadingRecord: true
     })

@@ -1,6 +1,7 @@
-import {Ref, DataExpression} from '@karma.run/sdk'
+import * as xpr from '@karma.run/sdk/expression'
 
 import {
+  RefValue,
   Model,
   TypedFieldOptions,
   KeyPath,
@@ -15,16 +16,16 @@ import {WorkerContext} from '../context/worker'
 import {Config} from '../context/config'
 
 export interface SaveContext {
-  readonly model: Ref
-  readonly id: Ref | undefined
+  readonly model: RefValue
+  readonly id: RefValue | undefined
   readonly config: Config
   readonly workerContext: WorkerContext
   readonly sessionContext: SessionContext
 }
 
 export interface DeleteContext {
-  readonly model: Ref
-  readonly id: Ref | undefined
+  readonly model: RefValue
+  readonly id: RefValue | undefined
   readonly config: Config
   readonly workerContext: WorkerContext
   readonly sessionContext: SessionContext
@@ -48,8 +49,8 @@ export interface EditRenderProps<V extends AnyFieldValue> {
   readonly changeKey?: any
 
   onValueChange(value: V, key: any): void
-  onEditRecord(model: Ref, id?: Ref): Promise<ModelRecord | undefined>
-  onSelectRecord(model: Ref): Promise<ModelRecord | undefined>
+  onEditRecord(model: RefValue, id?: RefValue): Promise<ModelRecord | undefined>
+  onSelectRecord(model: RefValue): Promise<ModelRecord | undefined>
   onEditField(field: AnyField, value?: AnyFieldValue): Promise<AnyFieldValue | undefined>
 }
 
@@ -89,7 +90,7 @@ export interface Field<V extends AnyFieldValue> {
   renderEditComponent(props: EditRenderProps<V>): React.ReactNode
 
   transformRawValue(value: unknown): V
-  transformValueToExpression(value: V): DataExpression
+  transformValueToExpression(value: V): xpr.DataConstructor
 
   traverse(keyPath: KeyPath): AnyField | undefined
   valuePathForKeyPath(keyPath: KeyPath): ValuePath

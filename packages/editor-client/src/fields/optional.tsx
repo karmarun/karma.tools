@@ -1,5 +1,7 @@
 import React from 'react'
-import {expression as e} from '@karma.run/sdk'
+
+import * as xpr from '@karma.run/sdk/expression'
+import {DataContext as dat} from '@karma.run/sdk/expression'
 
 import {
   Model,
@@ -188,10 +190,10 @@ export class OptionalField implements Field<OptionalFieldValue> {
     }
   }
 
-  public transformValueToExpression(value: OptionalFieldValue) {
+  public transformValueToExpression(value: OptionalFieldValue): xpr.DataConstructor {
     return value.value.isPresent
       ? this.field.transformValueToExpression(value.value.value!)
-      : e.null()
+      : dat.null()
   }
 
   public fieldOptions(): OptionalFieldOptions & TypedFieldOptions {

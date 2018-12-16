@@ -1,5 +1,5 @@
 import React from 'react'
-import {expression as e} from '@karma.run/sdk'
+import {DataContext as dat} from '@karma.run/sdk/expression'
 
 import {
   Model,
@@ -107,8 +107,8 @@ export class DateTimeField implements Field<DateTimeFieldValue> {
   }
 
   public transformValueToExpression(value: DateTimeFieldValue) {
-    if (!(value.value instanceof Date)) return e.null()
-    return e.dateTime(value.value.toISOString())
+    if (!(value.value instanceof Date)) return dat.null()
+    return dat.dateTime(value.value)
   }
 
   public fieldOptions(): DateTimeFieldOptions & TypedFieldOptions {

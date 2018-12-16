@@ -1,6 +1,8 @@
 import React from 'react'
 import memoizeOne from 'memoize-one'
-import {data as d, DataExpression} from '@karma.run/sdk'
+
+import * as xpr from '@karma.run/sdk/expression'
+import {DataContext as dat} from '@karma.run/sdk/expression'
 
 import {
   EditComponentRenderProps,
@@ -238,10 +240,10 @@ export class UnionField implements Field<UnionFieldValue> {
     }
   }
 
-  public transformValueToExpression(value: UnionFieldValue): DataExpression {
-    if (!value.value.selectedKey) return d.null()
+  public transformValueToExpression(value: UnionFieldValue): xpr.DataConstructor {
+    if (!value.value.selectedKey) return dat.null()
 
-    return d.union(
+    return dat.union(
       value.value.selectedKey,
       this.fieldForKey(value.value.selectedKey).transformValueToExpression(
         value.value.values[value.value.selectedKey]

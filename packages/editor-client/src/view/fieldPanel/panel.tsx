@@ -1,6 +1,6 @@
 import React from 'react'
 import memoizeOne from 'memoize-one'
-import {Ref} from '@karma.run/sdk'
+import {RefValue} from '@karma.run/editor-common'
 
 import {
   Panel,
@@ -26,8 +26,8 @@ export interface FieldPanelProps {
   onBack: () => void
   onApply: (value: AnyFieldValue) => void
   onRemove: () => void
-  onEditRecord: (model: Ref, id?: Ref) => Promise<ModelRecord | undefined>
-  onSelectRecord: (model: Ref) => Promise<ModelRecord | undefined>
+  onEditRecord: (model: RefValue, id?: RefValue) => Promise<ModelRecord | undefined>
+  onSelectRecord: (model: RefValue) => Promise<ModelRecord | undefined>
   onEditField: (field: AnyField, value?: AnyFieldValue) => Promise<AnyFieldValue | undefined>
 }
 

@@ -16,12 +16,12 @@ export class Remote {
 
   async login(username: string, password: string): Promise<UserSession> {
     let token = await this._login(username, password)
-    return new UserSession(this, token)
+    return new UserSession(this, username, token)
   }
 
   async adminLogin(username: string, dbSecret: string): Promise<DatabaseAdminSession> {
     let token = await this._login(username, dbSecret)
-    return new DatabaseAdminSession(this, token, dbSecret)
+    return new DatabaseAdminSession(this, username, token, dbSecret)
   }
 
   protected async _login(username: string, password: string): Promise<string> {
@@ -46,13 +46,29 @@ export class Remote {
   toString(): String {
     return `Remote: ${this.endpoint}`
   }
+
+  toJSON(): any {
+    return {endpoint: this.endpoint}
+  }
+
+  static fromJSON(value: any) {
+    return new Remote(value.endpoint)
+  }
 }
 
 export class UserSession {
   protected metaModelID?: string
   protected metaModel?: mdl.Model
 
-  constructor(public readonly remote: Remote, protected token: string) {}
+  public get token(): string {
+    return this._token
+  }
+
+  constructor(
+    public readonly remote: Remote,
+    public readonly username: string,
+    protected _token: string
+  ) {}
 
   async do(...expressions: xpr.Expression[]): Promise<any> {
     let response = await fetch(this.remote.endpoint + '/', {
@@ -95,6 +111,26 @@ export class UserSession {
     return mdl.fromValue(meta.decode(value) as val.Union)
   }
 
+  async refresh(): Promise<this> {
+    let response = await fetch(this.remote.endpoint + '/auth', {
+      method: 'post',
+      mode: 'cors',
+      headers: {
+        [utl.Header.Codec]: 'json',
+        [utl.Header.Signature]: this.token
+      }
+    })
+
+    let json = await response.json()
+
+    if (response.status !== 200) {
+      throw decodeError(json)
+    }
+
+    this._token = json as string
+    return this
+  }
+
   protected get headers() {
     return {
       [utl.Header.Codec]: 'json',
@@ -105,11 +141,19 @@ export class UserSession {
   toString(): String {
     return `Session: ${this.remote.endpoint}`
   }
+
+  toJSON(): any {
+    return {remote: this.remote.toJSON(), username: this.username, token: this.token}
+  }
+
+  static fromJSON(value: any) {
+    return new UserSession(Remote.fromJSON(value.remote), value.username, value.token)
+  }
 }
 
 export class DatabaseAdminSession extends UserSession {
-  constructor(remote: Remote, token: string, protected dbSecret: string) {
-    super(remote, token)
+  constructor(remote: Remote, username: string, token: string, protected dbSecret: string) {
+    super(remote, username, token)
   }
 
   async resetDatabase(newSecret?: string): Promise<void> {

@@ -1,6 +1,6 @@
 import React from 'react'
 import memoizeOne from 'memoize-one'
-import {expression as e} from '@karma.run/sdk'
+import {DataContext as dat} from '@karma.run/sdk/expression'
 
 import {
   Model,
@@ -140,7 +140,7 @@ export class EnumField implements Field<EnumFieldValue> {
 
   public transformValueToExpression(value: EnumFieldValue) {
     if (!value.value) throw new Error('Value is invalid.')
-    return e.symbol(value.value)
+    return dat.symbol(value.value)
   }
 
   public fieldOptions(): EnumFieldOptions & TypedFieldOptions {

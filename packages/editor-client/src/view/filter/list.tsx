@@ -3,7 +3,7 @@ import shortid from 'shortid'
 import {style} from 'typestyle'
 import memoizeOne from 'memoize-one'
 
-import {Ref} from '@karma.run/sdk'
+import {RefValue} from '@karma.run/editor-common'
 
 import {
   FilterConfiguration,
@@ -41,7 +41,7 @@ export function renderInputForConditionConfiguration(
   config: ConditionConfiguration,
   value: any,
   onValueChange: (value: any) => void,
-  onSelectRecord: (model: Ref) => Promise<ModelRecord | undefined>
+  onSelectRecord: (model: RefValue) => Promise<ModelRecord | undefined>
 ) {
   switch (config.type) {
     case ConditionType.StringEqual:
@@ -93,10 +93,10 @@ export function renderInputForConditionConfiguration(
 }
 
 export interface RefSelectProps {
-  value: Ref | undefined
-  model: Ref
-  onValueChange: (value: Ref) => void
-  onSelectRecord: (model: Ref) => Promise<ModelRecord | undefined>
+  value: RefValue | undefined
+  model: RefValue
+  onValueChange: (value: RefValue) => void
+  onSelectRecord: (model: RefValue) => Promise<ModelRecord | undefined>
 }
 
 export class RefSelect extends React.Component<RefSelectProps> {
@@ -163,7 +163,7 @@ export interface FilterRowProps {
   filterConfigurations: FilterConfiguration[]
   onAdd?: (index: number) => void
   onRemove?: (index: number) => void
-  onSelectRecord: (model: Ref) => Promise<ModelRecord | undefined>
+  onSelectRecord: (model: RefValue) => Promise<ModelRecord | undefined>
   onValueChange: (value: FilterRowValue, index: number) => void
 }
 
@@ -351,7 +351,7 @@ export interface FilterListProps {
   value: FilterListValue
   field: AnyField
   filterConfigurations: FilterConfiguration[]
-  onSelectRecord(model: Ref): Promise<ModelRecord | undefined>
+  onSelectRecord(model: RefValue): Promise<ModelRecord | undefined>
   onValueChange(value: FilterListValue): void
 }
 

@@ -1,12 +1,19 @@
 import React from 'react'
+import * as xpr from '@karma.run/sdk/expression'
 
-import {Ref, Expression} from '@karma.run/sdk'
-
-import {EditorContext, ReadonlyRefMap, RefMap, Sort, Condition} from '@karma.run/editor-common'
+import {
+  RefValue,
+  EditorContext,
+  ReadonlyRefMap,
+  RefMap,
+  Sort,
+  Condition
+} from '@karma.run/editor-common'
 
 import {createContextHOC} from './helper'
 import {ViewContext} from '../api/viewContext'
 import {AnyFieldValue} from '../api/field'
+import {UserSession, Remote} from '@karma.run/sdk'
 
 export interface PaginatedRecordList<T = ModelRecord> {
   total: number
@@ -14,8 +21,8 @@ export interface PaginatedRecordList<T = ModelRecord> {
 }
 
 export interface ModelRecord<T extends AnyFieldValue = AnyFieldValue> {
-  id: Ref
-  model: Ref
+  id: RefValue
+  model: RefValue
   created: Date
   updated: Date
   value: T
@@ -23,7 +30,7 @@ export interface ModelRecord<T extends AnyFieldValue = AnyFieldValue> {
 
 export interface EditorSession {
   username: string
-  signature: string
+  token: string
 }
 
 export interface EditorData {
@@ -75,29 +82,34 @@ export type SaveRecordResult =
   | SaveRecordValidationErrorResult
 
 export interface SessionContext extends EditorData {
-  session?: EditorSession
+  remote: Remote
+  session?: UserSession
   canRestoreSessionFromStorage: boolean
   unsavedChangesCount: number
   developmentMode: boolean
 
-  restoreSessionFromLocalStorage(): Promise<EditorSession>
-  restoreSession(session: EditorSession): Promise<EditorSession>
-  authenticate(username: string, password: string): Promise<EditorSession>
+  restoreSessionFromLocalStorage(): Promise<UserSession>
+  restoreSession(session: EditorSession): Promise<UserSession>
+  authenticate(username: string, password: string): Promise<UserSession>
   invalidate(): Promise<void>
-  getRecord(model: Ref, id: Ref): Promise<ModelRecord>
+  getRecord(model: RefValue, id: RefValue): Promise<ModelRecord>
 
   getRecordList(
-    model: Ref,
+    model: RefValue,
     limit: number,
     offset: number,
     sort: Sort,
     conditions: Condition[]
   ): Promise<PaginatedRecordList>
 
-  getReferrers(id: Ref, limit: number, offset: number): Promise<ModelRecord[]>
-  saveRecord(model: Ref, id: Ref | undefined, value: AnyFieldValue): Promise<SaveRecordResult>
-  deleteRecord(model: Ref, id: Ref, value: AnyFieldValue): Promise<void>
-  query(expression: Expression): Promise<any>
+  getReferrers(id: RefValue, limit: number, offset: number): Promise<ModelRecord[]>
+  saveRecord(
+    model: RefValue,
+    id: RefValue | undefined,
+    value: AnyFieldValue
+  ): Promise<SaveRecordResult>
+  deleteRecord(model: RefValue, id: RefValue, value: AnyFieldValue): Promise<void>
+  query(expression: xpr.Expression): Promise<any>
 
   increaseUnsavedChangesCount(): void
   decreaseUnsavedChangesCount(): void
@@ -107,6 +119,7 @@ export interface SessionContext extends EditorData {
 
 export const SessionContext = React.createContext<SessionContext>({
   ...initialEditorData,
+  remote: null as any,
   canRestoreSessionFromStorage: false,
   unsavedChangesCount: 0,
   developmentMode: false,

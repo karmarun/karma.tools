@@ -1,7 +1,9 @@
 import React from 'react'
 import shortid from 'shortid'
 import {style} from 'typestyle'
-import {data as d} from '@karma.run/sdk'
+
+import * as xpr from '@karma.run/sdk/expression'
+import {DataContext as dat} from '@karma.run/sdk/expression'
 
 import {
   reduceToMap,
@@ -260,8 +262,8 @@ export class MapField implements Field<MapFieldValue> {
     }
   }
 
-  public transformValueToExpression(value: MapFieldValue) {
-    return d.map(
+  public transformValueToExpression(value: MapFieldValue): xpr.DataConstructor {
+    return dat.map(
       reduceToMap(value.value, ({key, value}) => [
         key,
         this.field.transformValueToExpression(value)

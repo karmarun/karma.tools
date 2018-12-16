@@ -1,5 +1,5 @@
 import React from 'react'
-import {Ref} from '@karma.run/sdk'
+import {RefValue} from '@karma.run/editor-common'
 
 import {
   Sort,
@@ -43,7 +43,7 @@ export interface ToolbarAction {
   key: string
   icon: IconName
   label: string
-  onTrigger: (id: Ref) => void
+  onTrigger: (id: RefValue) => void
 }
 
 export interface RecordAction {
@@ -134,14 +134,14 @@ export class RecordList extends React.Component<RecordListProps> {
 }
 
 export interface RecordListPanelProps {
-  model: Ref
+  model: RefValue
   sessionContext: SessionContext
   localeContext: LocaleContext
   disabled: boolean
   headerPrefix: string
   toolbarActions: ToolbarAction[]
   recordActions: RecordAction[]
-  onSelectRecord: (model: Ref) => Promise<ModelRecord | undefined>
+  onSelectRecord: (model: RefValue) => Promise<ModelRecord | undefined>
 }
 
 export interface RecordListPanelState {
@@ -439,8 +439,8 @@ export type SpecializedRecordListProps = Omit<
 >
 
 export interface RootRecordListPanelProps extends SpecializedRecordListProps {
-  onEditRecord: (model: Ref, id?: Ref) => Promise<ModelRecord | undefined>
-  onDeleteRecord: (model: Ref, id: Ref) => Promise<void>
+  onEditRecord: (model: RefValue, id?: RefValue) => Promise<ModelRecord | undefined>
+  onDeleteRecord: (model: RefValue, id: RefValue) => Promise<void>
 }
 
 export class RootRecordListPanel extends React.PureComponent<RootRecordListPanelProps> {
@@ -524,8 +524,8 @@ export class RootRecordListPanel extends React.PureComponent<RootRecordListPanel
 }
 
 export interface SelectRecordListPanelProps extends SpecializedRecordListProps {
-  onBack: (model: Ref) => void
-  onRecordSelected: (model: Ref, record: ModelRecord) => void
+  onBack: (model: RefValue) => void
+  onRecordSelected: (model: RefValue, record: ModelRecord) => void
 }
 
 export class SelectRecordListPanel extends React.PureComponent<SelectRecordListPanelProps> {

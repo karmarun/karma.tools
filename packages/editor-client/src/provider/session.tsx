@@ -2,6 +2,9 @@ import React from 'react'
 import axios from 'axios'
 
 import {
+  RefValue,
+  TagRecord,
+  MetarializedRecord,
   Sort,
   ValuePathSegmentType,
   ValuePathSegment,
@@ -13,23 +16,25 @@ import {
   unserializeModel
 } from '@karma.run/editor-common'
 
-import {
-  Ref,
-  authenticate,
-  refreshSession,
-  query,
-  buildFunction,
-  buildExpression,
-  Expression,
-  expression as e,
-  MetarializedRecord,
-  SignatureHeader,
-  getTags,
-  getModels,
-  Tag,
-  DefaultTags
-} from '@karma.run/sdk'
+// import {
+//   authenticate,
+//   refreshSession,
+//   query,
+//   buildFunction,
+//   buildExpression,
+//   Expression,
+//   expression as e,
+//   MetarializedRecord,
+//   SignatureHeader,
+//   getTags,
+//   getModels,
+//   Tag,
+//   DefaultTags
+// } from '@karma.run/sdk'
 
+import {UserSession, Remote} from '@karma.run/sdk'
+import * as xpr from '@karma.run/sdk/expression'
+import * as utl from '@karma.run/sdk/utility'
 import * as storage from '../util/storage'
 
 import {Config, withConfig} from '../context/config'
@@ -40,10 +45,10 @@ import {
   initialEditorData,
   EditorData,
   ModelRecord,
-  EditorSession,
   SaveRecordResult,
   SaveRecordResultType,
-  PaginatedRecordList
+  PaginatedRecordList,
+  EditorSession
 } from '../context/session'
 
 import {ViewContext} from '../api/viewContext'
@@ -69,34 +74,33 @@ export interface UserContext {
 }
 
 export function getTagsAndModels(
-  karmaDataURL: string,
-  signature: string
-): Promise<{tags: Tag[]; models: MetarializedRecord[]; userRoles: string[]}> {
-  return query(
-    karmaDataURL,
-    signature,
-    buildFunction(e => () =>
-      e.data(d =>
-        d.struct({
-          tags: d.expr(() => getTags()),
-          models: d.expr(e => e.mapList(getModels(), (_, model) => e.metarialize(model)))
-        })
-      )
+  session: UserSession
+): Promise<{tags: TagRecord[]; models: MetarializedRecord[]; userRoles: string[]}> {
+  return session.do(
+    xpr.data(d =>
+      d.struct({
+        tags: d.expr(xpr.tag(utl.Tag.Tag).all()),
+        models: d.expr(
+          xpr
+            .tag(utl.Tag.Model)
+            .all()
+            .mapList((_, model) => xpr.metarialize(model))
+        )
+      })
     )
   )
 }
 
 export async function getContexts(
-  karmaDataURL: string,
-  signature: string,
+  session: UserSession,
   registry: FieldRegistry,
   editorContexts: EditorContext[] = [],
   viewContextOptions: ViewContextOptionsWithModel[] = []
 ) {
-  const {tags, models} = await getTagsAndModels(karmaDataURL, signature)
+  const {tags, models} = await getTagsAndModels(session)
 
-  const tagMap = new Map(tags.map(tag => [tag.tag, tag.model] as [string, Ref]))
-  const reverseTagMap = new RefMap(tags.map(tag => [tag.model, tag.tag] as [Ref, string]))
+  const tagMap = new Map(tags.map(tag => [tag.tag, tag.model] as [string, RefValue]))
+  const reverseTagMap = new RefMap(tags.map(tag => [tag.model, tag.tag] as [RefValue, string]))
 
   const overrideViewContextMap = new RefMap(
     viewContextOptions
@@ -112,13 +116,13 @@ export async function getContexts(
               ? tagMap.get(viewContextOption.model)
               : true,
             viewContextOption
-          ] as [Ref, ViewContextOptions]
+          ] as [RefValue, ViewContextOptions]
       )
   )
 
   // Set ViewContextOptions for default models if needed
-  const userModelRef = tagMap.get(DefaultTags.User)
-  const tagModelRef = tagMap.get(DefaultTags.Tag)
+  const userModelRef = tagMap.get(utl.Tag.User)
+  const tagModelRef = tagMap.get(utl.Tag.Tag)
 
   if (userModelRef && !overrideViewContextMap.has(userModelRef)) {
     overrideViewContextMap.set(userModelRef, {
@@ -152,8 +156,8 @@ export async function getContexts(
       ...editorContext,
       modelGroups: editorContext.modelGroups.map(modelGroup => ({
         ...modelGroup,
-        models: modelGroup.models.map(
-          model => (typeof model === 'string' ? tagMap.get(model)! : model)
+        models: modelGroup.models.map(model =>
+          typeof model === 'string' ? tagMap.get(model)! : model
         )
       }))
     }))
@@ -181,6 +185,7 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
 
     this.state = {
       ...initialEditorData,
+      remote: new Remote(props.config.karmaDataURL),
       canRestoreSessionFromStorage: storage.get(sessionStorageKey) != undefined,
       unsavedChangesCount: 0,
       developmentMode: storage.get(developmentModeStorageKey) || false,
@@ -226,8 +231,12 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
 
   public restoreSession = async (session: EditorSession) => {
     try {
-      const newSignature = await refreshSession(this.props.config.karmaDataURL, session.signature)
-      const newSession: EditorSession = {username: session.username, signature: newSignature}
+      const newSession = await new UserSession(
+        this.state.remote,
+        session.username,
+        session.token
+      ).refresh()
+
       const editorData = await this.getEditorData(newSession)
 
       this.storeSession(newSession)
@@ -241,8 +250,7 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
   }
 
   public authenticate = async (username: string, password: string) => {
-    const signature = await authenticate(this.props.config.karmaDataURL, username, password)
-    const session: EditorSession = {username, signature}
+    const session = await this.state.remote.login(username, password)
     const editorData = await this.getEditorData(session)
 
     this.storeSession(session)
@@ -269,23 +277,21 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
     }
   }
 
-  public getRecord = async (model: Ref, id: Ref): Promise<ModelRecord> => {
+  public getRecord = async (model: RefValue, id: RefValue): Promise<ModelRecord> => {
     if (!this.state.session) throw new Error('No session!')
 
     const viewContext = this.state.viewContextMap.get(model)
     if (!viewContext) throw new Error(`Coulnd't find ViewContext for model: ${model}`)
 
-    const record: MetarializedRecord = await query(
-      this.props.config.karmaDataURL,
-      this.state.session.signature,
-      buildFunction(e => () => e.metarialize(e.get(e.data(d => d.ref(id)))))
+    const record: MetarializedRecord = await this.state.session.do(
+      xpr.get(xpr.data(d => d.ref(id))).metarialize()
     )
 
     return this.transformMetarializedRecord(record, viewContext)
   }
 
   public getRecordList = async (
-    model: Ref,
+    model: RefValue,
     limit: number,
     offset: number,
     sort: Sort,
@@ -296,32 +302,30 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
     const viewContext = this.state.viewContextMap.get(model)
     if (!viewContext) throw new Error(`Coulnd't find ViewContext for model: ${model}`)
 
-    let listExpression = buildExpression(e =>
-      e.mapList(e.all(e.data(d => d.ref(model))), (_, value) => e.metarialize(value))
-    )
+    let listExpression: xpr.Expression = xpr
+      .all(xpr.data(d => d.ref(model)))
+      .mapList((_, value) => xpr.metarialize(value))
 
     if (filters.length > 0) {
-      listExpression = buildExpression(e =>
-        e.filterList(listExpression, (_, value) =>
-          e.and(...filters.map(filter => filterExpression(e.field('value', value), filter)))
-        )
+      listExpression = listExpression.filterList((_, value) =>
+        xpr.and(...filters.map(filter => filterExpression(value.field('value'), filter)))
       )
     }
 
-    function expressionForValuePathSegment(value: Expression, segment: ValuePathSegment) {
+    function expressionForValuePathSegment(value: xpr.Expression, segment: ValuePathSegment) {
       switch (segment.type) {
         case ValuePathSegmentType.Struct:
-          return e.field(segment.key, value)
+          return value.field(segment.key)
 
         case ValuePathSegmentType.Union:
-          return e.field(segment.key, value)
+          return value.field(segment.key)
 
         default:
           throw new Error('Not implemented!')
       }
     }
 
-    let valueExpression = (value: Expression) => {
+    let valueExpression = (value: xpr.Expression) => {
       for (const segment of sort.path) {
         value = expressionForValuePathSegment(value, segment)
       }
@@ -329,28 +333,22 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
       return value
     }
 
-    listExpression = buildExpression(e =>
-      e.memSort(listExpression, value => valueExpression(value))
-    )
+    listExpression = listExpression.memSort(value => valueExpression(value))
 
     if (sort.descending) {
-      listExpression = e.reverseList(listExpression)
+      listExpression = listExpression.reverseList()
     }
 
-    const recordList: PaginatedRecordList<MetarializedRecord> = await query(
-      this.props.config.karmaDataURL,
-      this.state.session.signature,
-      buildFunction(e => () => [
-        e.define('records', listExpression),
-        e.data(d =>
-          d.struct({
-            total: d.expr(e.length(e.scope('records'))),
-            limit: d.int64(limit),
-            offset: d.int64(offset),
-            records: d.expr(e.slice(e.scope('records'), offset, limit))
-          })
-        )
-      ])
+    const recordList: PaginatedRecordList<MetarializedRecord> = await this.state.session.do(
+      xpr.define('records', listExpression),
+      xpr.data(d =>
+        d.struct({
+          total: d.expr(xpr.scope('records').length()),
+          limit: d.int64(limit),
+          offset: d.int64(offset),
+          records: d.expr(xpr.scope('records').slice(offset, limit))
+        })
+      )
     )
 
     return {
@@ -361,17 +359,19 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
     }
   }
 
-  public getReferrers = async (id: Ref, limit: number, offset: number): Promise<ModelRecord[]> => {
+  public getReferrers = async (
+    id: RefValue,
+    limit: number,
+    offset: number
+  ): Promise<ModelRecord[]> => {
     if (!this.state.session) throw new Error('No session!')
 
-    let listExpression = buildExpression(e =>
-      e.mapList(e.allReferrers(e.data(d => d.ref(id))), (_, value) => e.metarialize(e.get(value)))
-    )
+    let listExpression = xpr
+      .allReferrers(xpr.data(d => d.ref(id)))
+      .mapList((_, value) => value.get().metarialize())
 
-    const records: MetarializedRecord[] = await query(
-      this.props.config.karmaDataURL,
-      this.state.session.signature,
-      buildFunction(e => () => e.slice(listExpression, offset, limit))
+    const records: MetarializedRecord[] = await this.state.session.do(
+      listExpression.slice(offset, limit)
     )
 
     return records.map(record =>
@@ -380,8 +380,8 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
   }
 
   public saveRecord = async (
-    model: Ref,
-    id: Ref | undefined,
+    model: RefValue,
+    id: RefValue | undefined,
     value: AnyFieldValue
   ): Promise<SaveRecordResult> => {
     if (!this.state.session) throw new Error('No session!')
@@ -404,18 +404,17 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
     const expressionValue = viewContext.field.transformValueToExpression(value)
 
     try {
-      const record = await query(
-        this.props.config.karmaDataURL,
-        this.state.session.signature,
-        buildFunction(e => () => [
-          e.define(
-            'recordID',
-            id
-              ? e.update(e.data(d => d.ref(id)), e.data(() => expressionValue))
-              : e.create(e.data(d => d.ref(model)), () => e.data(() => expressionValue))
-          ),
-          e.metarialize(e.get(e.scope('recordID')))
-        ])
+      const record: MetarializedRecord = await this.state.session.do(
+        xpr.define(
+          'recordID',
+          id
+            ? xpr.update(xpr.data(d => d.ref(id)), xpr.data(() => expressionValue))
+            : xpr.create(xpr.data(d => d.ref(model)), () => xpr.data(() => expressionValue))
+        ),
+        xpr
+          .scope('recordID')
+          .get()
+          .metarialize()
       )
 
       return {
@@ -427,7 +426,7 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
     }
   }
 
-  public deleteRecord = async (model: Ref, id: Ref, value: any): Promise<void> => {
+  public deleteRecord = async (model: RefValue, id: RefValue, value: any): Promise<void> => {
     if (!this.state.session) throw new Error('No session!')
 
     const viewContext = this.state.viewContextMap.get(model)
@@ -443,50 +442,40 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
       })
     }
 
-    await query(
-      this.props.config.karmaDataURL,
-      this.state.session.signature,
-      buildFunction(e => () => e.delete(e.data(d => d.ref(id))))
-    )
+    await this.state.session.do(xpr.delete_(xpr.data(d => d.ref(id))))
   }
 
-  public query = async (expression: Expression): Promise<any> => {
+  public query = async (expression: xpr.Expression): Promise<any> => {
     if (!this.state.session) throw new Error('No session!')
-
-    return query(
-      this.props.config.karmaDataURL,
-      this.state.session.signature,
-      buildFunction(() => () => expression)
-    )
+    return this.state.session.do(expression)
   }
 
-  private storeSession(session: EditorSession) {
+  private storeSession(session: UserSession) {
     storage.set(sessionStorageKey, session)
   }
 
-  private async getContextOptions(session: EditorSession): Promise<UserContext> {
+  private async getContextOptions(session: UserSession): Promise<UserContext> {
     const response = await axios.get(`${this.props.config.basePath}/api/context`, {
-      headers: {[SignatureHeader]: session.signature}
+      headers: {[utl.Header.Signature]: session.token}
     })
 
     return response.data
   }
 
-  private async getEditorData(session: EditorSession): Promise<EditorData> {
+  private async getEditorData(session: UserSession): Promise<EditorData> {
     const {editorContexts: userEditorContexts, viewContextOptions} = await this.getContextOptions(
       session
     )
 
     const {editorContexts, viewContexts} = await getContexts(
-      this.props.config.karmaDataURL,
-      session.signature,
+      session,
       this.props.config.fieldRegistry,
       userEditorContexts,
       viewContextOptions
     )
 
     const viewContextMap = new RefMap(
-      viewContexts.map(viewContext => [viewContext.model, viewContext] as [Ref, ViewContext])
+      viewContexts.map(viewContext => [viewContext.model, viewContext] as [RefValue, ViewContext])
     )
 
     const viewContextSlugMap = new Map(
@@ -511,12 +500,7 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
   private async refreshSession() {
     if (!this.state.session) return
 
-    const newSignature = await refreshSession(
-      this.props.config.karmaDataURL,
-      this.state.session.signature
-    )
-
-    const newSession = {username: this.state.session.username, signature: newSignature}
+    const newSession = await this.state.session.refresh()
 
     this.storeSession(newSession)
     this.setState({session: newSession})

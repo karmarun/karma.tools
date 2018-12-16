@@ -56,7 +56,7 @@ export function locationForURLPath(basePath: string, url: string): AppLocation {
     const signature = query.signature
 
     if (typeof username === 'string' && typeof signature === 'string') {
-      return LoginLocation(undefined, {username, signature})
+      return LoginLocation(undefined, {username, token: signature})
     } else {
       return LoginLocation()
     }

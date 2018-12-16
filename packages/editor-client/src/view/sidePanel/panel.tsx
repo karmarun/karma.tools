@@ -1,6 +1,6 @@
 import * as React from 'react'
 import Fuse from 'fuse.js'
-import {Ref} from '@karma.run/sdk'
+import {RefValue} from '@karma.run/editor-common'
 import {style} from 'typestyle'
 import memoizeOne from 'memoize-one'
 import {EditorContext, ReadonlyRefMap, refToString, uniqueFilter} from '@karma.run/editor-common'
@@ -39,7 +39,7 @@ export const GroupStateStorageKey = 'sidePanelGroupState_v1'
 export interface FuseSearchItem {
   name: string
   slug: string
-  model: Ref
+  model: RefValue
 }
 
 export interface SidePanelState {
@@ -96,7 +96,7 @@ export class SidePanel extends React.PureComponent<SidePanelProps, SidePanelStat
       this.props.sessionContext.viewContextMap
     )
 
-    const searchResults = fuseInstance.search<FuseSearchItem>(searchValue).slice(0, 5)
+    const searchResults = fuseInstance.search(searchValue).slice(0, 5)
     this.setState({searchValue, searchResults})
   }
 
@@ -117,7 +117,7 @@ export class SidePanel extends React.PureComponent<SidePanelProps, SidePanelStat
     (editorContext: EditorContext, viewContextMap: ReadonlyRefMap<ViewContext>) => {
       const groups = editorContext.modelGroups
       const modelIDs = groups
-        .map(group => group.models.map(model => refToString(model as Ref))) // TODO: Fix internal ModelGroup type
+        .map(group => group.models.map(model => refToString(model as RefValue))) // TODO: Fix internal ModelGroup type
         .reduce((acc, models) => acc.concat(models))
         .filter(uniqueFilter)
 
@@ -131,7 +131,7 @@ export class SidePanel extends React.PureComponent<SidePanelProps, SidePanelStat
         model: viewContext.model
       }))
 
-      return new Fuse(searchItems, {
+      return new Fuse<FuseSearchItem>(searchItems, {
         shouldSort: true,
         tokenize: true,
         matchAllTokens: false,
@@ -157,7 +157,7 @@ export class SidePanel extends React.PureComponent<SidePanelProps, SidePanelStat
 
         if (!viewContext) {
           const viewContext = sessionContext.viewContextMap.get(model)
-          const label = viewContext ? viewContext.name : refToString(model as Ref) // TODO: Fix internal ModelGroup type
+          const label = viewContext ? viewContext.name : refToString(model as RefValue) // TODO: Fix internal ModelGroup type
           return {id: `noPermission_${model}`, label}
         }
 

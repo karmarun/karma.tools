@@ -1,5 +1,7 @@
 import React from 'react'
-import {data as d} from '@karma.run/sdk'
+
+import * as xpr from '@karma.run/sdk/expression'
+import {DataContext as dat} from '@karma.run/sdk/expression'
 
 import {
   KeyPath,
@@ -175,7 +177,7 @@ export class TupleField implements Field<TupleFieldValue> {
     }
   }
 
-  public transformValueToExpression(value: TupleFieldValue) {
+  public transformValueToExpression(value: TupleFieldValue): xpr.DataConstructor {
     const tupleValues = this.fields.reduce(
       (acc, [key, field]) => {
         acc[key] = field.transformValueToExpression(value.value[key])
@@ -184,7 +186,7 @@ export class TupleField implements Field<TupleFieldValue> {
       [] as any[]
     )
 
-    return d.tuple(...tupleValues)
+    return dat.tuple(...tupleValues)
   }
 
   public fieldOptions(): TupleFieldOptions & TypedFieldOptions {

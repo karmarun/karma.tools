@@ -1,5 +1,5 @@
 import React from 'react'
-import {Ref} from '@karma.run/sdk'
+import {RefValue} from '@karma.run/editor-common'
 
 import {
   ViewContextPanelHeader,
@@ -21,15 +21,15 @@ import {MixedRecordList} from '../recordListPanel/panel'
 import {ViewContext} from '../../api/viewContext'
 
 export interface RecordDeletePanelProps {
-  model: Ref
-  recordID: Ref
+  model: RefValue
+  recordID: RefValue
   sessionContext: SessionContext
   localeContext: LocaleContext
   disabled: boolean
-  onBack: (mode: Ref) => void
-  onPostDelete: (model: Ref, id: Ref) => void
-  onEditRecord: (model: Ref, id?: Ref) => Promise<ModelRecord | undefined>
-  onDeleteRecord: (model: Ref, id: Ref) => Promise<void>
+  onBack: (mode: RefValue) => void
+  onPostDelete: (model: RefValue, id: RefValue) => void
+  onEditRecord: (model: RefValue, id?: RefValue) => Promise<ModelRecord | undefined>
+  onDeleteRecord: (model: RefValue, id: RefValue) => Promise<void>
 }
 
 export interface RecordDeletePanelState {

@@ -1,4 +1,6 @@
-import {expression as e, data as d} from '@karma.run/sdk'
+// import {expression as e, data as d} from '@karma.run/sdk'
+import * as xpr from '@karma.run/sdk/expression'
+import {DataContext as dat} from '@karma.run/sdk/expression'
 
 import {
   Model,
@@ -40,7 +42,7 @@ export class CurrentUserField implements Field<CurrentUserFieldValue> {
   }
 
   public transformValueToExpression() {
-    return d.expr(e.currentUser())
+    return dat.expr(xpr.currentUser())
   }
 
   public fieldOptions(): TypedFieldOptions {

@@ -1,6 +1,5 @@
-import {Ref} from '@karma.run/sdk'
-
 import {
+  RefValue,
   Model,
   KeyPath,
   SortConfiguration,
@@ -19,7 +18,7 @@ import {FieldRegistry, AnyField} from './field'
 import {ErrorField} from '../fields/error'
 
 export interface ViewContextConstructorOptions {
-  readonly model: Ref
+  readonly model: RefValue
   readonly name: string
   readonly description?: string
   readonly slug: string
@@ -29,7 +28,7 @@ export interface ViewContextConstructorOptions {
 }
 
 export class ViewContext {
-  public readonly model: Ref
+  public readonly model: RefValue
   public readonly name: string
   public readonly description?: string
   public readonly slug: string
@@ -83,7 +82,7 @@ export class ViewContext {
   }
 
   public static inferFromModel(
-    id: Ref,
+    id: RefValue,
     model: Model,
     registry: FieldRegistry,
     tag?: string,

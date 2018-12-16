@@ -1,4 +1,5 @@
-import {expression as e} from '@karma.run/sdk'
+import * as xpr from '@karma.run/sdk/expression'
+import {DataContext as dat} from '@karma.run/sdk/expression'
 
 import {
   Model,
@@ -43,8 +44,8 @@ export class NullField implements Field<NullFieldValue> {
     }
   }
 
-  public transformValueToExpression() {
-    return e.null()
+  public transformValueToExpression(): xpr.DataConstructor {
+    return dat.null()
   }
 
   public fieldOptions(): TypedFieldOptions {

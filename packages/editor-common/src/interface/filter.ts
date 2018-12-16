@@ -1,4 +1,4 @@
-import {Ref} from '@karma.run/sdk'
+import {RefValue} from '../util/ref'
 import {StorageType} from '../api/field'
 
 export enum ConditionType {
@@ -148,7 +148,7 @@ export interface NumberCondition extends BaseCondition {
 
 export interface RefStringCondition extends BaseCondition {
   type: ConditionType.RefEqual
-  value: Ref
+  value: RefValue
 }
 
 export interface BooleanCondition extends BaseCondition {
@@ -236,12 +236,12 @@ export function NumberConditionConfiguration(
 
 export interface RefConditionConfiguration extends BaseConditionConfiguration {
   type: ConditionType.RefEqual
-  model: Ref
+  model: RefValue
 }
 
 export function RefConditionConfiguration(
   type: RefConditionConfiguration['type'],
-  model: Ref,
+  model: RefValue,
   path: ValuePath = []
 ): RefConditionConfiguration {
   return {type, model, path}

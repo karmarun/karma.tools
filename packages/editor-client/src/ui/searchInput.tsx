@@ -1,8 +1,7 @@
 import * as React from 'react'
 import {style} from 'typestyle'
 
-import {Ref} from '@karma.run/sdk'
-import {refToString} from '@karma.run/editor-common'
+import {RefValue, refToString} from '@karma.run/editor-common'
 
 import {TextInputType, TextInput} from './input'
 import {Color, DefaultBorderRadiusPx, Spacing} from './style'
@@ -37,7 +36,7 @@ export const SearchInputStyle = style({
 })
 
 export interface SearchInputResultItem {
-  id: Ref
+  id: RefValue
   title: string
   href: string
 }

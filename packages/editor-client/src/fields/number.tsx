@@ -1,5 +1,7 @@
 import React from 'react'
-import {expression as e} from '@karma.run/sdk'
+
+import * as xpr from '@karma.run/sdk/expression'
+import {DataContext as d} from '@karma.run/sdk/expression'
 
 import {
   Model,
@@ -146,38 +148,38 @@ export class NumberField implements Field<NumberFieldValue> {
     return {value: value.toString(), isValid: true, hasChanges: false}
   }
 
-  public transformValueToExpression(value: NumberFieldValue) {
+  public transformValueToExpression(value: NumberFieldValue): xpr.DataConstructor {
     const numberValue = Number(value.value)
 
     if (Number.isNaN(numberValue)) throw new Error('Value is NaN.')
 
     switch (this.storageType) {
       case StorageType.Float:
-        return e.float(numberValue)
+        return d.float(numberValue)
 
       case StorageType.Int8:
-        return e.int8(numberValue)
+        return d.int8(numberValue)
 
       case StorageType.Int16:
-        return e.int16(numberValue)
+        return d.int16(numberValue)
 
       case StorageType.Int32:
-        return e.int32(numberValue)
+        return d.int32(numberValue)
 
       case StorageType.Int64:
-        return e.int64(numberValue)
+        return d.int64(numberValue)
 
       case StorageType.UInt8:
-        return e.uint8(numberValue)
+        return d.uint8(numberValue)
 
       case StorageType.UInt16:
-        return e.uint16(numberValue)
+        return d.uint16(numberValue)
 
       case StorageType.UInt32:
-        return e.uint32(numberValue)
-
+        return d.uint32(numberValue)
+        d
       case StorageType.UInt64:
-        return e.uint64(numberValue)
+        return d.uint64(numberValue)
     }
   }
 

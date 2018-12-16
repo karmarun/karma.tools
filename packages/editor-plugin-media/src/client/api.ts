@@ -1,5 +1,5 @@
 import axios from 'axios'
-import {SignatureHeader} from '@karma.run/sdk'
+import * as utl from '@karma.run/sdk/utility'
 import {UploadResponse, CommitResponse, CopyResponse, DeleteResponse} from '../common'
 
 const httpClient = axios.create()
@@ -16,7 +16,7 @@ export async function uploadMedia(
   data.append('file', file)
 
   const response = await httpClient.post(`${baseURL}/upload`, data, {
-    headers: {[SignatureHeader]: signature},
+    headers: {[utl.Header.Signature]: signature},
     onUploadProgress: (e: ProgressEvent) => {
       if (e.lengthComputable && onProgress) {
         onProgress(e.loaded / e.total)
@@ -37,7 +37,7 @@ export async function commitMedia(
   const response = await httpClient.post(
     `${baseURL}/commit`,
     {id, overrideID},
-    {headers: {[SignatureHeader]: signature}}
+    {headers: {[utl.Header.Signature]: signature}}
   )
   return response.data
 }
@@ -50,7 +50,7 @@ export async function copyMedia(
   const response = await httpClient.post(
     `${baseURL}/copy`,
     {id},
-    {headers: {[SignatureHeader]: signature}}
+    {headers: {[utl.Header.Signature]: signature}}
   )
   return response.data
 }
@@ -61,7 +61,7 @@ export async function deleteMedia(
   signature: string
 ): Promise<DeleteResponse> {
   const response = await httpClient.delete(`${baseURL}/${id}`, {
-    headers: {[SignatureHeader]: signature}
+    headers: {[utl.Header.Signature]: signature}
   })
   return response.data
 }

@@ -1,7 +1,7 @@
 import * as React from 'react'
 
 import {style} from 'typestyle'
-import {KarmaError, KarmaErrorType} from '@karma.run/sdk'
+import {KarmaAPIError, PermissionDeniedError} from '@karma.run/sdk'
 
 import {
   TextInputType,
@@ -149,9 +149,9 @@ export class Login extends React.Component<LoginFormProps, LoginFormState> {
       await this.props.sessionContext.authenticate(this.state.username, this.state.password)
     } catch (err) {
       console.error(err)
-      const karmaError: KarmaError = err
+      const karmaError: KarmaAPIError = err
 
-      if (karmaError.type === KarmaErrorType.PermissionDeniedError) {
+      if (karmaError instanceof PermissionDeniedError) {
         this.setState({
           isSubmitting: false,
           error: 'Invalid login'

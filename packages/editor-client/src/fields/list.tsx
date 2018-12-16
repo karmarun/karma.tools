@@ -1,7 +1,8 @@
 import React from 'react'
 import shortid from 'shortid'
 import {style} from 'typestyle'
-import {data as d, DataExpression} from '@karma.run/sdk'
+import * as xpr from '@karma.run/sdk/expression'
+import {DataContext as dat} from '@karma.run/sdk/expression'
 
 import {
   KeyPath,
@@ -362,8 +363,8 @@ export class ListField implements Field<ListFieldValue> {
     }
   }
 
-  public transformValueToExpression(value: ListFieldValue): DataExpression {
-    return d.list(...value.value.map(({value}) => this.field.transformValueToExpression(value)))
+  public transformValueToExpression(value: ListFieldValue): xpr.DataConstructor {
+    return dat.list(value.value.map(({value}) => this.field.transformValueToExpression(value)))
   }
 
   public fieldOptions(): ListFieldOptions & TypedFieldOptions {

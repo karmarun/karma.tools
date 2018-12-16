@@ -1,5 +1,6 @@
 import React from 'react'
-import {expression as e} from '@karma.run/sdk'
+import {DataContext as dat} from '@karma.run/sdk/expression'
+
 import {
   Model,
   SortConfiguration,
@@ -92,7 +93,7 @@ export class ErrorField implements Field<ErrorFieldValue> {
   }
 
   public transformValueToExpression() {
-    return e.null()
+    return dat.null()
   }
 
   public traverse() {
@@ -105,10 +106,6 @@ export class ErrorField implements Field<ErrorFieldValue> {
 
   public valuesForKeyPath() {
     return []
-  }
-
-  static inferFromModel() {
-    return null
   }
 
   public static type = 'error'

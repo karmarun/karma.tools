@@ -1,7 +1,12 @@
 import React from 'react'
 import {style} from 'typestyle'
-import {data as d, Ref, isRef} from '@karma.run/sdk'
+
+import * as xpr from '@karma.run/sdk/expression'
+import {DataContext as dat} from '@karma.run/sdk/expression'
+
 import {
+  RefValue,
+  isRef,
   Model,
   SortConfiguration,
   FilterConfiguration,
@@ -95,7 +100,7 @@ export class RefFieldEditComponent extends React.PureComponent<
     }
   }
 
-  private async loadRecord(id: Ref) {
+  private async loadRecord(id: RefValue) {
     this.setState({
       isLoadingRecord: true
     })
@@ -274,15 +279,15 @@ export interface RefFieldOptions extends FieldOptions {
 }
 
 export interface RefFieldConstructorOptions extends RefFieldOptions {
-  readonly model: Ref
+  readonly model: RefValue
 }
 
-export type RefFieldValue = FieldValue<Ref | undefined, string>
+export type RefFieldValue = FieldValue<RefValue | undefined, string>
 
 export class RefField implements Field<RefFieldValue> {
   public readonly label?: string
   public readonly description?: string
-  public readonly model: Ref
+  public readonly model: RefValue
 
   public readonly defaultValue: RefFieldValue = {
     value: undefined,
@@ -337,9 +342,9 @@ export class RefField implements Field<RefFieldValue> {
     }
   }
 
-  public transformValueToExpression(value: RefFieldValue) {
+  public transformValueToExpression(value: RefFieldValue): xpr.DataConstructor {
     if (!value.value) throw new Error('Invalid ref.')
-    return d.ref(value.value)
+    return dat.ref(value.value)
   }
 
   public isValidValue(value: RefFieldValue) {

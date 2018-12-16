@@ -1,6 +1,8 @@
 import React from 'react'
 import shortid from 'shortid'
-import {data as d} from '@karma.run/sdk'
+
+import * as xpr from '@karma.run/sdk/expression'
+import {DataContext as d} from '@karma.run/sdk/expression'
 
 import {
   Model,
@@ -138,7 +140,7 @@ export class StringField implements Field<StringFieldValue> {
     return this.validate(value)
   }
 
-  public transformValueToExpression(value: StringFieldValue) {
+  public transformValueToExpression(value: StringFieldValue): xpr.DataConstructor {
     return d.string(value.value)
   }
 

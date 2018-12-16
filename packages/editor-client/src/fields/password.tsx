@@ -1,5 +1,7 @@
 import React from 'react'
-import {expression as e, DataExpression} from '@karma.run/sdk'
+
+import * as xpr from '@karma.run/sdk/expression'
+import {DataContext as dat} from '@karma.run/sdk/expression'
 
 import {
   Model,
@@ -157,9 +159,9 @@ export class PasswordField implements Field<PasswordFieldValue> {
     }
   }
 
-  public transformValueToExpression(value: PasswordFieldValue): DataExpression {
-    if (value.value.hash == undefined) return e.null()
-    return e.string(value.value.hash)
+  public transformValueToExpression(value: PasswordFieldValue): xpr.DataConstructor {
+    if (value.value.hash == undefined) return dat.null()
+    return dat.string(value.value.hash)
   }
 
   public async onSave(

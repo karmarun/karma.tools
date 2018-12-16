@@ -9,9 +9,12 @@ export function createContextHOC<K extends string, C, CP extends {[key in K]: C}
   displayName?: string
 ) {
   function hoc<P extends CP>(Component: ReactComponentType<P>) {
+    // TODO: Somehow this errors now
+    const AnyComponent = Component as any
+
     const consumer: React.StatelessComponent<Omit<P, K>> = props => (
       <Context.Consumer>
-        {context => <Component {...props} {...{[propName]: context}} />}
+        {context => <AnyComponent {...props} {...{[propName]: context}} />}
       </Context.Consumer>
     )
 

@@ -1,4 +1,4 @@
-import {Ref} from '@karma.run/sdk'
+import {RefValue} from '../util/ref'
 import {KeyPath, TypedFieldOptions} from './field'
 
 export interface ViewContextOptions {
@@ -11,5 +11,5 @@ export interface ViewContextOptions {
 }
 
 export interface ViewContextOptionsWithModel extends ViewContextOptions {
-  readonly model: string | Ref
+  readonly model: string | RefValue
 }

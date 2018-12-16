@@ -1,6 +1,8 @@
 import React from 'react'
 import {style} from 'typestyle'
-import {data as d} from '@karma.run/sdk'
+
+import * as xpr from '@karma.run/sdk/expression'
+import {DataContext as dat} from '@karma.run/sdk/expression'
 
 import {
   convertKeyToLabel,
@@ -291,8 +293,8 @@ export class StructField implements Field<StructFieldValue> {
     }
   }
 
-  public transformValueToExpression(value: StructFieldValue) {
-    return d.struct(
+  public transformValueToExpression(value: StructFieldValue): xpr.DataConstructor {
+    return dat.struct(
       reduceToMap(this.fields, ([key, field]) => [
         key,
         field.transformValueToExpression(value.value[key])

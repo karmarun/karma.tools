@@ -10,8 +10,17 @@ import ReactDOMServer from 'react-dom/server'
 import path from 'path'
 import express from 'express'
 
-import {SignatureHeader, Tag, query, buildFunction, getTags, Ref} from '@karma.run/sdk'
-import {EditorContext, ViewContextOptionsWithModel} from '@karma.run/editor-common'
+// import {SignatureHeader, Tag, query, buildFunction, getTags, Ref} from '@karma.run/sdk'
+import {Remote, UserSession} from '@karma.run/sdk'
+import * as xpr from '@karma.run/sdk/expression'
+import * as utl from '@karma.run/sdk/utility'
+
+import {
+  EditorContext,
+  ViewContextOptionsWithModel,
+  TagRecord,
+  RefValue
+} from '@karma.run/editor-common'
 
 import {ServerPlugin, PluginContext} from './plugin'
 export * from './plugin'
@@ -20,12 +29,12 @@ const cacheOptions = {maxAge: '1d'}
 
 export type EditorContextsForRolesFn = (
   roles: string[],
-  tagMap: ReadonlyMap<string, Ref>
+  tagMap: ReadonlyMap<string, RefValue>
 ) => EditorContext[]
 
 export type ViewContextsForRolesFn = (
   roles: string[],
-  tagMap: ReadonlyMap<string, Ref>
+  tagMap: ReadonlyMap<string, RefValue>
 ) => ViewContextOptionsWithModel[]
 
 export interface MiddlewareOptions {
@@ -45,23 +54,20 @@ export interface MiddlewareOptions {
 }
 
 export function getTagsAndRoles(
-  karmaDataURL: string,
-  signature: string
-): Promise<{tags: Tag[]; roles: string[]}> {
-  return query(
-    karmaDataURL,
-    signature,
-    buildFunction(e => () =>
-      e.data(d =>
-        d.struct({
-          tags: d.expr(() => getTags()),
-          roles: d.expr(e =>
-            e.mapList(e.field('roles', e.get(e.currentUser())), (_, value) =>
-              e.field('name', e.get(value))
-            )
-          )
-        })
-      )
+  session: UserSession
+): Promise<{tags: TagRecord[]; roles: string[]}> {
+  return session.do(
+    xpr.data(d =>
+      d.struct({
+        tags: d.expr(xpr.tag(utl.Tag.Tag).all()),
+        roles: d.expr(
+          xpr
+            .currentUser()
+            .get()
+            .field('roles')
+            .mapList((_, value) => xpr.get(value).field('name'))
+        )
+      })
     )
   )
 }
@@ -76,6 +82,8 @@ export function editorMiddleware(opts: MiddlewareOptions): express.Router {
 
   const pluginHeaderElements: React.ReactNode[] = []
   const pluginIdentifiers: string[] = []
+
+  const remote = new Remote(opts.karmaDataURL)
 
   if (opts.plugins && opts.plugins.length) {
     for (const plugin of opts.plugins) {
@@ -135,12 +143,14 @@ export function editorMiddleware(opts: MiddlewareOptions): express.Router {
   })
 
   router.get(`${basePath}/api/context`, async (req, res, next) => {
-    const signature = req.header(SignatureHeader)
+    const signature = req.header(utl.Header.Signature)
     if (!signature) return next('No signature header found.')
 
+    const session = new UserSession(remote, '', signature)
+
     try {
-      const {tags, roles} = await getTagsAndRoles(opts.karmaDataURL, signature)
-      const tagMap = new Map(tags.map(tag => [tag.tag, tag.model] as [string, Ref]))
+      const {tags, roles} = await getTagsAndRoles(session)
+      const tagMap = new Map(tags.map(tag => [tag.tag, tag.model] as [string, RefValue]))
 
       return res.status(200).send({
         editorContexts: opts.editorContextsForRoles

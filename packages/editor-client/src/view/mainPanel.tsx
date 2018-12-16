@@ -1,6 +1,6 @@
 import React from 'react'
 import shortid from 'shortid'
-import {Ref} from '@karma.run/sdk'
+import {RefValue} from '@karma.run/editor-common'
 import {Deferred, lastItemThrow} from '@karma.run/editor-common'
 
 import {RootRecordListPanelContainer, SelectRecordListPanelContainer} from './recordListPanel'
@@ -49,11 +49,11 @@ export function NotFoundContext(id: string = shortid.generate()): NotFoundContex
 
 export interface RootListPanelContext extends BasePanelContext {
   type: PanelType.RootList
-  model: Ref
+  model: RefValue
 }
 
 export function RootListPanelContext(
-  model: Ref,
+  model: RefValue,
   id: string = shortid.generate()
 ): RootListPanelContext {
   return {type: PanelType.RootList, id, model}
@@ -61,12 +61,12 @@ export function RootListPanelContext(
 
 export interface SelectListPanelContext extends BasePanelContext {
   type: PanelType.SelectList
-  model: Ref
+  model: RefValue
   result: Deferred<ModelRecord | undefined>
 }
 
 export function SelectListPanelContext(
-  model: Ref,
+  model: RefValue,
   id: string = shortid.generate()
 ): SelectListPanelContext {
   return {type: PanelType.SelectList, id, model, result: new Deferred()}
@@ -74,14 +74,14 @@ export function SelectListPanelContext(
 
 export interface EditPanelContext extends BasePanelContext {
   type: PanelType.Edit
-  model: Ref
-  recordID?: Ref
+  model: RefValue
+  recordID?: RefValue
   result: Deferred<ModelRecord | undefined>
 }
 
 export function EditPanelContext(
-  model: Ref,
-  recordID?: Ref,
+  model: RefValue,
+  recordID?: RefValue,
   id: string = shortid.generate()
 ): EditPanelContext {
   return {
@@ -95,14 +95,14 @@ export function EditPanelContext(
 
 export interface DeletePanelContext extends BasePanelContext {
   type: PanelType.Delete
-  model: Ref
-  recordID: Ref
+  model: RefValue
+  recordID: RefValue
   result: Deferred<void>
 }
 
 export function DeletePanelContext(
-  model: Ref,
-  recordID: Ref,
+  model: RefValue,
+  recordID: RefValue,
   id: string = shortid.generate()
 ): DeletePanelContext {
   return {
@@ -226,7 +226,7 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
     }
   }
 
-  private handleEditRecord = async (model: Ref, id?: Ref) => {
+  private handleEditRecord = async (model: RefValue, id?: RefValue) => {
     if (this.state.panelContexts.length === 1) {
       const viewContext = this.props.sessionContext.viewContextMap.get(model)
       this.ignoreNextLocationUpdate = true
@@ -244,7 +244,7 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
     return await context.result
   }
 
-  private handleBack = (model: Ref, record?: ModelRecord) => {
+  private handleBack = (model: RefValue, record?: ModelRecord) => {
     if (this.state.panelContexts.length === 2) {
       this.ignoreNextLocationUpdate = true
 
@@ -291,7 +291,7 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
     }
   }
 
-  private handleDeleteRecord = async (model: Ref, id: Ref) => {
+  private handleDeleteRecord = async (model: RefValue, id: RefValue) => {
     if (this.state.panelContexts.length === 1) {
       this.ignoreNextLocationUpdate = true
 
@@ -308,14 +308,14 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
     return await context.result
   }
 
-  private handleSelectRecord = async (model: Ref) => {
+  private handleSelectRecord = async (model: RefValue) => {
     const context = SelectListPanelContext(model)
     this.pushPanelContext(context)
 
     return await context.result
   }
 
-  private handlePostSave = async (model: Ref, id: Ref) => {
+  private handlePostSave = async (model: RefValue, id: RefValue) => {
     if (this.state.panelContexts.length === 2) {
       this.ignoreNextLocationUpdate = true
       const viewContext = this.props.sessionContext.viewContextMap.get(model)
@@ -326,7 +326,7 @@ export class MainPanel extends React.Component<MainPanelProps, MainPanelState> {
     }
   }
 
-  private handlePostDelete = async (model: Ref, _id: Ref) => {
+  private handlePostDelete = async (model: RefValue, _id: RefValue) => {
     if (this.state.panelContexts.length === 2) {
       this.ignoreNextLocationUpdate = true
 

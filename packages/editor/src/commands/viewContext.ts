@@ -1,4 +1,4 @@
-import {authenticate} from '@karma.run/sdk'
+import {Remote} from '@karma.run/sdk'
 import {ClientConfiguration} from '../interface'
 import {loadServerConfig, findConfigsIfNeededAndSetCWD} from './helper'
 import {AnyFieldConstructor} from '@karma.run/editor-client'
@@ -47,8 +47,9 @@ export default async function viewContextCommand(opts: ViewContextCommandOptions
   const fieldRegistry = mergeFieldRegistries(createFieldRegistry(...fields), defaultFieldRegistry)
 
   try {
-    const signature = await authenticate(karmaDataURL, 'admin', opts.instanceSecret)
-    const {viewContexts} = await getContexts(karmaDataURL, signature, fieldRegistry)
+    const remote = new Remote(karmaDataURL)
+    const session = await remote.adminLogin('admin', opts.instanceSecret) // authenticate(karmaDataURL, 'admin', opts.instanceSecret)
+    const {viewContexts} = await getContexts(session, fieldRegistry)
 
     process.stdout.write(
       JSON.stringify(viewContexts.map(viewContext => viewContext.serialize()), undefined, 2),
