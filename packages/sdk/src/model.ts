@@ -7,8 +7,8 @@ export abstract class Model {
   abstract toValue(recursions?: {[key: string]: Recursion}): val.Value
   abstract transform(f: (model: Model) => Model): Model
 
-  toDataConstructor(mapMarkers?: {[key: string]: xpr.Expression}): xpr.DataConstructor {
-    return this.toValue().toDataConstructor(mapMarkers)
+  toDataConstructor(bindExpression?: {[key: string]: xpr.Expression}): xpr.DataConstructor {
+    return this.toValue().toDataConstructor(bindExpression)
   }
 }
 
@@ -590,7 +590,7 @@ export class DynamicgRef extends Model {
     return val.ref(json[0], json[1])
   }
   toValue(_recursions: {[key: string]: Recursion} = {}): val.Value {
-    return val.union('ref', new val.ExprMarker(this.label))
+    return val.union('ref', new val.BoundExpr(this.label))
   }
   transform(f: (model: Model) => Model): Model {
     return f(this)

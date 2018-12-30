@@ -65,8 +65,8 @@ export class SlateInlineElementNodeComponent extends React.Component<
           node.key,
           Slate.Inline.create({
             type: node.type,
-            data: newFieldValue,
-            isVoid: true
+            data: newFieldValue
+            // isVoid: true
           })
         )
       )
@@ -91,7 +91,11 @@ export class SlateInlineElementControlComponent extends React.Component<
     if (control.dataKey && !newFieldValue) return
 
     this.props.onValueChange(change => {
-      return change.insertInline({type: control.type, data: newFieldValue, isVoid: true})
+      return change.insertInline({
+        type: control.type,
+        data: newFieldValue
+        // isVoid: true // TODO
+      })
     })
   }
 

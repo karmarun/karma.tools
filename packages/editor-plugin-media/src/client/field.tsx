@@ -36,7 +36,7 @@ import {
   FieldValue
 } from '@karma.run/editor-client'
 
-import {data as d, DataExpression} from '@karma.run/sdk'
+import {DataContext as dat, DataConstructor} from '@karma.run/sdk/expression'
 import {UploadResponse, MediaType} from '../common/interface'
 import {Media, thumbnailURL, unserializeMedia} from '../common/editor'
 import {name} from '../common/version'
@@ -275,53 +275,53 @@ export class MediaField implements Field<MediaFieldValue> {
     }
   }
 
-  private mediaTypeExpressionForMedia(media: Media): DataExpression {
+  private mediaTypeExpressionForMedia(media: Media): DataConstructor {
     switch (media.mediaType) {
       case MediaType.Image:
-        return d.union(
+        return dat.union(
           media.mediaType,
-          d.struct({
-            width: d.int32(media.width),
-            height: d.int32(media.height)
+          dat.struct({
+            width: dat.int32(media.width),
+            height: dat.int32(media.height)
           })
         )
 
       default:
-        return d.union(media.mediaType, d.struct())
+        return dat.union(media.mediaType, dat.struct())
     }
   }
 
-  private backendExpressionForMedia(media: Media): DataExpression | undefined {
+  private backendExpressionForMedia(media: Media): DataConstructor | undefined {
     const backendKey = media.backend && firstKeyOptional(media.backend)
 
     // TODO: Find pluggable way to expressionify backend specific data
     switch (backendKey) {
       case 'cloudinary': {
         const value: CloudinaryResponse = media.backend[backendKey]
-        return d.struct({
-          public_id: d.string(value.public_id),
-          version: d.int32(value.version),
-          signature: d.string(value.signature),
-          width: value.width ? d.int32(value.width) : d.null(),
-          height: value.height ? d.int32(value.height) : d.null(),
-          format: d.string(value.format),
-          resource_type: d.string(value.resource_type),
-          created_at: d.string(value.created_at),
-          tags: d.list(...value.tags.map(tag => d.string(tag))),
-          bytes: d.int32(value.bytes),
-          type: d.string(value.type),
-          etag: d.string(value.etag),
-          placeholder: d.bool(value.placeholder),
-          url: d.string(value.url),
-          secure_url: d.string(value.secure_url),
-          access_mode: d.string(value.access_mode),
-          original_filename: d.string(value.original_filename),
-          pages: value.pages ? d.int32(value.pages) : d.null(),
-          frame_rate: value.frame_rate ? d.int32(value.frame_rate) : d.null(),
-          bit_rate: value.frame_rate ? d.int32(value.frame_rate) : d.null(),
-          duration: value.duration ? d.float(value.duration) : d.null(),
-          is_audio: value.is_audio ? d.bool(value.is_audio) : d.null(),
-          rotation: value.rotation ? d.int32(value.rotation) : d.null()
+        return dat.struct({
+          public_id: dat.string(value.public_id),
+          version: dat.int32(value.version),
+          signature: dat.string(value.signature),
+          width: value.width ? dat.int32(value.width) : dat.null(),
+          height: value.height ? dat.int32(value.height) : dat.null(),
+          format: dat.string(value.format),
+          resource_type: dat.string(value.resource_type),
+          created_at: dat.string(value.created_at),
+          tags: dat.list(...value.tags.map(tag => dat.string(tag))),
+          bytes: dat.int32(value.bytes),
+          type: dat.string(value.type),
+          etag: dat.string(value.etag),
+          placeholder: dat.bool(value.placeholder),
+          url: dat.string(value.url),
+          secure_url: dat.string(value.secure_url),
+          access_mode: dat.string(value.access_mode),
+          original_filename: dat.string(value.original_filename),
+          pages: value.pages ? dat.int32(value.pages) : dat.null(),
+          frame_rate: value.frame_rate ? dat.int32(value.frame_rate) : dat.null(),
+          bit_rate: value.frame_rate ? dat.int32(value.frame_rate) : dat.null(),
+          duration: value.duration ? dat.float(value.duration) : dat.null(),
+          is_audio: value.is_audio ? dat.bool(value.is_audio) : dat.null(),
+          rotation: value.rotation ? dat.int32(value.rotation) : dat.null()
         })
       }
 
@@ -330,25 +330,25 @@ export class MediaField implements Field<MediaFieldValue> {
     }
   }
 
-  public transformValueToExpression(value: MediaFieldValue): DataExpression {
+  public transformValueToExpression(value: MediaFieldValue): DataConstructor {
     const media = value.value.media
-    if (!media) return d.null()
+    if (!media) return dat.null()
 
     const backendExpression = this.backendExpressionForMedia(media)
 
-    return d.struct({
+    return dat.struct({
       mediaType: this.mediaTypeExpressionForMedia(media),
-      id: d.string(media.id),
-      url: d.string(media.url),
-      mimeType: d.string(media.mimeType),
-      filename: d.string(media.filename),
-      fileSize: d.int32(media.fileSize),
-      extension: media.extension ? d.string(media.extension) : d.null(),
+      id: dat.string(media.id),
+      url: dat.string(media.url),
+      mimeType: dat.string(media.mimeType),
+      filename: dat.string(media.filename),
+      fileSize: dat.int32(media.fileSize),
+      extension: media.extension ? dat.string(media.extension) : dat.null(),
       focusPoint: media.focusPoint
-        ? d.struct({x: d.float(media.focusPoint.x), y: d.float(media.focusPoint.y)})
-        : d.null(),
-      focusScale: media.focusScale ? d.float(media.focusScale) : d.null(),
-      backend: backendExpression ? backendExpression : d.null()
+        ? dat.struct({x: dat.float(media.focusPoint.x), y: dat.float(media.focusPoint.y)})
+        : dat.null(),
+      focusScale: media.focusScale ? dat.float(media.focusScale) : dat.null(),
+      backend: backendExpression ? backendExpression : dat.null()
     })
   }
 
@@ -375,7 +375,7 @@ export class MediaField implements Field<MediaFieldValue> {
   public async onSave(value: MediaFieldValue, context: SaveContext): Promise<MediaFieldValue> {
     const {media, uploadedMedia} = value.value
     const apiPath = mediaAPIPath(context.config.basePath)
-    const signature = context.sessionContext.session!.signature
+    const signature = context.sessionContext.session!.token
     const isNew = context.id == undefined
 
     if (uploadedMedia) {
@@ -398,7 +398,7 @@ export class MediaField implements Field<MediaFieldValue> {
   public async onDelete(value: MediaFieldValue, context: DeleteContext): Promise<MediaFieldValue> {
     const {media} = value.value
     const apiPath = mediaAPIPath(context.config.basePath)
-    const signature = context.sessionContext.session!.signature
+    const signature = context.sessionContext.session!.token
 
     if (media) await deleteMedia(apiPath, media.id, signature)
 

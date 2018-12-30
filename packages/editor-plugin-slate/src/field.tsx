@@ -6,7 +6,7 @@ import memoizeOne from 'memoize-one'
 import {Editor as SlateEditor, RenderMarkProps, RenderNodeProps} from 'slate-react'
 import plainTextSerializer from 'slate-plain-serializer'
 
-import {data as d, DataExpression} from '@karma.run/sdk'
+import {DataContext as dat, DataConstructor} from '@karma.run/sdk/expression'
 
 import {
   Model,
@@ -54,7 +54,7 @@ export class SlateFieldEditComponent extends React.PureComponent<
 
   public editorRef = React.createRef<SlateEditor>()
 
-  private handleChange = (change: Slate.Change) => {
+  private handleChange = (change: {value: Slate.Value}) => {
     this.props.onValueChange(
       {
         value: change.value,
@@ -81,11 +81,8 @@ export class SlateFieldEditComponent extends React.PureComponent<
     this.setState({hasFocus: false})
   }
 
-  private handleControlValueChange = (changeFn: (change: Slate.Change) => Slate.Change) => {
-    this.props.onValueChange(
-      {value: changeFn(this.props.value.value.change()).value, isValid: true, hasChanges: true},
-      this.props.changeKey
-    )
+  private handleControlValueChange = (changeFn: (change: Slate.Editor) => Slate.Editor) => {
+    changeFn(this.editorRef.current!.controller)
   }
 
   private handleControlEditData = async (dataKey: string, data?: SlateData) => {
@@ -274,11 +271,6 @@ export interface SlateFieldConstructorOptions {
 
 export type SlateFieldValue = FieldValue<Slate.Value, string>
 
-// Slate typings don't include leave and mark JSON.
-export type SlateMarkJSON = {object: 'mark'; type: string}
-export type SlateLeaveJSON = {object: 'leaf'; text: string; marks?: SlateMarkJSON[]}
-export type SlateJSON = Slate.NodeJSON | SlateLeaveJSON | SlateMarkJSON
-
 export const blankDefaultValue = Slate.Value.create({
   document: Slate.Document.create([Slate.Block.create('')])
 })
@@ -350,7 +342,7 @@ export class SlateField implements Field<SlateFieldValue> {
   }
 
   public transformRawValue(value: any): SlateFieldValue {
-    const recurse = (node: SlateJSON): any => {
+    const recurse = (node: Slate.NodeJSON): any => {
       switch (node.object) {
         case 'document':
           return {
@@ -358,8 +350,7 @@ export class SlateField implements Field<SlateFieldValue> {
             nodes: node.nodes ? node.nodes.map(node => recurse(node)) : undefined
           }
 
-        case 'inline':
-        case 'block':
+        case 'inline': {
           const dataKey = node.data ? firstKeyOptional(node.data) : undefined
           const dataField = dataKey ? this.dataFields[dataKey] : undefined
           const data = dataField ? dataField.transformRawValue(node.data![dataKey!]) : undefined
@@ -369,6 +360,19 @@ export class SlateField implements Field<SlateFieldValue> {
             data: data ? {[dataKey!]: data} : node.data,
             nodes: node.nodes ? node.nodes.map(node => recurse(node)) : undefined
           }
+        }
+
+        case 'block': {
+          const dataKey = node.data ? firstKeyOptional(node.data) : undefined
+          const dataField = dataKey ? this.dataFields[dataKey] : undefined
+          const data = dataField ? dataField.transformRawValue(node.data![dataKey!]) : undefined
+
+          return {
+            ...node,
+            data: data ? {[dataKey!]: data} : node.data,
+            nodes: node.nodes ? node.nodes.map(node => recurse(node)) : undefined
+          }
+        }
 
         default:
           return node
@@ -387,54 +391,73 @@ export class SlateField implements Field<SlateFieldValue> {
   public transformValueToExpression(value: SlateFieldValue) {
     const documentJSON: Slate.DocumentJSON = value.value.document.toJSON()
 
-    const recurse = (node: SlateJSON): DataExpression => {
+    const recurse = (node: Slate.NodeJSON): DataConstructor => {
       switch (node.object) {
         case 'document':
-          return d.struct({
-            object: d.string('document'),
-            nodes: node.nodes ? d.list(...node.nodes.map(node => recurse(node))) : d.null()
+          return dat.struct({
+            object: dat.string('document'),
+            nodes: node.nodes ? dat.list(node.nodes.map(node => recurse(node))) : dat.null()
           })
 
-        case 'inline':
-        case 'block':
+        case 'inline': {
           const dataKey = node.data ? firstKeyOptional(node.data) : undefined
           const dataField = dataKey ? this.dataFields[dataKey] : undefined
 
           const data = dataField
-            ? d.union(dataKey!, dataField.transformValueToExpression(node.data![dataKey!]))
-            : d.null()
+            ? dat.union(dataKey!, dataField.transformValueToExpression(node.data![dataKey!]))
+            : dat.null()
 
-          return d.struct({
-            object: d.string(node.object),
-            type: d.string(node.type),
-            isVoid: d.bool(node.isVoid || false),
+          return dat.struct({
+            object: dat.string(node.object),
+            type: dat.string(node.type),
             data: data,
-            nodes: node.nodes ? d.list(...node.nodes.map(node => recurse(node))) : d.null()
+            nodes: node.nodes ? dat.list(node.nodes.map(node => recurse(node))) : dat.null()
           })
+        }
+
+        case 'block': {
+          const dataKey = node.data ? firstKeyOptional(node.data) : undefined
+          const dataField = dataKey ? this.dataFields[dataKey] : undefined
+
+          const data = dataField
+            ? dat.union(dataKey!, dataField.transformValueToExpression(node.data![dataKey!]))
+            : dat.null()
+
+          return dat.struct({
+            object: dat.string(node.object),
+            type: dat.string(node.type),
+            data: data,
+            nodes: node.nodes ? dat.list(node.nodes.map(node => recurse(node))) : dat.null()
+          })
+        }
 
         case 'text':
-          return d.struct({
-            object: d.string('text'),
+          return dat.struct({
+            object: dat.string('text'),
             leaves: node.leaves
-              ? d.list(...node.leaves.map(leave => recurse(leave as SlateLeaveJSON)))
-              : d.null()
-          })
-
-        case 'leaf':
-          return d.struct({
-            object: d.string('leaf'),
-            text: d.string(node.text),
-            marks: node.marks ? d.list(...node.marks.map(mark => recurse(mark))) : d.null()
-          })
-
-        case 'mark':
-          return d.struct({
-            object: d.string('mark'),
-            type: d.string(node.type)
+              ? dat.list(
+                  node.leaves.map(leave =>
+                    dat.struct({
+                      object: dat.string('leaf'),
+                      text: leave.text ? dat.string(leave.text) : dat.null(),
+                      marks: leave.marks
+                        ? dat.list(
+                            leave.marks.map(mark =>
+                              dat.struct({
+                                object: dat.string('mark'),
+                                type: dat.string(mark.type)
+                              })
+                            )
+                          )
+                        : dat.null()
+                    })
+                  )
+                )
+              : dat.null()
           })
 
         default:
-          return d.null()
+          return dat.null()
       }
     }
 

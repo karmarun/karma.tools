@@ -7,12 +7,12 @@ export type SlateData = Slate.Block['data']
 export interface SlateRenderControlProps {
   disabled: boolean
   value: Slate.Value
-  onValueChange(changeFn: (change: Slate.Change) => Slate.Change): void
+  onValueChange(changeFn: (change: Slate.Editor) => Slate.Editor): void
   onEditData(dataKey: string, data?: SlateData): Promise<{[key: string]: any} | undefined>
 }
 
 export interface SlateRenderNodeProps extends RenderNodeProps {
-  onValueChange(changeFn: (change: Slate.Change) => Slate.Change): void
+  onValueChange(changeFn: (change: Slate.Editor) => Slate.Editor): void
   onEditData(dataKey: string, data?: SlateData): Promise<{[key: string]: any} | undefined>
 }
 

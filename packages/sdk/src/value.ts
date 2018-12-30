@@ -413,10 +413,11 @@ export class Null implements Value {
   }
 }
 
-export class ExprMarker implements Value {
+export class BoundExpr implements Value {
   constructor(readonly label: string) {}
   toDataConstructor(exprMap?: ExprMap): xpr.DataConstructor {
-    if (!exprMap || !exprMap[this.label]) throw new Error(`unmapped marker "${this.label}"`)
+    if (!exprMap || !exprMap[this.label])
+      throw new Error(`unbound expression labelled "${this.label}"`)
     return xpr.DataContext.expr(exprMap[this.label])
   }
   toJSON(): any {

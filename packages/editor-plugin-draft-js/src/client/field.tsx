@@ -1,6 +1,6 @@
 import React from 'react'
 import {EditorState, convertFromRaw, convertToRaw, RawDraftContentState} from 'draft-js'
-import {data as d, DataExpression} from '@karma.run/sdk'
+import {DataContext as dat, DataConstructor} from '@karma.run/sdk/expression'
 
 import {
   Model,
@@ -215,44 +215,44 @@ export class DraftJSField implements Field<DraftJSFieldValue> {
     }
   }
 
-  public transformValueToExpression(value: DraftJSFieldValue): DataExpression {
+  public transformValueToExpression(value: DraftJSFieldValue): DataConstructor {
     const rawData = convertToRaw(value.value.getCurrentContent())
 
-    return d.struct({
-      blocks: d.list(
-        ...rawData.blocks.map(block => {
+    return dat.struct({
+      blocks: dat.list(
+        rawData.blocks.map(block => {
           const dataKey = block.data ? firstKeyOptional(block.data) : undefined
           const data = dataKey ? (block.data as any)[dataKey] : undefined
 
           const dataField = dataKey ? this.dataFields[dataKey] : undefined
           const dataUnionValue = dataField
-            ? d.union(dataKey!, dataField.transformValueToExpression(data))
+            ? dat.union(dataKey!, dataField.transformValueToExpression(data))
             : undefined
 
-          return d.struct({
-            data: dataUnionValue || d.null(),
+          return dat.struct({
+            data: dataUnionValue || dat.null(),
 
-            type: d.string(block.type),
-            text: d.string(block.text),
-            key: d.string(block.key),
-            depth: d.int32(block.depth),
+            type: dat.string(block.type),
+            text: dat.string(block.text),
+            key: dat.string(block.key),
+            depth: dat.int32(block.depth),
 
-            entityRanges: d.list(
-              ...block.entityRanges.map(entityRange =>
-                d.struct({
-                  offset: d.int32(entityRange.offset),
-                  length: d.int32(entityRange.length),
-                  key: d.int32(entityRange.key)
+            entityRanges: dat.list(
+              block.entityRanges.map(entityRange =>
+                dat.struct({
+                  offset: dat.int32(entityRange.offset),
+                  length: dat.int32(entityRange.length),
+                  key: dat.int32(entityRange.key)
                 })
               )
             ),
 
-            inlineStyleRanges: d.list(
-              ...block.inlineStyleRanges.map(styleRange =>
-                d.struct({
-                  offset: d.int32(styleRange.offset),
-                  length: d.int32(styleRange.length),
-                  style: d.string(styleRange.style)
+            inlineStyleRanges: dat.list(
+              block.inlineStyleRanges.map(styleRange =>
+                dat.struct({
+                  offset: dat.int32(styleRange.offset),
+                  length: dat.int32(styleRange.length),
+                  style: dat.string(styleRange.style)
                 })
               )
             )
@@ -260,11 +260,11 @@ export class DraftJSField implements Field<DraftJSFieldValue> {
         })
       ),
 
-      entityMap: d.map(
+      entityMap: dat.map(
         mapObject(rawData.entityMap, entity =>
-          d.struct({
-            type: d.string(entity.type),
-            mutability: d.string(entity.mutability),
+          dat.struct({
+            type: dat.string(entity.type),
+            mutability: dat.string(entity.mutability),
             data: this.linkField.transformValueToExpression(entity.data as any)
           })
         )

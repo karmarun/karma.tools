@@ -65,8 +65,8 @@ export class SlateBlockElementNodeComponent extends React.Component<
           node.key,
           Slate.Block.create({
             type: node.type,
-            data: newFieldValue,
-            isVoid: true
+            data: newFieldValue
+            // isVoid: true // TODO
           })
         )
       )
@@ -91,7 +91,11 @@ export class SlateBlockElementControlComponent extends React.Component<
     if (control.dataKey && !newFieldValue) return
 
     this.props.onValueChange(change => {
-      return change.insertBlock({type: control.type, data: newFieldValue, isVoid: true})
+      return change.insertBlock({
+        type: control.type,
+        data: newFieldValue
+        // isVoid: true // TODO
+      })
     })
   }
 
