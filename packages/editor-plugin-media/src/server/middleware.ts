@@ -1,20 +1,19 @@
 import os from 'os'
+import fs from 'fs'
 import path from 'path'
-import shortid from 'shortid'
 import mkdirp from 'mkdirp'
+import mimeTypes from 'mime-types'
+import Busboy from 'busboy'
+
 import sharp from 'sharp'
 
-import Busboy from 'busboy'
 import {Router, RequestHandler, json, Response} from 'express'
 import {ErrorRequestHandler, Request, NextFunction} from 'express-serve-static-core'
 
 import {deleteNullValues} from '@karma.run/editor-common'
-import {SignatureHeader, query, buildFunction} from '@karma.run/sdk'
+import {SignatureHeader, query, buildFunction, Remote} from '@karma.run/sdk'
 
-import {MediaType, ErrorType} from '../common'
-
-import {LocalBackend, MediaBackend} from './backend'
-
+import {MediaType, ErrorType, generateID} from '../common'
 import {getFilePathForID, UploadFile, getMetadataForID} from './helper'
 
 import {
@@ -27,7 +26,12 @@ import {
   CommitOptions,
   DeleteOptions,
   ThumbnailOptions,
-  CopyOptions
+  CopyOptions,
+  LocaleStorageAdapter,
+  FileID,
+  StorageAdapter,
+  TransformationRotation,
+  TransformationFocusType
 } from './action'
 
 export type UploadMiddlewareOptions = UploadOptions
@@ -48,7 +52,7 @@ export interface PreviewMiddlewareOptions {
 export interface MiddlewareOptions {
   karmaDataURL: string
   hostname: string
-  backend: MediaBackend
+  storageAdapter: StorageAdapter
   allowedRoles: string[]
   allowedMediaTypes?: MediaType[]
   tempDirPath?: string
@@ -56,7 +60,7 @@ export interface MiddlewareOptions {
 
 export const defaultOptions: Partial<MiddlewareOptions> = {
   tempDirPath: path.join(os.tmpdir(), 'karma.run-media'),
-  backend: new LocalBackend(),
+  storageAdapter: new LocaleStorageAdapter(path.resolve(process.cwd(), '.cache')),
   allowedMediaTypes: [
     MediaType.Image,
     MediaType.Video,
@@ -71,42 +75,47 @@ export function uploadMediaMiddleware(opts: UploadMiddlewareOptions): RequestHan
   mkdirp.sync(opts.tempDirPath)
 
   return async (req, res, next) => {
-    const busboy = new Busboy({
-      headers: req.headers,
-      limits: {files: 1}
-    })
+    try {
+      const busboy = new Busboy({
+        headers: req.headers,
+        limits: {files: 1}
+      })
 
-    busboy.on('file', async (_fieldName, fileStream, filename) => {
-      // WORKAROUND: We have to include the extension so sharp can detect SVGs.
-      const extension = path.extname(filename)
-      const id = shortid() + extension
+      busboy.on('file', async (_fieldName, fileStream, filename) => {
+        const id = generateID()
+        const filePath = getFilePathForID(id, opts.tempDirPath)
+        const uploadFile: UploadFile = {id, filename, path: filePath}
 
-      const uploadFile: UploadFile | undefined = {
-        id,
-        filename,
-        path: getFilePathForID(id, opts.tempDirPath)
-      }
+        try {
+          await new Promise((resolve, reject) => {
+            const writeStream = fs.createWriteStream(uploadFile.path)
 
-      // Normalize rotation based on EXIF
-      const pipeline = sharp().rotate()
-      fileStream.pipe(pipeline)
+            writeStream.on('finish', () => resolve())
+            writeStream.on('error', err => reject(err))
 
-      try {
-        await pipeline.toFile(uploadFile.path)
-
-        return res.status(200).send(
-          await uploadMedia(uploadFile!, {
-            hostname: opts.hostname,
-            tempDirPath: opts.tempDirPath,
-            allowedMediaTypes: opts.allowedMediaTypes
+            fileStream.pipe(writeStream)
           })
-        )
-      } catch (err) {
-        return next(err)
-      }
-    })
 
-    req.pipe(busboy)
+          return res.status(200).send(
+            await uploadMedia(uploadFile, {
+              hostname: opts.hostname,
+              tempDirPath: opts.tempDirPath,
+              allowedMediaTypes: opts.allowedMediaTypes
+            })
+          )
+        } catch (err) {
+          return next(err)
+        }
+      })
+
+      busboy.on('error', (err: any) => {
+        return next(err)
+      })
+
+      req.pipe(busboy)
+    } catch (err) {
+      return next(err)
+    }
   }
 }
 
@@ -118,11 +127,8 @@ export function previewMediaMiddleware(opts: PreviewMiddlewareOptions): RequestH
       const tempFilePath = path.join(opts.tempDirPath, req.params.id)
       const metadata = await getMetadataForID(req.params.id, opts.tempDirPath)
 
-      // Deliver "image/svg" as "image/svg+xml"
-      const mimeType = metadata.mimeType.replace('image/svg;', 'image/svg+xml;')
-
       return res.status(200).sendFile(tempFilePath, {
-        headers: {'Content-Type': mimeType}
+        headers: {'Content-Type': metadata.mimeType}
       })
     } catch (err) {
       return next(ErrorType.NotFound)
@@ -141,7 +147,8 @@ export function commitMediaMiddleware(opts: CommitMiddlewareOptions): RequestHan
     }
 
     try {
-      return res.status(200).send(await commitMedia(req.body.id, req.body.overrideID, opts))
+      const overrideID = req.body.overrideID && FileID.fromIDString(req.body.overrideID)
+      return res.status(200).send(await commitMedia(req.body.id, overrideID, opts))
     } catch (err) {
       return next(err)
     }
@@ -186,6 +193,7 @@ export function thumbnailRedirectMiddleware(opts: ThumbnailMiddlewareOptions): R
 
 export function checkPrivilegeMiddleware(opts: CheckPrivilegeMiddlewareOptions) {
   return async (req: Request, _res: Response, next: NextFunction) => {
+    const remote = new Remote(opts.karmaDataURL)
     const signature = req.get(SignatureHeader)
     if (!signature) return next(ErrorType.PermissionDenied)
 
@@ -211,9 +219,153 @@ export function checkPrivilegeMiddleware(opts: CheckPrivilegeMiddlewareOptions) 
   }
 }
 
+export function getMiddleware(opts: CommitMiddlewareOptions) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const fileID = FileID.fromURLPath(req.path)
+      const exists = await opts.storageAdapter.exists(fileID)
+
+      if (!exists && fileID.mediaType !== MediaType.Image) return next(ErrorType.NotFound)
+      if (!exists && fileID.isOriginal) return next(ErrorType.NotFound)
+
+      if (!exists) {
+        const originalFileID = fileID.original()
+        const originalExists = await opts.storageAdapter.exists(originalFileID)
+
+        if (!originalExists) return next(ErrorType.NotFound)
+
+        const originalStream = (await opts.storageAdapter.read(originalFileID)).pipe(sharp())
+        const metadata = await originalStream.rotate().metadata()
+
+        let lastStream = originalStream
+        let formatSharpInstance = sharp()
+
+        for (const transformation of fileID.transformations) {
+          const sharpInstance = sharp()
+          lastStream.pipe(sharpInstance)
+
+          if (
+            typeof transformation.focus === 'object' &&
+            (transformation.width || transformation.height)
+          ) {
+          } else {
+            switch (transformation.focus) {
+              case TransformationFocusType.AutoAttention:
+                sharpInstance.crop(sharp.strategy.attention)
+                break
+
+              case TransformationFocusType.AutoEntropy:
+                sharpInstance.crop(sharp.strategy.entropy)
+                break
+
+              case TransformationFocusType.TopLeft:
+                sharpInstance.crop(sharp.gravity.northwest)
+                break
+
+              case TransformationFocusType.Top:
+                sharpInstance.crop(sharp.gravity.north)
+                break
+
+              case TransformationFocusType.TopRight:
+                sharpInstance.crop(sharp.gravity.northeast)
+                break
+
+              case TransformationFocusType.Right:
+                sharpInstance.crop(sharp.gravity.east)
+                break
+
+              case TransformationFocusType.BottomRight:
+                sharpInstance.crop(sharp.gravity.southeast)
+                break
+
+              case TransformationFocusType.Bottom:
+                sharpInstance.crop(sharp.gravity.south)
+                break
+
+              case TransformationFocusType.BottomLeft:
+                sharpInstance.crop(sharp.gravity.southwest)
+                break
+
+              case TransformationFocusType.Left:
+                sharpInstance.crop(sharp.gravity.west)
+                break
+
+              case TransformationFocusType.Center:
+                sharpInstance.crop(sharp.gravity.center)
+                break
+            }
+
+            switch (transformation.rotation) {
+              case TransformationRotation.Rotate0:
+                sharpInstance.rotate(0)
+                break
+
+              case TransformationRotation.Rotate90:
+                sharpInstance.rotate(90)
+                break
+
+              case TransformationRotation.Rotate180:
+                sharpInstance.rotate(180)
+                break
+
+              case TransformationRotation.Rotate270:
+                sharpInstance.rotate(270)
+                break
+
+              case TransformationRotation.Auto:
+                // We already normalize the rotation on any transformation.
+                break
+            }
+
+            if (transformation.width || transformation.height) {
+              const constrainedWidth = transformation.width
+                ? Math.min(1000, Math.min(metadata.width!, transformation.width)) // TODO: Add max size to options
+                : undefined
+
+              const constrainedHeight = transformation.height
+                ? Math.min(1000, Math.min(metadata.height!, transformation.height)) // TODO: Add max size to options
+                : undefined
+
+              sharpInstance.resize(constrainedWidth, constrainedHeight)
+            }
+          }
+
+          lastStream = sharpInstance
+        }
+
+        lastStream.pipe(formatSharpInstance)
+
+        await opts.storageAdapter.write(fileID, formatSharpInstance.toFormat(fileID.outputFormat))
+      }
+
+      const stream = await opts.storageAdapter.read(fileID)
+      const mimeType = mimeTypes.contentType(fileID.outputFormat) || 'application/octet-stream'
+
+      stream
+        .on('error', err => {
+          console.error(err)
+          return next(ErrorType.NotFound)
+        })
+        .once('data', function() {
+          res.set('Content-Type', mimeType)
+          res.status(200)
+        })
+        .on('data', function(chunk) {
+          res.write(chunk)
+        })
+        .on('end', () => {
+          res.end()
+        })
+    } catch (err) {
+      return next(err)
+    }
+  }
+}
+
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   if (typeof err === 'string') {
     let statusCode = 400
+    let message: string | undefined = undefined
 
     switch (err) {
       case ErrorType.PermissionDenied:
@@ -227,12 +379,18 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
       case ErrorType.Internal:
         statusCode = 500
         break
+
+      case ErrorType.InvalidExtension:
+        statusCode = 400
+        message =
+          'Image MIME type differs from extension MIME type, ' +
+          "usually means that the extension didn't match the actual content"
     }
 
-    return res.status(statusCode).send({type: err})
+    return res.status(statusCode).json({type: err, message})
   } else {
     console.error('Error:', err)
-    return res.status(500).send({type: ErrorType.Internal})
+    return res.status(500).json({type: ErrorType.Internal})
   }
 }
 
@@ -244,16 +402,18 @@ export function mediaMiddleware(options: MiddlewareOptions): Router {
   const router = Router()
 
   router.get('/preview/:id', previewMediaMiddleware(opts))
-  router.get('/thumbnail/:id', thumbnailRedirectMiddleware(opts))
+  // router.get('/thumbnail/:id', thumbnailRedirectMiddleware(opts)) // TODO
+  router.get('/*', getMiddleware(opts))
 
   router.use(json())
-  router.use(checkPrivilegeMiddleware(opts))
+  // router.use(checkPrivilegeMiddleware(opts))
 
   router.post('/upload', uploadMediaMiddleware(opts))
   router.post('/commit', commitMediaMiddleware(opts))
-  router.post('/copy', copyMediaMiddleware(opts))
+  // router.post('/copy', copyMediaMiddleware(opts)) // TODO
 
-  router.delete('/:id', deleteMediaMiddleware(opts))
+  // router.delete('/:id', deleteMediaMiddleware(opts)) // TODO
+
   router.use(errorHandler)
 
   return router

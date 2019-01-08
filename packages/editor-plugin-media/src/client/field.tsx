@@ -386,7 +386,17 @@ export class MediaField implements Field<MediaFieldValue> {
         signature
       )
 
-      return {value: {media: response}, isValid: true, hasChanges: true}
+      return {
+        value: {
+          media: {
+            ...response,
+            focusPoint: {x: 0.5, y: 0.5},
+            focusScale: 1
+          }
+        },
+        isValid: true,
+        hasChanges: true
+      }
     } else if (isNew && media) {
       const response = await copyMedia(apiPath, media.id, signature)
       return {value: {media: {...media, ...response}}, isValid: true, hasChanges: true}

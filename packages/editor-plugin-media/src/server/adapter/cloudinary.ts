@@ -1,5 +1,3 @@
-import {Omit} from '@karma.run/editor-common'
-
 import {
   convertFromCloudinaryID,
   convertToCloudinaryID,
@@ -11,7 +9,7 @@ import {
   DeleteResponse
 } from '../../common'
 
-import {MediaBackend} from './interface'
+import {MediaAdapter} from './interface'
 import {IntermediateFile} from '../helper'
 
 export interface CloudinaryConfig {
@@ -50,7 +48,7 @@ export interface CloudinaryOptions {
   apiSecret: string
 }
 
-export class CloudinaryBackend implements MediaBackend {
+export class CloudinaryAdapter implements MediaAdapter {
   private baseConfig: CloudinaryConfig
 
   public constructor(options: CloudinaryOptions) {
@@ -153,13 +151,14 @@ export class CloudinaryBackend implements MediaBackend {
       rotation: response.rotation
     }
 
-    const commonResponse: Omit<CommonCommitResponse, 'mediaType'> = {
+    const commonResponse: CommonCommitResponse = {
       id: convertFromCloudinaryID(response.public_id, response.resource_type),
       url: response.secure_url,
       filename: file.filename,
       fileSize: file.fileSize,
       extension: file.extension,
       mimeType: file.mimeType,
+      format: file.format,
       backend: {cloudinary: knownCloudinaryProps}
     }
 
@@ -190,5 +189,9 @@ export class CloudinaryBackend implements MediaBackend {
           ...commonResponse
         }
     }
+  }
+
+  public async get(): Promise<never> {
+    throw new Error('Not implemented!')
   }
 }

@@ -39,7 +39,7 @@ export class SlateInlineElementControl implements SlateControl {
   }
 
   public renderNode(props: SlateRenderNodeProps): React.ReactNode {
-    if ((props.node.object as string) !== 'inline' || this.type !== props.node.type) return
+    if (props.node.object !== 'inline' || this.type !== props.node.type) return
     return <SlateInlineElementNodeComponent {...props} control={this} />
   }
 
@@ -55,7 +55,7 @@ export class SlateInlineElementNodeComponent extends React.Component<
     const node = this.props.node
     const control = this.props.control
 
-    if (!node || (node.object as string) !== 'inline' || !control.dataKey) return
+    if (!node || node.object !== 'inline' || !control.dataKey) return
 
     const newFieldValue = await this.props.onEditData(control.dataKey, node.data)
 
