@@ -1,1 +1,1 @@
-export * from './lib/types/expression'
+export * from './lib/cjs/expression'

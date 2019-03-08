@@ -4,7 +4,7 @@ import * as val from './value'
 import * as utl from './utility'
 import {decodeError} from './error'
 
-import fetch from 'isomorphic-fetch'
+import axios, {AxiosError} from 'axios'
 
 export class Remote {
   constructor(readonly endpoint: string) {
@@ -25,22 +25,18 @@ export class Remote {
   }
 
   protected async _login(username: string, password: string): Promise<string> {
-    let response = await fetch(this.endpoint + '/auth', {
-      method: 'post',
-      mode: 'cors',
-      body: JSON.stringify({username, password}),
-      headers: {
-        [utl.Header.Codec]: 'json'
+    let response = await axios.post(
+      this.endpoint + '/auth',
+      {username, password},
+      {
+        responseType: 'json',
+        headers: {
+          [utl.Header.Codec]: 'json'
+        }
       }
-    })
+    )
 
-    let json = await response.json()
-
-    if (response.status !== 200) {
-      throw decodeError(json)
-    }
-
-    return json as string
+    return response.data as string
   }
 
   toString(): String {
@@ -71,20 +67,21 @@ export class UserSession {
   ) {}
 
   async do(...expressions: xpr.Expression[]): Promise<any> {
-    let response = await fetch(this.remote.endpoint + '/', {
-      method: 'post',
-      mode: 'cors',
-      body: JSON.stringify(new xpr.Function([], expressions).toValue()),
-      headers: this.headers
-    })
+    try {
+      const response = await axios.post(
+        this.remote.endpoint + '/',
+        new xpr.Function([], expressions).toValue(),
+        {
+          responseType: 'json',
+          headers: this.headers
+        }
+      )
 
-    let json = await response.json()
-
-    if (response.status !== 200) {
-      throw decodeError(json)
+      return response.data
+    } catch (err) {
+      const axiosError: AxiosError = err
+      throw axiosError.response ? decodeError(axiosError.response.data) : err
     }
-
-    return json
   }
 
   async getMetaModelRef(): Promise<val.Ref> {
@@ -112,23 +109,21 @@ export class UserSession {
   }
 
   async refresh(): Promise<this> {
-    let response = await fetch(this.remote.endpoint + '/auth', {
-      method: 'post',
-      mode: 'cors',
-      headers: {
-        [utl.Header.Codec]: 'json',
-        [utl.Header.Signature]: this.token
-      }
-    })
+    try {
+      const response = await axios.post(this.remote.endpoint + '/auth', undefined, {
+        responseType: 'json',
+        headers: {
+          [utl.Header.Codec]: 'json',
+          [utl.Header.Signature]: this.token
+        }
+      })
 
-    let json = await response.json()
-
-    if (response.status !== 200) {
-      throw decodeError(json)
+      this._token = response.data as string
+      return this
+    } catch (err) {
+      const axiosError: AxiosError = err
+      throw axiosError.response ? decodeError(axiosError.response.data) : err
     }
-
-    this._token = json as string
-    return this
   }
 
   protected get headers() {
@@ -156,31 +151,48 @@ export class DatabaseAdminSession extends UserSession {
     super(remote, username, token)
   }
 
-  async resetDatabase(newSecret?: string): Promise<void> {
+  async resetDatabase(newSecret?: string): Promise<DatabaseAdminSession> {
     if (newSecret === undefined) {
       newSecret = this.dbSecret
     }
 
-    let response = await fetch(this.remote.endpoint + '/admin/reset', {
-      method: 'post',
-      mode: 'cors',
-      body: JSON.stringify(newSecret),
-      headers: this.headers
-    })
+    try {
+      await axios.post(this.remote.endpoint + '/admin/reset', newSecret, {
+        responseType: 'json',
+        headers: this.headers
+      })
 
-    let json = await response.json()
-
-    if (response.status !== 200) {
-      throw decodeError(json)
+      return this.remote.adminLogin(this.username, newSecret)
+    } catch (err) {
+      const axiosError: AxiosError = err
+      throw axiosError.response ? decodeError(axiosError.response.data) : err
     }
   }
 
-  async import(data: any) {
-    await fetch(this.remote.endpoint + '/admin/import', {
-      method: 'post',
-      mode: 'cors',
-      body: data,
-      headers: this.headers
-    })
+  async export(): Promise<ArrayBuffer> {
+    try {
+      const response = await axios.post(this.remote.endpoint + '/admin/export', undefined, {
+        responseType: 'arraybuffer',
+        headers: this.headers
+      })
+
+      return response.data
+    } catch (err) {
+      const axiosError: AxiosError = err
+      throw axiosError.response ? decodeError(axiosError.response.data) : err
+    }
+  }
+
+  async import(data: any): Promise<DatabaseAdminSession> {
+    try {
+      await axios.post(this.remote.endpoint + '/admin/import', data, {
+        headers: this.headers
+      })
+
+      return this.remote.adminLogin(this.username, this.dbSecret)
+    } catch (err) {
+      const axiosError: AxiosError = err
+      throw axiosError.response ? decodeError(axiosError.response.data) : err
+    }
   }
 }

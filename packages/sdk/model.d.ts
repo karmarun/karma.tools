@@ -1,1 +1,1 @@
-export * from './lib/types/model'
+export * from './lib/cjs/model'

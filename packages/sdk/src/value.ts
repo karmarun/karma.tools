@@ -13,32 +13,41 @@ export interface Value {
 export function union<T extends Value = Value>(caze: string, value: T): Union<T> {
   return new Union(caze, value)
 }
+
 export function struct<T extends {[field: string]: Value} = {[field: string]: Value}>(
   struct: T
 ): Struct<T> {
   return new Struct(struct)
 }
+
 export function map<T extends Value = Value>(map: {[field: string]: T}): Map<T> {
   return new Map(map)
 }
+
 export function list<T extends Value = Value>(list: T[]): List<T> {
   return new List(list)
 }
+
 export function set<T extends Value = Value>(set: T[]): Set<T> {
   return new Set(set)
 }
+
 export function tuple<T extends Value[] = Value[]>(...tuple: T): Tuple<T> {
   return new Tuple(tuple)
 }
+
 export function string(string: string): String {
   return new String(string)
 }
+
 export function symbol(symbol: string): Symbol {
   return new Symbol(symbol)
 }
+
 export function bool(bool: boolean): Bool {
   return new Bool(bool)
 }
+
 export function dateTime(dateTime: Date): DateTime {
   return new DateTime(dateTime)
 }
@@ -53,27 +62,35 @@ export function ref(model: string[] | string, id?: string): Ref {
 export function float(float: number): Float {
   return new Float(float)
 }
+
 export function int8(int8: number): Int8 {
   return new Int8(int8)
 }
+
 export function int16(int16: number): Int16 {
   return new Int16(int16)
 }
+
 export function int32(int32: number): Int32 {
   return new Int32(int32)
 }
+
 export function int64(int64: number): Int64 {
   return new Int64(int64)
 }
+
 export function uint8(uint8: number): Uint8 {
   return new Uint8(uint8)
 }
+
 export function uint16(uint16: number): Uint16 {
   return new Uint16(uint16)
 }
+
 export function uint32(uint32: number): Uint32 {
   return new Uint32(uint32)
 }
+
 export function uint64(uint64: number): Uint64 {
   return new Uint64(uint64)
 }
@@ -82,12 +99,14 @@ export function uint64(uint64: number): Uint64 {
 
 export class Union<T extends Value = Value> implements Value {
   readonly case: string
+
   constructor(
     c: string, // NOTE: "case" not permitted as constructor argument name
     readonly value: T
   ) {
     this.case = c
   }
+
   assertCase(caze: string): T {
     if (this.case !== caze) {
       throw new Error(
@@ -98,12 +117,15 @@ export class Union<T extends Value = Value> implements Value {
     }
     return this.value
   }
+
   toDataConstructor(exprMap?: ExprMap): xpr.DataConstructor {
     return xpr.DataContext.union(this.case, this.value.toDataConstructor(exprMap))
   }
+
   toJSON(): any {
     return {[this.case]: this.value.toJSON()}
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(union(this.case, this.value.transform(f)))
   }
@@ -115,6 +137,7 @@ export class Struct<T extends {[field: string]: Value} = {[field: string]: Value
   field<K extends keyof T>(name: K): T[K] {
     return this.struct[name]
   }
+
   toDataConstructor(exprMap?: ExprMap): xpr.DataConstructor {
     const arg: {[field: string]: xpr.DataConstructor} = {}
     for (let k in this.struct) {
@@ -122,6 +145,7 @@ export class Struct<T extends {[field: string]: Value} = {[field: string]: Value
     }
     return xpr.DataContext.struct(arg)
   }
+
   toJSON(): any {
     const out: {[fields: string]: any} = {}
     for (const k in this.struct) {
@@ -129,6 +153,7 @@ export class Struct<T extends {[field: string]: Value} = {[field: string]: Value
     }
     return out
   }
+
   transform(f: (v: Value) => Value): Value {
     const mapped: {[field: string]: Value} = {}
     Object.keys(this.struct).forEach(k => {
@@ -148,6 +173,7 @@ export class Map<T extends Value = Value> implements Value {
     }
     return v
   }
+
   toDataConstructor(exprMap?: ExprMap): xpr.DataConstructor {
     const arg: {[field: string]: xpr.DataConstructor} = {}
     for (let k in this.map) {
@@ -155,6 +181,7 @@ export class Map<T extends Value = Value> implements Value {
     }
     return xpr.DataContext.map(arg)
   }
+
   toJSON(): any {
     const out: {[fields: string]: any} = {}
     for (const k in this.map) {
@@ -162,6 +189,7 @@ export class Map<T extends Value = Value> implements Value {
     }
     return out
   }
+
   transform(f: (v: Value) => Value): Value {
     const mapped: {[key: string]: Value} = {}
     Object.keys(this.map).forEach(k => {
@@ -176,15 +204,19 @@ export class List<T extends Value = Value> implements Value {
   append(value: T): List<T> {
     return new List(this.list.concat(value))
   }
+
   index(index: number): T {
     return this.list[index]
   }
+
   toDataConstructor(exprMap?: ExprMap): xpr.DataConstructor {
     return xpr.DataContext.list(this.list.map(v => v.toDataConstructor(exprMap)))
   }
+
   toJSON(): any {
     return this.list.map(v => v.toJSON())
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(list(this.list.map(v => v.transform(f))))
   }
@@ -195,9 +227,11 @@ export class Set<T extends Value = Value> implements Value {
   toDataConstructor(exprMap?: ExprMap): xpr.DataConstructor {
     return xpr.DataContext.set(this.set.map(v => v.toDataConstructor(exprMap)))
   }
+
   toJSON(): any {
     return this.set.map(v => v.toJSON())
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(set(this.set.map(v => v.transform(f))))
   }
@@ -208,12 +242,15 @@ export class Tuple<T extends Value[] = Value[]> implements Value {
   index<K extends keyof T>(index: K): T[K] {
     return this.tuple[index]
   }
+
   toDataConstructor(exprMap?: ExprMap): xpr.DataConstructor {
     return xpr.DataContext.tuple(...this.tuple.map(v => v.toDataConstructor(exprMap)))
   }
+
   toJSON(): any {
     return this.tuple.map(v => v.toJSON())
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(tuple(...this.tuple.map(v => v.transform(f))))
   }
@@ -224,9 +261,11 @@ export class Ref implements Value {
   toDataConstructor(): xpr.DataConstructor {
     return xpr.DataContext.ref(this.model, this.id)
   }
+
   toJSON(): any {
     return this.id
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }
@@ -237,9 +276,11 @@ export class String implements Value {
   toDataConstructor(): xpr.DataConstructor {
     return xpr.DataContext.string(this.string)
   }
+
   toJSON(): any {
     return this.string
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }
@@ -250,9 +291,11 @@ export class Symbol implements Value {
   toDataConstructor(): xpr.DataConstructor {
     return xpr.DataContext.symbol(this.symbol)
   }
+
   toJSON(): any {
     return this.symbol
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }
@@ -263,9 +306,11 @@ export class Int8 implements Value {
   toDataConstructor(): xpr.DataConstructor {
     return xpr.DataContext.int8(this.int8)
   }
+
   toJSON(): any {
     return this.int8
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }
@@ -276,9 +321,11 @@ export class Int16 implements Value {
   toDataConstructor(): xpr.DataConstructor {
     return xpr.DataContext.int16(this.int16)
   }
+
   toJSON(): any {
     return this.int16
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }
@@ -289,9 +336,11 @@ export class Int32 implements Value {
   toDataConstructor(): xpr.DataConstructor {
     return xpr.DataContext.int32(this.int32)
   }
+
   toJSON(): any {
     return this.int32
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }
@@ -302,9 +351,11 @@ export class Int64 implements Value {
   toDataConstructor(): xpr.DataConstructor {
     return xpr.DataContext.int64(this.int64)
   }
+
   toJSON(): any {
     return this.int64
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }
@@ -315,9 +366,11 @@ export class Uint8 implements Value {
   toDataConstructor(): xpr.DataConstructor {
     return xpr.DataContext.uint8(this.uint8)
   }
+
   toJSON(): any {
     return this.uint8
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }
@@ -328,9 +381,11 @@ export class Uint16 implements Value {
   toDataConstructor(): xpr.DataConstructor {
     return xpr.DataContext.uint16(this.uint16)
   }
+
   toJSON(): any {
     return this.uint16
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }
@@ -341,9 +396,11 @@ export class Uint32 implements Value {
   toDataConstructor(): xpr.DataConstructor {
     return xpr.DataContext.uint32(this.uint32)
   }
+
   toJSON(): any {
     return this.uint32
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }
@@ -354,9 +411,11 @@ export class Uint64 implements Value {
   toDataConstructor(): xpr.DataConstructor {
     return xpr.DataContext.uint64(this.uint64)
   }
+
   toJSON(): any {
     return this.uint64
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }
@@ -367,9 +426,11 @@ export class Float implements Value {
   toDataConstructor(): xpr.DataConstructor {
     return xpr.DataContext.float(this.float)
   }
+
   toJSON(): any {
     return this.float
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }
@@ -380,9 +441,11 @@ export class Bool implements Value {
   toDataConstructor(): xpr.DataConstructor {
     return xpr.DataContext.bool(this.bool)
   }
+
   toJSON(): any {
     return this.bool
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }
@@ -393,9 +456,11 @@ export class DateTime implements Value {
   toDataConstructor(): xpr.DataConstructor {
     return xpr.DataContext.dateTime(this.dateTime)
   }
+
   toJSON(): any {
     return this.dateTime.toISOString()
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }
@@ -405,9 +470,11 @@ export class Null implements Value {
   toDataConstructor(): xpr.DataConstructor {
     return xpr.DataContext.null()
   }
+
   toJSON(): any {
     return null
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }
@@ -417,12 +484,14 @@ export class BoundExpr implements Value {
   constructor(readonly label: string) {}
   toDataConstructor(exprMap?: ExprMap): xpr.DataConstructor {
     if (!exprMap || !exprMap[this.label])
-      throw new Error(`unbound expression labelled "${this.label}"`)
+      throw new Error(`Unbound expression labelled "${this.label}"`)
     return xpr.DataContext.expr(exprMap[this.label])
   }
+
   toJSON(): any {
     return null
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }
@@ -433,9 +502,11 @@ export class Expr implements Value {
   toDataConstructor(): xpr.DataConstructor {
     return xpr.DataContext.expr(this.expression)
   }
+
   toJSON(): any {
     return null
   }
+
   transform(f: (v: Value) => Value): Value {
     return f(this)
   }

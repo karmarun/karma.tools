@@ -18,6 +18,10 @@ export enum Header {
 export type ObjectMap<T = any> = {[key: string]: T}
 export type ModelMap = ObjectMap<mdl.Model>
 
+export function createModel(model: mdl.Model, key: string = 'this') {
+  return createModels({[key]: model})
+}
+
 export function createModels(modelMap: ModelMap) {
   return xpr.tag(Tag.Model).createMultiple(
     mapObject(modelMap, model => {

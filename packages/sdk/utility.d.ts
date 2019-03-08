@@ -1,1 +1,1 @@
-export * from './lib/types/utility'
+export * from './lib/cjs/utility'

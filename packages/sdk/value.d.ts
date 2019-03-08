@@ -1,1 +1,1 @@
-export * from './lib/types/value'
+export * from './lib/cjs/value'
