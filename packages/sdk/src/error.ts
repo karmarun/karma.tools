@@ -4,7 +4,7 @@ export class KarmaAPIError extends Error {
     Object.setPrototypeOf(this, new.target.prototype)
   }
 
-  public toString() {
+  toString() {
     return this.message ? `${this.constructor.name}: ${this.message}` : `${this.constructor.name}`
   }
 }
@@ -71,7 +71,21 @@ export class UnknownError extends KarmaAPIError {
   }
 }
 
-type JSONMachineError = {
+export class MigrationError extends KarmaAPIError {
+  constructor(readonly underlyingError: KarmaAPIError, readonly query: object) {
+    super(underlyingError.message)
+    Object.setPrototypeOf(this, new.target.prototype)
+  }
+}
+
+export class JSONError extends KarmaAPIError {
+  constructor(readonly message: string) {
+    super(message)
+    Object.setPrototypeOf(this, new.target.prototype)
+  }
+}
+
+type MachineErrorJSON = {
   compilationError: {
     problem: string
     program: string
@@ -81,17 +95,17 @@ type JSONMachineError = {
   permissionDeniedError: {}
 }
 
-type JSONError = {
+type ErrorJSON = {
   humanReadableError?: {
     human: string
-    machine: JSONMachineError
+    machine: MachineErrorJSON
   }
-} & JSONMachineError
+} & MachineErrorJSON
 
-export type JSONErrorType = keyof JSONMachineError
+export type JSONErrorType = keyof MachineErrorJSON
 
-export function decodeError(json: JSONError): KarmaAPIError {
-  let machineError: JSONMachineError
+export function decodeError(json: ErrorJSON): KarmaAPIError {
+  let machineError: MachineErrorJSON
   let message: string = ''
 
   if (!json.humanReadableError) {

@@ -1,4 +1,5 @@
 import * as val from './value'
+import {mapObject, ObjectMap} from './utility'
 
 /*
     HOW TO ADD A NEW EXPRESSION
@@ -579,7 +580,9 @@ export abstract class Expression {
     return slice(this, offset, length)
   }
 
-  createMultiple(funcs: {[name: string]: (f: Scope) => Expression | Expression[]}): CreateMultiple {
+  createMultiple(funcs: {
+    [name: string]: ((f: Scope) => Expression | Expression[]) | Function
+  }): CreateMultiple {
     return createMultiple(this, funcs)
   }
 
@@ -1206,13 +1209,11 @@ export function data(data: DataConstructor | DataFunc): Data {
 
 export function createMultiple(
   model: Expression,
-  funcs: {[name: string]: (f: Scope) => Expression | Expression[]}
+  funcs: ObjectMap<((f: Scope) => Expression | Expression[]) | Function>
 ): CreateMultiple {
-  const fs: {[name: string]: Function} = {}
-
-  for (let k in funcs) {
-    fs[k] = func(funcs[k], 1)
-  }
+  const fs: ObjectMap<Function> = mapObject(funcs, value =>
+    typeof value === 'function' ? func(value, 1) : value
+  )
 
   return new CreateMultiple(model, fs)
 }
