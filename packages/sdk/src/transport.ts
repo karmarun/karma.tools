@@ -9,7 +9,7 @@ import {decodeError, JSONError} from './error'
 
 async function handleAxiosError<T>(fn: () => Promise<T>): Promise<T> {
   try {
-    return fn()
+    return await fn()
   } catch (err) {
     const axiosError = err as AxiosError
     throw axiosError.response ? decodeError(axiosError.response.data) : err

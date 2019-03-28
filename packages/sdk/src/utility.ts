@@ -140,6 +140,20 @@ export function filterObject<T>(
   return filteredObj
 }
 
+export function reduceObject<T, R>(
+  obj: ObjectMap<T>,
+  reduceFn: (accumulator: R, value: T, key: string) => R,
+  initial: R
+) {
+  let accumulator = initial
+
+  for (const key in obj) {
+    accumulator = reduceFn(accumulator, obj[key], key)
+  }
+
+  return accumulator
+}
+
 export function mapObject<T, R>(
   obj: ObjectMap<T>,
   mapFn: (value: T, key: string) => R

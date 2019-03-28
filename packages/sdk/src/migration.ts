@@ -9,9 +9,11 @@ import {
   filterObject,
   mapStructure,
   mapStrings,
-  mapObject
+  mapObject,
+  reduceObject
 } from './utility'
 import {MigrationError} from './error'
+import {Model} from './model'
 
 export type DatabaseImage = ObjectMap<ObjectMap<any>>
 export type TagMap = ObjectMap<string>
@@ -21,6 +23,56 @@ export type TransformationFn = (
   oldTags: TagMap,
   newTags: TagMap
 ) => DatabaseImage
+
+let currentTempModelID = 0
+let currentTempTagID = 0
+
+export function addModel(
+  image: DatabaseImage,
+  oldTags: TagMap,
+  newTags: TagMap,
+  tag: string,
+  model: Model
+): string {
+  const tempModelID = `$model-${currentTempModelID++}`
+  const tempTagID = `$tag-${currentTempTagID++}`
+
+  image[tempModelID] = {}
+  image[newTags[BuiltInTag.Model]][tempModelID] = model.toValue().toJSON()
+  image[newTags[BuiltInTag.Tag]][tempTagID] = {
+    model: [newTags[BuiltInTag.Model], tempModelID],
+    tag
+  }
+  oldTags[tag] = tempModelID
+
+  return tempModelID
+}
+
+export function changeModelByTag(
+  image: DatabaseImage,
+  oldTags: TagMap,
+  newTags: TagMap,
+  tag: string,
+  modelTransformFn: (rawModel: any) => any,
+  recordTransformFn?: (rawRecord: any) => any
+): void {
+  const models = image[newTags[BuiltInTag.Model]]
+  const modelId = oldTags[tag]
+  const migratedModel = modelTransformFn(models[modelId])
+
+  image[newTags[BuiltInTag.Model]][modelId] = migratedModel
+
+  if (recordTransformFn) {
+    image[oldTags[tag]] = reduceObject(
+      image[oldTags[tag]],
+      (accumulator, record, id) => {
+        accumulator[id] = recordTransformFn(record)
+        return accumulator
+      },
+      {} as any
+    )
+  }
+}
 
 export async function migrate(
   sourceSession: AdminSession,
@@ -103,6 +155,7 @@ export async function migrate(
   const targetTags: {model: RefTuple; tag: string}[] = await targetSession.do(
     xpr.tag(BuiltInTag.Tag).all()
   )
+
   const idRewriteMap: ObjectMap<string> = {}
 
   for (let obj of targetTags) {
