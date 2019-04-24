@@ -1,5 +1,6 @@
 import * as val from './value'
 import * as xpr from './expression'
+import {ObjectMap, mapObject} from './utility'
 
 export abstract class Model {
   abstract concrete(): Model
@@ -60,6 +61,25 @@ export function annotation(string: string, model: Model): Annotation {
 
 export function tuple(...models: Model[]): Tuple {
   return new Tuple(models)
+}
+
+export function recursive<T extends ObjectMap<(recursions: {[key: string]: Recursion}) => Model>>(
+  models: T,
+  top: keyof T
+): Recursion {
+  const recursionMap = mapObject(models, (_, key) => new Recursion(key))
+
+  for (const key in recursionMap) {
+    recursionMap[key].model = models[key](recursionMap)
+  }
+
+  return recursionMap[top as string]
+}
+
+export function recursion(label: string, fn: (recursion: Recursion) => Model) {
+  const recursion = new Recursion(label)
+  recursion.model = fn(recursion)
+  return recursion
 }
 
 // end convenience constructors
