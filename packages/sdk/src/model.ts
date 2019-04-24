@@ -76,10 +76,14 @@ export function recursive<T extends ObjectMap<(recursions: {[key: string]: Recur
   return recursionMap[top as string]
 }
 
-export function recursion(label: string, fn: (recursion: Recursion) => Model) {
+export function recursion(label: string, fn: (recursion: Recursion) => Model): Recursion {
   const recursion = new Recursion(label)
   recursion.model = fn(recursion)
   return recursion
+}
+
+export function enum_(symbols: string[]) {
+  return new Enum(symbols)
 }
 
 // end convenience constructors
