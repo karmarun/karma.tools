@@ -196,7 +196,8 @@ export class AdminSession extends UserSession {
     return handleAxiosError(async () => {
       const response = await axios.post(this.endpoint + Endpoint.AdminExport, undefined, {
         responseType: 'arraybuffer',
-        headers: this.headers
+        headers: this.headers,
+        maxContentLength: Number.MAX_SAFE_INTEGER
       })
 
       return response.data
@@ -206,7 +207,8 @@ export class AdminSession extends UserSession {
   async import(data: any): Promise<boolean> {
     return handleAxiosError(async () => {
       await axios.post(this.endpoint + Endpoint.AdminImport, data, {
-        headers: this.headers
+        headers: this.headers,
+        maxContentLength: Number.MAX_SAFE_INTEGER
       })
 
       try {
