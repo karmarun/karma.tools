@@ -102,7 +102,7 @@ export class MediaFieldEditComponent extends React.PureComponent<
       const response = await uploadMedia(
         mediaAPIPath(this.props.config.basePath),
         file,
-        this.props.sessionContext.session!.signature,
+        this.props.sessionContext.session!.token,
         (progress: number) => {
           this.setState({progress})
         }
@@ -287,7 +287,7 @@ export class MediaField implements Field<MediaFieldValue> {
         )
 
       default:
-        return dat.union(media.mediaType, dat.struct())
+        return dat.union(media.mediaType, dat.struct({}))
     }
   }
 
@@ -307,7 +307,7 @@ export class MediaField implements Field<MediaFieldValue> {
           format: dat.string(value.format),
           resource_type: dat.string(value.resource_type),
           created_at: dat.string(value.created_at),
-          tags: dat.list(...value.tags.map(tag => dat.string(tag))),
+          tags: dat.list(value.tags.map(tag => dat.string(tag))),
           bytes: dat.int32(value.bytes),
           type: dat.string(value.type),
           etag: dat.string(value.etag),

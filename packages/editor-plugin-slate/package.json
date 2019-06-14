@@ -2,21 +2,18 @@
   "name": "@karma.run/editor-plugin-slate",
   "version": "0.15.0",
   "main": "./lib/cjs/index.js",
-  "module": "./lib/es6/index.js",
-  "types": "./lib/types/index.d.ts",
+  "module": "./lib/esm/index.js",
   "sideEffects": false,
   "license": "MIT",
   "repository": "github:karmarun/karma.tools",
   "scripts": {
-    "build": "run-p build:*",
-    "build:cjs": "tsc --outDir ./lib/cjs",
-    "build:es6": "tsc --module esnext --outDir ./lib/es6",
-    "build:types": "tsc --declaration --declarationDir ./lib/types --emitDeclarationOnly",
-    "watch": "run-s clean mkdir symlink watch:dev",
-    "watch:dev": "tsc --watch --outDir ./lib/cjs --declaration --declarationDir ./lib/types --declarationMap",
-    "mkdir": "shx mkdir -p ./lib/cjs ./lib/types",
-    "symlink": "shx ln -s ./cjs ./lib/es6",
-    "copy:license": "shx cp ../../LICENSE ./",
+    "build": "run-s copy-license sync-package-info build:*",
+    "build:cjs": "tsc --declaration --module commonjs --outDir ./lib/cjs",
+    "build:esm": "tsc --declaration --module esnext --outDir ./lib/esm",
+    "watch": "npm-run-all copy-license sync-package-info --parallel watch:*",
+    "watch:cjs": "tsc -p ./tsconfig.json --declarationMap --declaration --module commonjs --outDir ./lib/cjs --watch",
+    "watch:esm": "tsc -p ./tsconfig.json --declarationMap --declaration --module esnext --outDir ./lib/esm --watch",
+    "copy-license": "shx cp ../../LICENSE ./",
     "clean": "shx rm -rf ./LICENSE ./lib",
     "prepare": "run-s clean copy:license build sync-package-info",
     "sync-package-info": "node ./../../scripts/syncPackageInfo.js ./src/version.ts"
@@ -38,7 +35,7 @@
     "@types/slate-react": "^0.20.3",
     "npm-run-all": "^4.1.5",
     "shx": "^0.3.2",
-    "typescript": "^3.2.2"
+    "typescript": "^3.5.2"
   },
   "peerDependencies": {
     "@karma.run/editor-client": "^0.15.0",

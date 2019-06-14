@@ -29,7 +29,7 @@ export const PanelStyle = style({
   display: 'flex',
   flexDirection: 'column',
   height: '100%',
-  overflowY: 'scroll'
+  overflowY: 'auto'
 })
 
 export interface PanelContentProps {

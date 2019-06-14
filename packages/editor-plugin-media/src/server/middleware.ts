@@ -11,7 +11,6 @@ import {Router, RequestHandler, json, Response} from 'express'
 import {ErrorRequestHandler, Request, NextFunction} from 'express-serve-static-core'
 
 import {deleteNullValues} from '@karma.run/editor-common'
-import {SignatureHeader, query, buildFunction, Remote} from '@karma.run/sdk'
 
 import {MediaType, ErrorType, generateID} from '../common'
 import {getFilePathForID, UploadFile, getMetadataForID} from './helper'
@@ -33,6 +32,11 @@ import {
   TransformationRotation,
   TransformationFocusType
 } from './action'
+
+import {Remote, UserSession} from '@karma.run/sdk'
+
+import * as xpr from '@karma.run/sdk/expression'
+import * as utl from '@karma.run/sdk/utility'
 
 export type UploadMiddlewareOptions = UploadOptions
 export type CommitMiddlewareOptions = CommitOptions
@@ -194,17 +198,16 @@ export function thumbnailRedirectMiddleware(opts: ThumbnailMiddlewareOptions): R
 export function checkPrivilegeMiddleware(opts: CheckPrivilegeMiddlewareOptions) {
   return async (req: Request, _res: Response, next: NextFunction) => {
     const remote = new Remote(opts.karmaDataURL)
-    const signature = req.get(SignatureHeader)
+    const signature = req.header(utl.Header.Signature)
+
     if (!signature) return next(ErrorType.PermissionDenied)
 
+    const session = new UserSession(remote.endpoint, '', signature)
+
     try {
-      const roles: string[] = await query(
-        opts.karmaDataURL,
-        signature,
-        buildFunction(e => () =>
-          e.mapList(e.field('roles', e.get(e.currentUser())), (_, value) =>
-            e.field('name', e.get(value))
-          )
+      const roles: string[] = await session.do(
+        xpr.mapList(xpr.field('roles', xpr.get(xpr.currentUser())), (_, value) =>
+          xpr.field('name', xpr.get(value))
         )
       )
 
@@ -249,52 +252,6 @@ export function getMiddleware(opts: CommitMiddlewareOptions) {
             (transformation.width || transformation.height)
           ) {
           } else {
-            switch (transformation.focus) {
-              case TransformationFocusType.AutoAttention:
-                sharpInstance.crop(sharp.strategy.attention)
-                break
-
-              case TransformationFocusType.AutoEntropy:
-                sharpInstance.crop(sharp.strategy.entropy)
-                break
-
-              case TransformationFocusType.TopLeft:
-                sharpInstance.crop(sharp.gravity.northwest)
-                break
-
-              case TransformationFocusType.Top:
-                sharpInstance.crop(sharp.gravity.north)
-                break
-
-              case TransformationFocusType.TopRight:
-                sharpInstance.crop(sharp.gravity.northeast)
-                break
-
-              case TransformationFocusType.Right:
-                sharpInstance.crop(sharp.gravity.east)
-                break
-
-              case TransformationFocusType.BottomRight:
-                sharpInstance.crop(sharp.gravity.southeast)
-                break
-
-              case TransformationFocusType.Bottom:
-                sharpInstance.crop(sharp.gravity.south)
-                break
-
-              case TransformationFocusType.BottomLeft:
-                sharpInstance.crop(sharp.gravity.southwest)
-                break
-
-              case TransformationFocusType.Left:
-                sharpInstance.crop(sharp.gravity.west)
-                break
-
-              case TransformationFocusType.Center:
-                sharpInstance.crop(sharp.gravity.center)
-                break
-            }
-
             switch (transformation.rotation) {
               case TransformationRotation.Rotate0:
                 sharpInstance.rotate(0)
@@ -326,7 +283,13 @@ export function getMiddleware(opts: CommitMiddlewareOptions) {
                 ? Math.min(1000, Math.min(metadata.height!, transformation.height)) // TODO: Add max size to options
                 : undefined
 
-              sharpInstance.resize(constrainedWidth, constrainedHeight)
+              sharpInstance.resize(constrainedWidth, constrainedHeight, {
+                fit: 'cover',
+                position:
+                  typeof transformation.focus === 'string'
+                    ? positionForFocusType(transformation.focus)
+                    : undefined
+              })
             }
           }
 
@@ -417,4 +380,41 @@ export function mediaMiddleware(options: MiddlewareOptions): Router {
   router.use(errorHandler)
 
   return router
+}
+
+export function positionForFocusType(focus: TransformationFocusType) {
+  switch (focus) {
+    case TransformationFocusType.AutoAttention:
+      return sharp.strategy.attention
+
+    case TransformationFocusType.AutoEntropy:
+      return sharp.strategy.entropy
+
+    case TransformationFocusType.TopLeft:
+      return sharp.gravity.northwest
+
+    case TransformationFocusType.Top:
+      return sharp.gravity.north
+
+    case TransformationFocusType.TopRight:
+      return sharp.gravity.northeast
+
+    case TransformationFocusType.Right:
+      return sharp.gravity.east
+
+    case TransformationFocusType.BottomRight:
+      return sharp.gravity.southeast
+
+    case TransformationFocusType.Bottom:
+      return sharp.gravity.south
+
+    case TransformationFocusType.BottomLeft:
+      return sharp.gravity.southwest
+
+    case TransformationFocusType.Left:
+      return sharp.gravity.west
+
+    case TransformationFocusType.Center:
+      return sharp.gravity.center
+  }
 }

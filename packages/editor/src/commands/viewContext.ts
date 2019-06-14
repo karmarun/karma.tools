@@ -48,7 +48,7 @@ export default async function viewContextCommand(opts: ViewContextCommandOptions
 
   try {
     const remote = new Remote(karmaDataURL)
-    const session = await remote.adminLogin('admin', opts.instanceSecret) // authenticate(karmaDataURL, 'admin', opts.instanceSecret)
+    const session = await remote.adminLogin(opts.instanceSecret)
     const {viewContexts} = await getContexts(session, fieldRegistry)
 
     process.stdout.write(

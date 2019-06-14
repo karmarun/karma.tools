@@ -9,14 +9,15 @@ import ReactDOMServer from 'react-dom/server'
 
 import path from 'path'
 import express from 'express'
+import proxy from 'express-http-proxy'
 
-// import {SignatureHeader, Tag, query, buildFunction, getTags, Ref} from '@karma.run/sdk'
 import {
   name as sdkModuleName,
   version as sdkModuleVersion,
   Remote,
   UserSession
 } from '@karma.run/sdk'
+
 import * as xpr from '@karma.run/sdk/expression'
 import * as utl from '@karma.run/sdk/utility'
 
@@ -30,7 +31,6 @@ import {
 } from '@karma.run/editor-common'
 
 import {version as serverModuleVersion} from './version'
-
 import {ServerPlugin, PluginContext} from './plugin'
 
 export * from './plugin'
@@ -70,7 +70,7 @@ export function getTagsAndRoles(
   return session.do(
     xpr.data(d =>
       d.struct({
-        tags: d.expr(xpr.tag(utl.Tag.Tag).all()),
+        tags: d.expr(xpr.tag(utl.BuiltInTag.Tag).all()),
         roles: d.expr(
           xpr
             .currentUser()
@@ -161,7 +161,7 @@ export function editorMiddleware(opts: MiddlewareOptions): express.Router {
     const signature = req.header(utl.Header.Signature)
     if (!signature) return next('No signature header found.')
 
-    const session = new UserSession(remote, '', signature)
+    const session = new UserSession(remote.endpoint, '', signature)
 
     try {
       const {tags, roles} = await getTagsAndRoles(session)
@@ -180,6 +180,8 @@ export function editorMiddleware(opts: MiddlewareOptions): express.Router {
       return next(err)
     }
   })
+
+  router.use(`${basePath}/api/proxy`, proxy(remote.endpoint))
 
   router.use(
     (err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

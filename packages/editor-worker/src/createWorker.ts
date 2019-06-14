@@ -1,4 +1,4 @@
-import {InputMessage, OutputMessage, MessageMap} from '@karma.run/editor-common'
+import {InputMessage, MessageMap} from '@karma.run/editor-common'
 
 export type MessageHandlerMap<T extends MessageMap> = {
   [K in keyof T]: (input: T[K]['input']) => T[K]['output']
@@ -15,7 +15,7 @@ export function createWorker<T extends MessageMap>(
     if (!handler) throw new Error('Invalid message sent to worker!')
 
     const output = handler(msg.input)
-    const outMsg: OutputMessage<keyof T, T['output']> = {id: msg.id, type: msg.type, output}
+    const outMsg = {id: msg.id, type: msg.type, output}
 
     postMessage(outMsg)
   })

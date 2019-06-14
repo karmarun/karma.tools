@@ -50,4 +50,4 @@ WORKDIR $HOME_DIR
 USER node
 
 EXPOSE 3000
-CMD yarn start
+CMD yarn karma-editor server

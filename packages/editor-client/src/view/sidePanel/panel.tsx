@@ -264,6 +264,9 @@ export const SidePanelStyle = (colors: Colors) =>
         display: 'flex',
         flexDirection: 'column',
         padding: Spacing.larger,
+
+        overflow: 'hidden',
+
         height: '100%',
         width: '100%',
 

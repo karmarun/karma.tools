@@ -79,10 +79,10 @@ export function getTagsAndModels(
   return session.do(
     xpr.data(d =>
       d.struct({
-        tags: d.expr(xpr.tag(utl.Tag.Tag).all()),
+        tags: d.expr(xpr.tag(utl.BuiltInTag.Tag).all()),
         models: d.expr(
           xpr
-            .tag(utl.Tag.Model)
+            .tag(utl.BuiltInTag.Model)
             .all()
             .mapList((_, model) => xpr.metarialize(model))
         )
@@ -121,8 +121,8 @@ export async function getContexts(
   )
 
   // Set ViewContextOptions for default models if needed
-  const userModelRef = tagMap.get(utl.Tag.User)
-  const tagModelRef = tagMap.get(utl.Tag.Tag)
+  const userModelRef = tagMap.get(utl.BuiltInTag.User)
+  const tagModelRef = tagMap.get(utl.BuiltInTag.Tag)
 
   if (userModelRef && !overrideViewContextMap.has(userModelRef)) {
     overrideViewContextMap.set(userModelRef, {
@@ -185,7 +185,7 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
 
     this.state = {
       ...initialEditorData,
-      remote: new Remote(props.config.karmaDataURL),
+      remote: new Remote('/api/proxy'),
       canRestoreSessionFromStorage: storage.get(sessionStorageKey) != undefined,
       unsavedChangesCount: 0,
       developmentMode: storage.get(developmentModeStorageKey) || false,
@@ -232,7 +232,7 @@ export class SessionProvider extends React.Component<SessionProviderProps, Sessi
   public restoreSession = async (session: EditorSession) => {
     try {
       const newSession = await new UserSession(
-        this.state.remote,
+        this.state.remote.endpoint,
         session.username,
         session.token
       ).refresh()
