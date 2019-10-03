@@ -1,12 +1,12 @@
 import {PointLike} from '@karma.run/editor-common'
 import {CommitResponse, MediaType} from './interface'
 
-export type Media<T = any> = CommitResponse<T> & {
+export type Media = CommitResponse & {
   focusPoint: {x: number; y: number}
   focusScale: number
 }
 
-export type SerializedMedia<T = any> = {
+export type SerializedMedia = {
   mediaType: {
     image?: {width: number; height: number}
     video?: {}
@@ -23,14 +23,13 @@ export type SerializedMedia<T = any> = {
   extension: string
   focusPoint: PointLike
   focusScale: number
-  backend: T
 }
 
 export function thumbnailURL(baseURL: string, id: string) {
   return `${baseURL}/thumbnail/${id}`
 }
 
-export function serializeMedia<T = any>(media: Media<T>): SerializedMedia<T> {
+export function serializeMedia(media: Media): SerializedMedia {
   const commonProps = {
     id: media.id,
     url: media.url,
@@ -40,8 +39,7 @@ export function serializeMedia<T = any>(media: Media<T>): SerializedMedia<T> {
     fileSize: media.fileSize,
     extension: media.extension,
     focusPoint: media.focusPoint,
-    focusScale: media.focusScale,
-    backend: media.backend
+    focusScale: media.focusScale
   }
 
   switch (media.mediaType) {
@@ -91,7 +89,7 @@ export function serializeMedia<T = any>(media: Media<T>): SerializedMedia<T> {
   }
 }
 
-export function unserializeMedia<T = any>(media: SerializedMedia<T>): Media<T> {
+export function unserializeMedia(media: SerializedMedia): Media {
   const commonProps = {
     id: media.id,
     url: media.url,
@@ -101,8 +99,7 @@ export function unserializeMedia<T = any>(media: SerializedMedia<T>): Media<T> {
     fileSize: media.fileSize,
     extension: media.extension,
     focusPoint: media.focusPoint,
-    focusScale: media.focusScale,
-    backend: media.backend
+    focusScale: media.focusScale
   }
 
   const mediaType = Object.keys(media.mediaType)[0] as MediaType

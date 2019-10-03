@@ -125,31 +125,31 @@ export class CloudinaryAdapter implements MediaAdapter {
 
     const mediaType = this.mediaTypeForResourceType(response.resource_type)
 
-    const knownCloudinaryProps: CloudinaryResponse = {
-      public_id: response.public_id,
-      version: response.version,
-      signature: response.signature,
-      width: response.width,
-      height: response.height,
-      format: response.format,
-      resource_type: response.resource_type,
-      created_at: response.created_at,
-      tags: response.tags,
-      bytes: response.bytes,
-      type: response.type,
-      etag: response.etag,
-      placeholder: response.placeholder,
-      url: response.url,
-      secure_url: response.secure_url,
-      access_mode: response.access_mode,
-      original_filename: response.original_filename,
-      pages: response.pages,
-      frame_rate: response.frame_rate,
-      bit_rate: response.bit_rate,
-      duration: response.duration,
-      is_audio: response.is_audio,
-      rotation: response.rotation
-    }
+    // const knownCloudinaryProps: CloudinaryResponse = {
+    //   public_id: response.public_id,
+    //   version: response.version,
+    //   signature: response.signature,
+    //   width: response.width,
+    //   height: response.height,
+    //   format: response.format,
+    //   resource_type: response.resource_type,
+    //   created_at: response.created_at,
+    //   tags: response.tags,
+    //   bytes: response.bytes,
+    //   type: response.type,
+    //   etag: response.etag,
+    //   placeholder: response.placeholder,
+    //   url: response.url,
+    //   secure_url: response.secure_url,
+    //   access_mode: response.access_mode,
+    //   original_filename: response.original_filename,
+    //   pages: response.pages,
+    //   frame_rate: response.frame_rate,
+    //   bit_rate: response.bit_rate,
+    //   duration: response.duration,
+    //   is_audio: response.is_audio,
+    //   rotation: response.rotation
+    // }
 
     const commonResponse: CommonCommitResponse = {
       id: convertFromCloudinaryID(response.public_id, response.resource_type),
@@ -158,8 +158,7 @@ export class CloudinaryAdapter implements MediaAdapter {
       fileSize: file.fileSize,
       extension: file.extension,
       mimeType: file.mimeType,
-      format: file.format,
-      backend: {cloudinary: knownCloudinaryProps}
+      format: file.format
     }
 
     try {

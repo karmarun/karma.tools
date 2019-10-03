@@ -75,7 +75,7 @@ export type UploadResponse =
   | DocumentUploadResponse
   | OtherUploadResponse
 
-export interface CommonCommitResponse<T = any> {
+export interface CommonCommitResponse {
   id: string
   url: string
   mimeType: string
@@ -83,37 +83,36 @@ export interface CommonCommitResponse<T = any> {
   fileSize: number
   extension: string
   format: string
-  backend: T
 }
 
-export interface ImageCommitResponse<T = any> extends CommonCommitResponse<T> {
+export interface ImageCommitResponse extends CommonCommitResponse {
   mediaType: MediaType.Image
   width: number
   height: number
 }
 
-export interface VideoCommitResponse<T = any> extends CommonCommitResponse<T> {
+export interface VideoCommitResponse extends CommonCommitResponse {
   mediaType: MediaType.Video
 }
 
-export interface AudioCommitResponse<T = any> extends CommonCommitResponse<T> {
+export interface AudioCommitResponse extends CommonCommitResponse {
   mediaType: MediaType.Audio
 }
 
-export interface DocumentCommitResponse<T = any> extends CommonCommitResponse<T> {
+export interface DocumentCommitResponse extends CommonCommitResponse {
   mediaType: MediaType.Document
 }
 
-export interface OtherCommitResponse<T = any> extends CommonCommitResponse<T> {
+export interface OtherCommitResponse extends CommonCommitResponse {
   mediaType: MediaType.Other
 }
 
-export type CommitResponse<T = any> =
-  | ImageCommitResponse<T>
-  | VideoCommitResponse<T>
-  | AudioCommitResponse<T>
-  | DocumentCommitResponse<T>
-  | OtherCommitResponse<T>
+export type CommitResponse =
+  | ImageCommitResponse
+  | VideoCommitResponse
+  | AudioCommitResponse
+  | DocumentCommitResponse
+  | OtherCommitResponse
 
 export interface CopyResponse<T = any> {
   id: string

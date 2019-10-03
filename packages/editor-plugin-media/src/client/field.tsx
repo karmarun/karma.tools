@@ -4,7 +4,7 @@ import {
   SortConfiguration,
   FilterConfiguration,
   Model,
-  firstKeyOptional,
+  // firstKeyOptional,
   TypedFieldOptions
 } from '@karma.run/editor-common'
 
@@ -41,7 +41,7 @@ import {UploadResponse, MediaType} from '../common/interface'
 import {Media, thumbnailURL, unserializeMedia} from '../common/editor'
 import {name} from '../common/version'
 import {uploadMedia, commitMedia, copyMedia, deleteMedia} from './api'
-import {CloudinaryResponse} from '../common/backend'
+// import {CloudinaryResponse} from '../common/backend'
 
 export function mediaAPIPath(basePath: string) {
   return `${basePath}/api/plugin/${name}`
@@ -291,50 +291,49 @@ export class MediaField implements Field<MediaFieldValue> {
     }
   }
 
-  private backendExpressionForMedia(media: Media): DataConstructor | undefined {
-    const backendKey = media.backend && firstKeyOptional(media.backend)
-
-    // TODO: Find pluggable way to expressionify backend specific data
-    switch (backendKey) {
-      case 'cloudinary': {
-        const value: CloudinaryResponse = media.backend[backendKey]
-        return dat.struct({
-          public_id: dat.string(value.public_id),
-          version: dat.int32(value.version),
-          signature: dat.string(value.signature),
-          width: value.width ? dat.int32(value.width) : dat.null(),
-          height: value.height ? dat.int32(value.height) : dat.null(),
-          format: dat.string(value.format),
-          resource_type: dat.string(value.resource_type),
-          created_at: dat.string(value.created_at),
-          tags: dat.list(value.tags.map(tag => dat.string(tag))),
-          bytes: dat.int32(value.bytes),
-          type: dat.string(value.type),
-          etag: dat.string(value.etag),
-          placeholder: dat.bool(value.placeholder),
-          url: dat.string(value.url),
-          secure_url: dat.string(value.secure_url),
-          access_mode: dat.string(value.access_mode),
-          original_filename: dat.string(value.original_filename),
-          pages: value.pages ? dat.int32(value.pages) : dat.null(),
-          frame_rate: value.frame_rate ? dat.int32(value.frame_rate) : dat.null(),
-          bit_rate: value.frame_rate ? dat.int32(value.frame_rate) : dat.null(),
-          duration: value.duration ? dat.float(value.duration) : dat.null(),
-          is_audio: value.is_audio ? dat.bool(value.is_audio) : dat.null(),
-          rotation: value.rotation ? dat.int32(value.rotation) : dat.null()
-        })
-      }
-
-      default:
-        return undefined
-    }
-  }
+  // private backendExpressionForMedia(_media: Media): DataConstructor | undefined {
+  //   return undefined
+  //   // const backendKey = media.backend && firstKeyOptional(media.backend)
+  //   // TODO: Find pluggable way to expressionify backend specific data
+  //   // switch (backendKey) {
+  //   //   case 'cloudinary': {
+  //   //     const value: CloudinaryResponse = media.backend[backendKey]
+  //   //     return dat.struct({
+  //   //       public_id: dat.string(value.public_id),
+  //   //       version: dat.int32(value.version),
+  //   //       signature: dat.string(value.signature),
+  //   //       width: value.width ? dat.int32(value.width) : dat.null(),
+  //   //       height: value.height ? dat.int32(value.height) : dat.null(),
+  //   //       format: dat.string(value.format),
+  //   //       resource_type: dat.string(value.resource_type),
+  //   //       created_at: dat.string(value.created_at),
+  //   //       tags: dat.list(value.tags.map(tag => dat.string(tag))),
+  //   //       bytes: dat.int32(value.bytes),
+  //   //       type: dat.string(value.type),
+  //   //       etag: dat.string(value.etag),
+  //   //       placeholder: dat.bool(value.placeholder),
+  //   //       url: dat.string(value.url),
+  //   //       secure_url: dat.string(value.secure_url),
+  //   //       access_mode: dat.string(value.access_mode),
+  //   //       original_filename: dat.string(value.original_filename),
+  //   //       pages: value.pages ? dat.int32(value.pages) : dat.null(),
+  //   //       frame_rate: value.frame_rate ? dat.int32(value.frame_rate) : dat.null(),
+  //   //       bit_rate: value.frame_rate ? dat.int32(value.frame_rate) : dat.null(),
+  //   //       duration: value.duration ? dat.float(value.duration) : dat.null(),
+  //   //       is_audio: value.is_audio ? dat.bool(value.is_audio) : dat.null(),
+  //   //       rotation: value.rotation ? dat.int32(value.rotation) : dat.null()
+  //   //     })
+  //   //   }
+  //   //   default:
+  //   //     return undefined
+  //   // }
+  // }
 
   public transformValueToExpression(value: MediaFieldValue): DataConstructor {
     const media = value.value.media
     if (!media) return dat.null()
 
-    const backendExpression = this.backendExpressionForMedia(media)
+    // const backendExpression = this.backendExpressionForMedia(media)
 
     return dat.struct({
       mediaType: this.mediaTypeExpressionForMedia(media),
@@ -348,7 +347,7 @@ export class MediaField implements Field<MediaFieldValue> {
         ? dat.struct({x: dat.float(media.focusPoint.x), y: dat.float(media.focusPoint.y)})
         : dat.null(),
       focusScale: media.focusScale ? dat.float(media.focusScale) : dat.null(),
-      backend: backendExpression ? backendExpression : dat.null()
+      format: dat.string(media.format)
     })
   }
 

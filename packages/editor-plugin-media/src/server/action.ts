@@ -347,6 +347,7 @@ export async function uploadMedia(
 }
 
 export interface CommitOptions {
+  hostname: string
   tempDirPath: string
   storageAdapter: StorageAdapter
 }
@@ -384,8 +385,7 @@ export async function commitMedia(
     fileSize: file.fileSize,
     mimeType: file.mimeType,
     format: file.format,
-    url: `/${fileID.toURLPath(file.filename)}`,
-    backend: undefined
+    url: `${opts.hostname || ''}/${fileID.toURLPath(file.filename)}`
   }
 
   switch (file.mediaType) {

@@ -11,6 +11,7 @@
     "types": [],
     "jsx": "react",
     "incremental": true,
+    "tsBuildInfoFile": "./.tsbuildinfo",
     "sourceMap": true,
     "strict": true,
     "strictNullChecks": true,

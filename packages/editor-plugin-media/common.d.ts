@@ -1,1 +1,1 @@
-export * from './lib/types/common'
+export * from './lib/cjs/common'

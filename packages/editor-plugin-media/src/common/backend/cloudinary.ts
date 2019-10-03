@@ -27,7 +27,7 @@ export interface CloudinaryResponse {
   rotation?: number
 }
 
-export type CloudinaryCommitResponse = CommitResponse<{cloudinary: CloudinaryResponse}>
+export type CloudinaryCommitResponse = CommitResponse
 export type CloudinaryCopyResponse = CopyResponse<{cloudinary: CloudinaryResponse}>
 
 export interface IDComponents {
