@@ -728,10 +728,15 @@ export class DateTime extends Model {
   }
 
   decode(json: any): val.DateTime {
-    if (typeof json !== 'string') {
-      throw new Error(`expected string, got ${typeof json}`)
+    if (!(json instanceof Date) && typeof json !== 'string') {
+      throw new Error(`expected string or Date object, got ${typeof json}`)
     }
-    return val.dateTime(new Date(json))
+
+    if (typeof json === 'string') {
+      return val.dateTime(new Date(json))
+    } else {
+      return val.dateTime(json)
+    }
   }
 
   toValue(_recursions: {[key: string]: Recursion} = {}): val.Value {
