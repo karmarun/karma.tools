@@ -1,6 +1,6 @@
 {
   "name": "@karma.run/sdk",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "karma.run SDK",
   "engines": {
     "node": ">=4.2.0"
@@ -22,7 +22,7 @@
     "watch:esm": "tsc -p ./tsconfig.json --declarationMap --declaration --module esnext --outDir ./lib/esm --watch",
     "copy-license": "shx cp ../../LICENSE ./",
     "clean": "shx rm -rf ./LICENSE ./lib",
-    "prepare": "run-s clean copy-license build sync-package-info",
+    "prepare": "run-s clean copy-license sync-package-info build",
     "sync-package-info": "node ./../../scripts/syncPackageInfo.js ./src/version.ts"
   },
   "sideEffects": false,
@@ -35,8 +35,8 @@
     "axios": "^0.18.0"
   },
   "devDependencies": {
-    "shx": "^0.3.2",
     "npm-run-all": "^4.1.5",
+    "shx": "^0.3.2",
     "typescript": "^3.5.2"
   }
 }
