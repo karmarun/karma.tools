@@ -28,7 +28,7 @@
   "repository": "github:karmarun/karma.tools",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.18.0"
+    "axios": "^0.21.1"
   },
   "devDependencies": {
     "npm-run-all": "^4.1.3",

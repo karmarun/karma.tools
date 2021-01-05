@@ -24,7 +24,7 @@
   "dependencies": {
     "@karma.run/editor-common": "^0.14.0",
     "@karma.run/sdk": "^0.5.13",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "classnames": "^2.2.5",
     "csx": "^9.0.0",
     "fuse.js": "^3.2.0",
